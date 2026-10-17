@@ -1,0 +1,40 @@
+@echo off
+setlocal
+cd /d "%~dp0"
+py -3 -c "import sys; assert sys.version_info >= (3,10)" >nul 2>nul
+if not errorlevel 1 goto use_py
+python -c "import sys; assert sys.version_info >= (3,10)" >nul 2>nul
+if not errorlevel 1 goto use_python
+echo Python 3.10 or newer was not found.
+echo Install Python from https://www.python.org/downloads/windows/
+echo Enable Add Python to PATH, then try again.
+if /i not "%~1"=="--check" pause
+exit /b 1
+
+:use_py
+set "YTDL_PYTHON=py -3"
+goto run
+
+:use_python
+set "YTDL_PYTHON=python"
+
+:run
+title YTDL Studio - Install
+if /i "%~1"=="--check" goto check
+%YTDL_PYTHON% -m pip install --upgrade -r "%~dp0requirements.txt"
+set "YTDL_EXIT=%errorlevel%"
+if not "%YTDL_EXIT%"=="0" goto failed
+echo.
+echo Installation complete. Open start.bat.
+pause
+exit /b 0
+
+:failed
+echo.
+echo Installation failed. See the error above.
+pause
+exit /b %YTDL_EXIT%
+
+:check
+%YTDL_PYTHON% -m pip --version
+exit /b %errorlevel%

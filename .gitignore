@@ -1,0 +1,42 @@
+# Python environments and generated caches
+__pycache__/
+*.py[cod]
+.venv*/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local browser profiles, settings, credentials and cookies
+.preview-profile/
+.env
+.env.*
+!.env.example
+*cookies*.txt
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Generated builds and downloads
+build/
+dist/
+*.spec
+*.zip
+*.dmg
+*.app/
+*.part
+*.ytdl
+*.mp4
+*.mp3
+*.webm
+*.mkv
+*.m4a
+*.log
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
