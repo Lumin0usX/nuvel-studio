@@ -31,6 +31,8 @@ def main():
         '--collect-all', 'yt_dlp', '--collect-all', 'yt_dlp_ejs',
         '--collect-all', 'curl_cffi', '--collect-all', 'certifi',
         '--collect-all', 'webview', '--hidden-import', 'webview.platforms.cocoa',
+        '--exclude-module', 'gallery_dl',  # gallery-dl is a separate external CLI
+        '--collect-all', 'PIL',
         '--copy-metadata', 'yt-dlp',
     ])
     app = output / 'YTDL Studio.app'

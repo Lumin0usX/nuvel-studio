@@ -1,4 +1,4 @@
-"""Liquid Glass desktop shell, with an authenticated local-browser fallback."""
+"""Desktop shell, with an authenticated local-browser fallback."""
 import base64
 import copy
 import json
@@ -13,8 +13,11 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
-from download_engine import PLATFORMS, platform_support, download_error
+from download_engine import PLATFORMS, PLATFORM_DOMAINS, platform_modes, platform_support, download_error
 from platform_runtime import resource_path, ffmpeg_path, open_directory
+from image_download import download_images, image_support
+from media_quality import validate_quality, quality_label, media_options
+from ui_preferences import load_preferences, save_preferences
 
 
 class StudioAPI:
@@ -22,22 +25,28 @@ class StudioAPI:
         self._window = None
         self._lock = threading.RLock()
         self._cancel = threading.Event()
+        self._preferences = load_preferences()
         self._state = dict(phase='idle', percent=0, title='', detail='', speed='', eta='',
-                           folder=str(Path.home() / 'Downloads'), history=[], error='')
+                           folder=self._preferences.get('folder', str(Path.home() / 'Downloads')), history=[], error='',
+                           progress_known=True, image_count=0)
         self._platforms = []
         self._version = ''
+        self._image_engine = dict(available=False, modules=[])
         threading.Thread(target=self._scan, daemon=True).start()
 
     def _scan(self):
         version, states = platform_support()
+        engine = image_support()
         platforms = []
         for name, key, slug, color in PLATFORMS:
             icon = resource_path('assets', 'platforms', slug + '.png')
             platforms.append(dict(name=name, slug=slug, color=color, status=states[name],
+                                  domains=PLATFORM_DOMAINS[slug], **platform_modes(slug, states[name], engine),
                                   icon='data:image/png;base64,' + base64.b64encode(icon.read_bytes()).decode()))
         with self._lock:
             self._platforms = platforms
             self._version = version
+            self._image_engine = engine
 
     def _update(self, **values):
         with self._lock:
@@ -45,7 +54,17 @@ class StudioAPI:
 
     def snapshot(self):
         with self._lock:
-            return dict(**copy.deepcopy(self._state), platforms=self._platforms, version=self._version)
+            return dict(**copy.deepcopy(self._state), platforms=copy.deepcopy(self._platforms),
+                        version=self._version, image_engine=copy.deepcopy(self._image_engine),
+                        preferences=copy.deepcopy(self._preferences))
+
+    def save_preferences(self, values):
+        try:
+            with self._lock:
+                self._preferences = save_preferences(values)
+            return dict(ok=True)
+        except (OSError, ValueError, TypeError) as exc:
+            return dict(error=str(exc))
 
     def choose_folder(self):
         if self._window is None:
@@ -72,6 +91,56 @@ class StudioAPI:
         except (OSError, subprocess.SubprocessError) as exc:
             return dict(error=str(exc))
 
+    def remove_history(self, record_id):
+        """Remove only an in-memory record. Never touch downloaded files."""
+        if not isinstance(record_id, str) or not record_id:
+            return dict(error='ไม่พบรหัสประวัติ')
+        with self._lock:
+            self._state['history'] = [item for item in self._state['history'] if item.get('id') != record_id]
+        return dict(ok=True)
+
+    def analyze_url(self, options):
+        """Read real metadata on a request thread; never start a transfer."""
+        if not isinstance(options, dict):
+            return dict(error='ข้อมูลลิงก์ไม่ถูกต้อง')
+        url = str(options.get('url', '')).strip()
+        try:
+            parsed = urlsplit(url)
+            if parsed.scheme not in ('http', 'https') or not parsed.hostname:
+                raise ValueError()
+        except ValueError:
+            return dict(error='ใช้ลิงก์แบบเต็มที่ขึ้นต้นด้วย https://')
+        if options.get('mode') == 'image':
+            return dict(unavailable=True, detail='โหมดภาพอ่านโพสต์หรืออัลบั้มเมื่อเริ่มดาวน์โหลด คุณภาพต้นฉบับจะเก็บไฟล์ตามที่ต้นทางส่งให้')
+        cookies = options.get('cookies', 'none')
+        if cookies not in ('none', 'file', 'chrome', 'edge', 'firefox', 'brave', 'opera', 'vivaldi'):
+            return dict(error='ตัวเลือก cookies ไม่ถูกต้อง')
+        try:
+            import yt_dlp
+            opts = dict(quiet=True, no_warnings=True, noplaylist=True, skip_download=True,
+                        socket_timeout=12, retries=0, extractor_retries=0, cachedir=False,
+                        playlist_items='1')
+            if cookies not in ('none', 'file'):
+                opts['cookiesfrombrowser'] = (cookies,)
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                if cookies == 'file':
+                    from yt_dlp.cookies import YoutubeDLCookieJar
+                    jar = YoutubeDLCookieJar(str(options.get('cookie_path', '')))
+                    jar.load(ignore_discard=True, ignore_expires=True)
+                    jar.filename = None
+                    ydl.cookiejar = jar
+                info = ydl.extract_info(url, download=False)
+            if not info or info.get('_type') in ('playlist', 'multi_video'):
+                return dict(unavailable=True, detail='ใช้ลิงก์คลิปโดยตรงเพื่อดูตัวอย่าง · คุณยังลองดาวน์โหลดลิงก์นี้ได้')
+            formats = info.get('formats') or []
+            heights = sorted({int(f['height']) for f in formats if isinstance(f.get('height'), (int, float)) and f['height'] > 0})
+            extensions = sorted({str(f['ext']) for f in formats if f.get('ext')})
+            return dict(title=info.get('title') or '', thumbnail=info.get('thumbnail') or '',
+                        source=info.get('extractor_key') or parsed.hostname,
+                        duration=info.get('duration'), resolutions=heights, formats=extensions)
+        except Exception as exc:
+            return dict(error=download_error(exc))
+
     def start_download(self, options):
         if not isinstance(options, dict):
             return dict(error='ข้อมูลการดาวน์โหลดไม่ถูกต้อง')
@@ -84,13 +153,17 @@ class StudioAPI:
                 if parsed.scheme.lower() not in ('http', 'https') or not parsed.hostname:
                     raise ValueError()
             except ValueError:
-                return dict(error='วางลิงก์คลิปที่ขึ้นต้นด้วย https://')
+                return dict(error='วางลิงก์ที่ขึ้นต้นด้วย https://')
             folder = Path(str(options.get('folder', '')).strip()).expanduser()
             if not str(options.get('folder', '')).strip() or not folder.is_dir():
                 return dict(error='เลือกโฟลเดอร์ปลายทางที่มีอยู่ก่อน')
             mode = options.get('mode', 'video')
-            if mode not in ('video', 'audio'):
-                return dict(error='เลือกรูปแบบ MP4 หรือ MP3')
+            if mode not in ('video', 'audio', 'image'):
+                return dict(error='เลือกวิดีโอ เสียง หรือภาพ')
+            try:
+                quality = validate_quality(mode, options.get('quality', 'best'))
+            except ValueError as exc:
+                return dict(error=str(exc))
             cookies = options.get('cookies', 'none')
             if cookies not in ('none', 'file', 'chrome', 'edge', 'firefox', 'brave', 'opera', 'vivaldi'):
                 return dict(error='ตัวเลือก cookies ไม่ถูกต้อง')
@@ -98,19 +171,26 @@ class StudioAPI:
             if cookies == 'file' and not Path(cookie_path).is_file():
                 return dict(error='ไม่พบไฟล์ cookies.txt')
             self._cancel.clear()
-            self._update(phase='connecting', percent=0, title=parsed.hostname, detail='กำลังอ่านข้อมูลคลิป',
-                         speed='', eta='', error='', folder=str(folder.resolve()), mode=mode)
-            threading.Thread(target=self._download, args=(url, str(folder.resolve()), mode, cookies, cookie_path), daemon=True).start()
+            self._update(phase='connecting', percent=0, title=parsed.hostname, detail='กำลังอ่านข้อมูล',
+                         progress_known=mode != 'image', image_count=0,
+                         speed='', eta='', error='', folder=str(folder.resolve()), mode=mode,
+                         quality=quality, quality_label=quality_label(mode, quality), source=parsed.hostname,
+                         url=url, total_bytes=0, downloaded_bytes=0, history_id='')
+            threading.Thread(target=self._download, args=(url, str(folder.resolve()), mode, cookies, cookie_path, quality), daemon=True).start()
             return dict(ok=True)
 
     def cancel_download(self):
         with self._lock:
             if self._state['phase'] in ('connecting', 'downloading', 'processing'):
                 self._cancel.set()
-                self._update(phase='cancelling', detail='กำลังหยุด · หากกำลังแปลงไฟล์จะรอให้ขั้นตอนนี้จบ')
+                self._update(phase='cancelling', detail='กำลังหยุดดาวน์โหลดภาพ' if self._state.get('mode') == 'image'
+                             else 'กำลังหยุด · หากกำลังแปลงไฟล์จะรอให้ขั้นตอนนี้จบ')
         return dict(ok=True)
 
-    def _download(self, url, folder, mode, cookies, cookie_path):
+    def _download(self, url, folder, mode, cookies, cookie_path, quality='best'):
+        if mode == 'image':
+            self._download_images(url, folder, cookies, cookie_path, quality)
+            return
         try:
             import yt_dlp
             def check_cancel():
@@ -124,6 +204,7 @@ class StudioAPI:
                     percent = min(100, data.get('downloaded_bytes', 0) * 100 / total) if total else 0
                     speed, eta = data.get('speed'), data.get('eta')
                     self._update(phase='downloading', percent=percent, title=title, detail='กำลังดาวน์โหลด',
+                                 progress_known=bool(total), total_bytes=total, downloaded_bytes=data.get('downloaded_bytes', 0),
                                  speed=f'{speed / 1048576:.1f} MB/s' if speed else '',
                                  eta=f'{int(eta)//60}:{int(eta)%60:02d}' if eta is not None else '')
                 elif data['status'] == 'finished':
@@ -134,11 +215,7 @@ class StudioAPI:
             opts = dict(outtmpl=os.path.join(folder, '%(title).150B [%(extractor_key)s-%(id)s].%(ext)s'),
                         noplaylist=True, progress_hooks=[progress], postprocessor_hooks=[postprocess],
                         windowsfilenames=sys.platform == 'win32', quiet=True, ffmpeg_location=ffmpeg_path())
-            if mode == 'audio':
-                opts.update(format='bestaudio/best', postprocessors=[dict(key='FFmpegExtractAudio', preferredcodec='mp3', preferredquality='192')])
-            else:
-                opts.update(format='bestvideo*+bestaudio/best', merge_output_format='mp4',
-                            postprocessors=[dict(key='FFmpegVideoConvertor', preferedformat='mp4')])
+            opts.update(media_options(mode, quality))
             if cookies not in ('none', 'file'):
                 opts['cookiesfrombrowser'] = (cookies,)
             with yt_dlp.YoutubeDL(opts) as ydl:
@@ -153,21 +230,42 @@ class StudioAPI:
                     raise RuntimeError('ดาวน์โหลดไม่สำเร็จ ลองใช้ลิงก์คลิปโดยตรง')
                 check_cancel()
             with self._lock:
-                history = [dict(title=self._state['title'], mode=mode, folder=folder,
+                history = [dict(id=secrets.token_hex(8), title=self._state['title'], mode=mode, folder=folder,
+                                source=self._state.get('source', ''), status='done',
+                                quality=quality, quality_label=quality_label(mode, quality),
                                 time=time.strftime('%H:%M'))] + self._state['history'][:7]
-                self._update(phase='done', percent=100, detail='บันทึกไฟล์เรียบร้อยแล้ว', history=history)
+                self._update(phase='done', percent=100, detail='บันทึกไฟล์เรียบร้อยแล้ว', history=history, history_id=history[0]['id'])
         except Exception as exc:
             if self._cancel.is_set():
                 self._update(phase='cancelled', detail='หยุดแล้ว · ไฟล์บางส่วนอาจยังอยู่ในโฟลเดอร์', speed='', eta='')
             else:
                 self._update(phase='error', detail='ดาวน์โหลดไม่สำเร็จ', error=download_error(exc), speed='', eta='')
 
+    def _download_images(self, url, folder, cookies, cookie_path, quality='best'):
+        try:
+            result = download_images(url, folder, self._cancel, self._update, cookies, cookie_path, quality=quality)
+            if self._cancel.is_set():
+                raise RuntimeError('หยุดแล้ว')
+            with self._lock:
+                history = [dict(id=secrets.token_hex(8), title=result['title'], mode='image', folder=result['folder'],
+                                source=self._state.get('source', ''), status='done',
+                                count=result['count'], quality=quality, quality_label=quality_label('image', quality),
+                                time=time.strftime('%H:%M'))] + self._state['history'][:7]
+                self._update(phase='done', percent=100, progress_known=True, title=result['title'],
+                             folder=result['folder'], image_count=result['count'], speed='', eta='',
+                             detail=f"บันทึกแล้ว {result['count']} ภาพ", history=history, history_id=history[0]['id'])
+        except Exception as exc:
+            if self._cancel.is_set():
+                self._update(phase='cancelled', detail='หยุดแล้ว · ภาพที่โหลดเสร็จยังอยู่ในโฟลเดอร์', speed='', eta='')
+            else:
+                self._update(phase='error', detail='ดาวน์โหลดภาพไม่สำเร็จ', error=str(exc), speed='', eta='')
+
 
 def _serve(api):
     """Fallback has no external listening port and requires a random session token."""
     token = secrets.token_urlsafe(32)
     ui_root = resource_path('ui')
-    allowed = {'snapshot', 'start_download', 'cancel_download', 'open_folder', 'choose_folder', 'choose_cookies'}
+    allowed = {'snapshot', 'start_download', 'cancel_download', 'open_folder', 'choose_folder', 'choose_cookies', 'analyze_url', 'remove_history', 'save_preferences'}
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_):
             pass
@@ -184,7 +282,7 @@ def _serve(api):
         def do_GET(self):
             if self.headers.get('Host') != f'127.0.0.1:{self.server.server_port}':
                 return self._reply(403, {})
-            files = {'/': ('index.html', 'text/html; charset=utf-8'), '/studio.css': ('studio.css', 'text/css'), '/studio.js': ('studio.js', 'text/javascript')}
+            files = {'/': ('index.html', 'text/html; charset=utf-8'), '/studio.css': ('studio.css', 'text/css'), '/studio.js': ('studio.js', 'text/javascript'), '/i18n.js': ('i18n.js', 'text/javascript; charset=utf-8')}
             entry = files.get(urlsplit(self.path).path)
             if not entry:
                 return self._reply(404, {})
@@ -219,7 +317,7 @@ def main():
         if '--self-test' in sys.argv:
             raise SystemExit('pywebview is required to test the packaged app')
         server, url = _serve(api)
-        print('Liquid Glass UI is running locally. Close this terminal to stop it.')
+        print('YTDL Studio is running locally. Close this terminal to stop it.')
         candidates = []
         if sys.platform == 'win32':
             for base in (os.environ.get('PROGRAMFILES', ''), os.environ.get('PROGRAMFILES(X86)', '')):
@@ -240,11 +338,15 @@ def main():
         return
     window = webview.create_window('YTDL Studio', str(resource_path('ui', 'index.html')),
                                    js_api=api, width=1240, height=860, min_size=(780, 640),
-                                   background_color='#e5e9f3', vibrancy=sys.platform == 'darwin')
+                                   background_color='#090B10', vibrancy=False)
     api._window = window
     def closing():
         if api.snapshot()['phase'] in ('connecting', 'downloading', 'processing', 'cancelling'):
-            return window.create_confirmation_dialog('กำลังดาวน์โหลด', 'ปิดแอปและหยุดงานนี้หรือไม่?')
+            labels = {'th': ('กำลังดาวน์โหลด', 'ปิดแอปและหยุดงานนี้หรือไม่?'),
+                      'en': ('Download in progress', 'Close the app and stop this download?'),
+                      'ja': ('ダウンロード中', 'アプリを閉じてダウンロードを停止しますか？'),
+                      'zh-CN': ('正在下载', '关闭应用并停止此次下载？')}
+            return window.create_confirmation_dialog(*labels.get(api._preferences.get('language'), labels['th']))
     window.events.closing += closing
     if '--self-test' in sys.argv:
         subprocess.run([ffmpeg_path(), '-version'], check=True, capture_output=True)

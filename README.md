@@ -1,14 +1,26 @@
 # YTDL Studio
 
-A desktop video and audio downloader with a Liquid Glass-inspired interface,
+A desktop video, audio and image downloader with the Obsidian Futuristic interface,
 powered by yt-dlp. Original project materials are proprietary.
 
 ## Features
 
-- Download video as MP4 or audio as MP3.
-- Local WebView interface with translucent cards and a responsive layout.
-- Platform indicators for YouTube, TikTok, Facebook, Instagram, X, Reddit,
-  Vimeo, Dailymotion, Twitch Clips, Bilibili, and Pinterest.
+- Download video as MP4; save native audio or choose an MP3 bitrate.
+- Download original raster images directly (JPEG, PNG, WebP, GIF, AVIF, HEIC,
+  TIFF, BMP, JXL, ICO), including image endpoints without file extensions.
+- Download images from posts/albums through the separately invoked gallery-dl
+  CLI. Image mode filters out videos and preserves original image formats.
+- Desktop sidebar with Overview, Downloads, searchable History, and Settings.
+  Contextual quality controls, real metadata previews where available, a transfer
+  dock across pages, and Ctrl/Cmd + Enter to start from Overview.
+- Dark design tokens, keyboard focus states, responsive auto-collapse, reduced
+  motion and compact list preferences. No frontend framework or UI dependencies.
+- Searchable platform indicators for 30 services, sorted with supported sources
+  first. Video, audio and image capabilities are reported separately.
+- New sources in the catalog: Bluesky, SoundCloud, Bandcamp, Mixcloud,
+  Audiomack, Flickr, Imgur, Tumblr, Pixiv, DeviantArt, Unsplash, VK, RuTube,
+  Rumble, Streamable, Internet Archive, Niconico, Douyin, and Snapchat Spotlight.
+  Pixiv, DeviantArt and Unsplash use image mode. Music services use audio mode.
 - Support for other sources available through the installed yt-dlp extractors.
 - Progress, transfer speed, estimated time remaining, cancellation, and the
   last eight successful downloads from the current session.
@@ -16,6 +28,86 @@ powered by yt-dlp. Original project materials are proprietary.
 
 Platform indicators report installed extractor support, not successful live
 tests of every service or URL. This project does not bypass DRM.
+
+## Desktop interface
+
+The HTML/CSS/JavaScript interface runs in the existing pywebview shell (or its
+authenticated localhost fallback). Native window controls remain unchanged.
+Metadata reads use yt-dlp without starting a download; unavailable previews do
+not block downloading. Image-post metadata is read only during the actual job.
+
+Settings use an atomic, per-user JSON file under `YTDLStudio/preferences.json`:
+Local AppData on Windows, Application Support on macOS, or XDG config on Linux.
+Destination, appearance and language preferences persist; cookies and cookie-file
+paths remain in memory. Inter and Noto Sans Thai are preferred when installed,
+with native system font fallbacks; the UI makes no external font requests.
+
+Choose **Settings → General → Language** for English, Thai, Japanese, or
+Simplified Chinese. The interface switches immediately and remembers the choice
+across app launches. All translation assets are bundled for offline use, including
+quality options, status messages, help and accessibility labels. Media titles,
+filenames, platform names and raw third-party diagnostics stay in their original
+form. Switching languages preserves quality selections and settings drafts.
+
+Downloads supports the existing single-job workflow, cancellation, retry in the
+current UI session, and opening folders. There is no pause/resume or queue.
+History retains the latest eight successful jobs in memory; removing a record
+does not delete a file. Opening individual files is not offered because the
+backend does not reliably return a final file path for every mode and job.
+
+See [UI review and verification](DESIGN.md) for design decisions and QA limits.
+
+## Quality preferences
+
+All three modes default to the highest quality the source exposes.
+
+- Video: highest available, or a height ceiling from 360p through 8K/4320p.
+  The downloader chooses the best format at or below the cap; if none exists,
+  it reports an error instead of downloading above the cap. It does not upscale.
+- Audio: the default keeps the best audio stream and native codec when possible
+  (for example M4A or Opus). To export MP3, select 96/128/192/256/320 kbps.
+  Re-encoding at a higher bitrate cannot improve a low-quality source.
+- Images: the default preserves the exact downloaded bytes. Other choices
+  limit the long edge to 640–4096 px after download, preserving aspect ratio
+  and never enlarging smaller originals. Resizing needs Pillow. JPEG/WebP
+  resizing re-encodes at quality 95; GIF/WebP/APNG animation is retained within
+  processing limits. Unsupported codecs, very large animations or multipage
+  documents require original quality; failures leave the downloaded original.
+
+Selections are independent for each mode during the current app session.
+History records the requested quality ceiling, not a claim that the source
+actually had that resolution. Direct links cannot retrieve a larger image than
+the linked file itself; there is no AI upscaling or invented source quality.
+
+## Image download setup
+
+Run the installer again after updating (`install.bat` on Windows, or
+`bash install_macos.command` on macOS). It installs gallery-dl alongside the app.
+Choose **ภาพ**, paste an image, post or album URL, and download. Direct image
+links work without gallery-dl. Post/album support depends on the installed
+[gallery-dl extractors](https://gdl-org.github.io/docs/supportedsites.html);
+some sites require cookies from an account that can view the content.
+
+Image mode shows separate source indicators; they inspect local extractor
+modules and do not promise that every post will work. Other gallery-dl sources
+outside the catalog can also be entered directly. The catalog includes Flickr,
+Imgur, Tumblr, Pixiv, DeviantArt, Unsplash and Bluesky with their own logo tiles.
+A profile URL can download multiple posts; use a post URL for a smaller job.
+
+Direct files go into the selected folder without overwriting existing files.
+Gallery jobs use a separate `Images-<timestamp>` subfolder. Progress shows
+image counts when the total is unknown. Cancellation preserves completed
+images; partial/failed jobs are not added to the success history. Direct
+images have a 256 MB per-file limit. SVG and arbitrary HTML scraping are not
+supported. Video thumbnails are not used as a substitute for image posts.
+
+The packaged macOS `.app` does not bundle gallery-dl. Install the external CLI
+with `brew install gallery-dl` or `pipx install gallery-dl`, then reopen the app.
+Direct image links still work without that CLI.
+
+Image transfers are covered by local automated tests (including a simulated
+gallery subprocess). Live social-site downloads have not been verified here;
+the development environment blocks package/network connections.
 
 ## Windows
 
@@ -63,9 +155,10 @@ for public distribution. A macOS binary cannot be built by this project on Windo
   cancellation, and successful/failed jobs using mocks.
 - Windows launcher checks and the authenticated local HTTP bridge were tested.
 - JavaScript syntax and HTML element bindings were checked.
-- The new interface has not completed visual or end-to-end validation on a real
-  Windows desktop or Apple Silicon Mac. Live downloads have not been verified
-  across all listed platforms. No finished macOS binary is included.
+- Browser workflow was tested with real local image transfers, cancellation,
+  retry, history, settings and responsive layouts. The targeted UI refinement was
+  reviewed with actual browser screenshots; native Apple Silicon validation remains open.
+  Live downloads were not verified across all platforms. No macOS binary is included.
 
 Run the test suite:
 
@@ -80,8 +173,10 @@ python -m unittest discover -s tests -v
 | `ytdl_studio.py` | Main launcher |
 | `glass_app.py` | WebView shell, local API, download jobs |
 | `ui/` | HTML, CSS, and JavaScript interface |
+| `ui/i18n.js` | Offline translations and live language switching |
 | `download_engine.py` | Platform registry and error guidance |
 | `platform_runtime.py` | Cross-platform resources, FFmpeg, and folder opening |
+| `ui_preferences.py` | Validated, atomic per-user appearance/destination preferences |
 | `assets/platforms/` | Bundled platform marks |
 | `legacy_tk.py` | Previous interface, available with `--classic` |
 | `tests/` | Automated tests |

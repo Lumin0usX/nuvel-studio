@@ -17,6 +17,14 @@ upstream projects and in the installed packages.
 - FFmpeg: https://ffmpeg.org/legal.html
 - pywebview: https://github.com/r0x0r/pywebview
 - PyInstaller: https://github.com/pyinstaller/pyinstaller
+- gallery-dl (GPL-2.0): https://github.com/mikf/gallery-dl
+- Pillow: https://github.com/python-pillow/Pillow
+
+Image-post extraction invokes gallery-dl as a separate command-line process.
+The source installer installs it into the Python environment; the macOS app
+builder explicitly excludes it from the application bundle. Install the CLI
+separately for packaged apps. Its code and license remain separate from the
+original proprietary application code.
 
 Before distributing a packaged application, review the exact dependency
 versions and FFmpeg build that are included, preserve their required notices,
@@ -28,7 +36,9 @@ source repository by default.
 ## Platform marks
 
 YouTube, TikTok, Facebook, Instagram, X/Twitter, Reddit, Vimeo, Dailymotion,
-Twitch, Bilibili, and Pinterest names and marks identify their respective
+Twitch, Bilibili, Pinterest, Bluesky, SoundCloud, Bandcamp, Mixcloud, Audiomack,
+Flickr, Imgur, Tumblr, Pixiv, DeviantArt, Unsplash, VK, RuTube, Rumble,
+Streamable, Internet Archive, Niconico, Douyin, and Snapchat names and marks identify their respective
 platforms. They belong to their respective owners. Their inclusion does not
 imply endorsement, sponsorship, or affiliation.
 
