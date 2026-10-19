@@ -4,6 +4,7 @@ import io
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 from types import SimpleNamespace
 import unittest
@@ -16,7 +17,7 @@ from update_project import UpdateError, main, update_source
 class SourceUpdateTests(unittest.TestCase):
     def git(self, path, *args):
         return subprocess.run(['git', '-C', str(path), *args], check=True,
-                              capture_output=True, text=True, timeout=15).stdout.strip()
+                              capture_output=True, text=True, encoding='utf-8', timeout=15).stdout.strip()
 
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix='ytdl-update-test-')
@@ -24,7 +25,7 @@ class SourceUpdateTests(unittest.TestCase):
         root = Path(self.temporary.name)
         self.origin = root / 'origin.git'
         self.author = root / 'author'
-        self.clone = root / 'YTDL Studio'
+        self.clone = root / 'YTDL Studio ไทย'
         self.git(root, 'init', '--bare', str(self.origin))
         self.git(root, 'init', '--initial-branch=main', str(self.author))
         self.identity(self.author)
@@ -158,9 +159,9 @@ class SourceUpdateTests(unittest.TestCase):
 
 
 class UpdateWorkflowTests(unittest.TestCase):
-    def run_main(self, args, update_error=None, command_error=None):
+    def run_main(self, args, update_error=None, command_error=None, platform='darwin'):
         output = io.StringIO()
-        with patch('update_project.sys', SimpleNamespace(platform='darwin', stderr=output)), \
+        with patch('update_project.sys', SimpleNamespace(platform=platform, stderr=output, executable='chosen-python')), \
              patch('update_project.update_source', side_effect=update_error) as update, \
              patch('update_project.subprocess.run', side_effect=command_error) as run, \
              redirect_stdout(output):
@@ -197,6 +198,91 @@ class UpdateWorkflowTests(unittest.TestCase):
         self.assertEqual(run.call_count, 1)
         self.assertIn('installation/build failed', output)
         self.assertNotIn('Update and build complete', output)
+
+    def test_windows_uses_selected_python_for_pip_and_launcher_check(self):
+        result, update, run, output = self.run_main([], platform='win32')
+        self.assertEqual(result, 0)
+        update.assert_called_once()
+        self.assertEqual(run.call_count, 2)
+        self.assertEqual(run.call_args_list[0].args[0][:5],
+                         ['chosen-python', '-m', 'pip', 'install', '--upgrade'])
+        self.assertTrue(run.call_args_list[0].args[0][-1].endswith('requirements.txt'))
+        self.assertEqual(run.call_args_list[1].args[0][:2], ['chosen-python', '-c'])
+        self.assertIn('import glass_app', run.call_args_list[1].args[0][2])
+        self.assertIn('Open start.bat', output)
+
+    def test_windows_pip_failure_does_not_claim_success_or_check_launcher(self):
+        result, _, run, output = self.run_main([], platform='win32',
+            command_error=subprocess.CalledProcessError(1, ['chosen-python', '-m', 'pip']))
+        self.assertEqual(result, 1)
+        self.assertEqual(run.call_count, 1)
+        self.assertNotIn('Update complete', output)
+
+    def test_windows_git_failure_never_installs(self):
+        result, _, run, output = self.run_main([], platform='win32', update_error=UpdateError('offline'))
+        self.assertEqual(result, 1)
+        run.assert_not_called()
+        self.assertIn('offline', output)
+
+    def test_check_mode_does_not_fetch_or_install(self):
+        with patch('update_project.shutil.which', return_value='git'):
+            result, update, run, output = self.run_main(['--check'], platform='win32')
+        self.assertEqual(result, 0)
+        update.assert_not_called()
+        self.assertEqual([call.args[0] for call in run.call_args_list],
+                         [['git', '--version'], ['chosen-python', '-m', 'pip', '--version']])
+        self.assertIn('No updates were applied', output)
+
+    def test_windows_rejects_build_before_fetching(self):
+        with patch('update_project.sys', SimpleNamespace(platform='win32')), \
+             patch('update_project.update_source') as update, redirect_stderr(io.StringIO()), \
+             self.assertRaises(SystemExit) as error:
+            main(['--build'])
+        self.assertEqual(error.exception.code, 2)
+        update.assert_not_called()
+
+
+@unittest.skipUnless(sys.platform == 'win32', 'Windows batch launcher tests')
+class WindowsBatchUpdateTests(unittest.TestCase):
+    def run_batch(self, updater, *args):
+        with tempfile.TemporaryDirectory(prefix='ytdl-batch-test-') as temporary:
+            folder = Path(temporary, 'YTDL Studio ไทย')
+            folder.mkdir()
+            shutil.copyfile(Path(__file__).resolve().parents[1] / 'update.bat', folder / 'update.bat')
+            (folder / 'update_project.py').write_text(updater, encoding='utf-8')
+            # Only the copied stub runs: these tests never fetch or install.
+            return subprocess.run(['cmd.exe', '/d', '/c', 'update.bat', *args], cwd=folder,
+                                  input='\n\n', text=True, encoding='utf-8', errors='replace',
+                                  capture_output=True, timeout=15)
+
+    def test_check_flag_is_forwarded_in_a_folder_with_spaces_and_thai(self):
+        result = self.run_batch("import sys\nassert sys.argv[1:] == ['--check']\nprint('CHECK_OK')\n", '--check')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('CHECK_OK', result.stdout)
+        self.assertNotIn('Press any key', result.stdout)
+
+    def test_failure_returns_nonzero_and_keeps_error_visible(self):
+        result = self.run_batch("print('SIMULATED_UPDATE_ERROR')\nraise SystemExit(1)\n")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn('SIMULATED_UPDATE_ERROR', result.stdout)
+        self.assertIn('Update failed', result.stdout)
+
+    def test_check_failure_returns_nonzero_without_prompting(self):
+        result = self.run_batch("print('SIMULATED_CHECK_ERROR')\nraise SystemExit(1)\n", '--check')
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn('SIMULATED_CHECK_ERROR', result.stdout)
+        self.assertNotIn('Press any key', result.stdout)
+
+    def test_replacing_running_batch_does_not_execute_new_contents(self):
+        updater = ("from pathlib import Path\n"
+                   "Path(__file__).with_name('update.bat').write_bytes("
+                   "b'@echo off\\r\\necho SHOULD_NOT_RUN\\r\\nexit /b 9\\r\\n')\n"
+                   "print('UPDATE_OK')\n")
+        result = self.run_batch(updater)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('UPDATE_OK', result.stdout)
+        self.assertNotIn('SHOULD_NOT_RUN', result.stdout)
+        self.assertNotIn('not recognized', result.stderr)
 
 
 if __name__ == '__main__':

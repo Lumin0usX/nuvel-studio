@@ -57,9 +57,10 @@ backend does not reliably return a final file path for every mode and job.
 
 See [UI review and verification](DESIGN.md) for design decisions and QA limits.
 
-On macOS, close Studio and double-click `update_macos.command` in the Git clone
-to fetch the latest `main` and update dependencies. Choose option 2 to also build
-a new `.app`; replace the old app manually after the successful build.
+Close Studio and double-click `update.bat` on Windows or `update_macos.command`
+on macOS in the Git clone to fetch the latest `main` and update dependencies.
+On macOS, choose option 2 to also build a new `.app`; replace the old app manually
+after the successful build.
 The private repository requires existing GitHub access. Local changes and
 diverged history stop the update without discarding files. See
 [macOS update instructions](README-macOS.md) for setup and limitations.
@@ -136,7 +137,17 @@ Validate launcher dependencies without opening the UI:
 ```bat
 start.bat --check
 install.bat --check
+update.bat --check
 ```
+
+To update, close Studio and double-click **update.bat** in the project folder.
+It updates code, upgrades dependencies with the same Python selected by the
+launcher, and checks that the launcher imports successfully. It leaves the
+window open so errors can be read. Open **start.bat** after it reports success.
+Git for Windows must be installed, and Git must have access to the private repo.
+The first update requires `git pull --ff-only origin main` to receive update.bat.
+This updates the source installation; it does not replace a packaged `.exe`.
+Local changes or conflicting Git history stop the update without discarding files.
 
 ## macOS Apple Silicon
 

@@ -21,12 +21,13 @@ def update_source(project, allowed_origins=ORIGINS):
     """Fast-forward main only; leave local edits and diverged history untouched."""
     project = Path(project).resolve()
     if not shutil.which('git'):
-        raise UpdateError('Git was not found. Install the macOS Command Line Tools, then retry.')
+        raise UpdateError('Git was not found. Install Git for Windows or the macOS Command Line Tools, then retry.')
 
     def git(*args):
         try:
             return subprocess.run(['git', '-C', str(project), *args], check=True,
-                                  capture_output=True, text=True, timeout=120).stdout.strip()
+                                  capture_output=True, text=True, encoding='utf-8',
+                                  errors='replace', timeout=120).stdout.strip()
         except subprocess.TimeoutExpired as exc:
             raise UpdateError('Git timed out. Check your connection and GitHub access, then retry.') from exc
         except subprocess.CalledProcessError as exc:
@@ -78,29 +79,53 @@ def update_source(project, allowed_origins=ORIGINS):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='Update the YTDL Studio source folder on macOS.')
+    parser = argparse.ArgumentParser(description='Update the YTDL Studio source folder on Windows or macOS.')
     parser.add_argument('--build', action='store_true', help='Also build a new macOS .app.')
+    parser.add_argument('--check', action='store_true', help='Check Python, pip and Git without updating or installing.')
     args = parser.parse_args(argv)
-    if sys.platform != 'darwin':
-        parser.error('Run update_macos.command on macOS.')
+    if sys.platform not in ('darwin', 'win32'):
+        parser.error('Run update.bat on Windows or update_macos.command on macOS.')
+    if args.build and sys.platform != 'darwin':
+        parser.error('--build is only supported on macOS. Windows uses start.bat.')
     project = Path(__file__).resolve().parent
     try:
+        if args.check:
+            if not shutil.which('git'):
+                raise UpdateError('Git was not found. Install Git and reopen this updater.')
+            subprocess.run(['git', '--version'], check=True)
+            subprocess.run([sys.executable, '-m', 'pip', '--version'], check=True)
+            print('YTDL Studio updater: OK. No updates were applied.', flush=True)
+            return 0
         update_source(project)
         print('Updating dependencies and checking the environment...', flush=True)
-        subprocess.run(['/bin/bash', str(project / 'install_macos.command')], cwd=project, check=True)
+        if sys.platform == 'win32':
+            # Use the interpreter chosen by update.bat, just as start.bat does.
+            # Calling pip directly also avoids an extra install.bat pause.
+            subprocess.run([sys.executable, '-m', 'pip', 'install', '--upgrade',
+                            '-r', str(project / 'requirements.txt')], cwd=project, check=True)
+            subprocess.run([sys.executable, '-c',
+                            "import glass_app; print('YTDL Studio launcher: OK')"], cwd=project, check=True)
+        else:
+            subprocess.run(['/bin/bash', str(project / 'install_macos.command')], cwd=project, check=True)
         if args.build:
             print('Building the updated macOS app...', flush=True)
             subprocess.run(['/bin/bash', str(project / 'build_macos.command')], cwd=project, check=True)
             print('Update and build complete. Replace your old app with the new one in dist.', flush=True)
             subprocess.run(['/usr/bin/open', str(project / 'dist')], check=False)
         else:
-            print('Update complete. Open start_macos.command to use the new version.', flush=True)
+            launcher = 'start.bat' if sys.platform == 'win32' else 'start_macos.command'
+            print('Update complete. Open ' + launcher + ' to use the new version.', flush=True)
         return 0
     except UpdateError as exc:
         print('\nUpdate stopped:\n' + str(exc), file=sys.stderr)
     except subprocess.CalledProcessError as exc:
-        print('\nSource is current, but installation/build failed (exit ' + str(exc.returncode)
-              + '). See the error above. You can rerun this updater to retry.', file=sys.stderr)
+        if args.check:
+            print('\nUpdater check failed. See the error above; no updates were applied.', file=sys.stderr)
+        else:
+            print('\nSource is current, but installation/build failed (exit ' + str(exc.returncode)
+                  + '). See the error above. You can rerun this updater to retry.', file=sys.stderr)
+    except OSError as exc:
+        print('\nCould not run an update component: ' + str(exc), file=sys.stderr)
     except KeyboardInterrupt:
         print('\nUpdate interrupted. Rerun the updater to check and finish the update.', file=sys.stderr)
     return 1
