@@ -31,6 +31,26 @@ PLATFORMS = (
     ("Niconico", "Niconico", "niconico", "#eeeeee"),
     ("Douyin", "Douyin", "douyin", "#61ded8"),
     ("Snapchat", "SnapchatSpotlight", "snapchat", "#fffc00"),
+    ("LinkedIn", "LinkedIn", "linkedin", "#0a66c2"),
+    ("Telegram", "TelegramEmbed", "telegram", "#26a5e4"),
+    ("Weibo", "Weibo", "weibo", "#e6162d"),
+    ("Xiaohongshu / RED", "XiaoHongShu", "rednote", "#ff2442"),
+    ("Kick", "KickClip", "kick", "#53fc18"),
+    ("Odysee", "LBRY", "odysee", "#ef1970"),
+    ("PeerTube", "PeerTube", "peertube", "#f1680d"),
+    ("TED", "TedTalk", "ted", "#eb0028"),
+    ("9GAG", "NineGag", "ninegag", "#eeeeee"),
+    ("Medal.tv", "MedalTV", "medal", "#f6bd41"),
+    ("Apple Podcasts", "ApplePodcasts", "applepodcasts", "#b45ef4"),
+    ("Audius", "Audius", "audius", "#cc67ff"),
+    ("ArtStation", None, "artstation", "#13aff0"),
+    ("Behance", None, "behance", "#1769ff"),
+    ("Pexels", None, "pexels", "#05a081"),
+    ("500px", None, "fivehundredpx", "#eeeeee"),
+    ("Wallhaven", None, "wallhaven", "#8ecb67"),
+    ("ImgBB", None, "imgbb", "#51a8f8"),
+    ("Lensdump", None, "lensdump", "#7bc67a"),
+    ("Wikimedia Commons", "Wikimedia", "wikimediacommons", "#81b9ef"),
 )
 
 # Domains also travel with the API response; the UI must not maintain another registry.
@@ -47,16 +67,34 @@ PLATFORM_DOMAINS = dict(
     deviantart=('deviantart.com', 'sta.sh'), unsplash=('unsplash.com',),
     vk=('vk.com', 'vkvideo.ru'), rutube=('rutube.ru',), rumble=('rumble.com',),
     streamable=('streamable.com',), archive=('archive.org',), niconico=('nicovideo.jp', 'nico.ms'),
-    douyin=('douyin.com',), snapchat=('snapchat.com',))
-AUDIO_ONLY = frozenset(('soundcloud', 'bandcamp', 'mixcloud', 'audiomack'))
+    douyin=('douyin.com',), snapchat=('snapchat.com',),
+    linkedin=('linkedin.com',), telegram=('t.me',), weibo=('weibo.com', 'weibo.cn'),
+    rednote=('xiaohongshu.com', 'xhslink.com'), kick=('kick.com',),
+    odysee=('odysee.com', 'lbry.tv'), peertube=('framatube.org', 'peertube.tv', 'tilvids.com', 'diode.zone', 'video.blender.org'),
+    ted=('ted.com',), ninegag=('9gag.com',), medal=('medal.tv',),
+    applepodcasts=('podcasts.apple.com',), audius=('audius.co',),
+    artstation=('artstation.com',), behance=('behance.net',), pexels=('pexels.com',),
+    fivehundredpx=('500px.com',), wallhaven=('wallhaven.cc',), imgbb=('imgbb.com', 'ibb.co'),
+    lensdump=('lensdump.com',), wikimediacommons=('commons.wikimedia.org',))
+AUDIO_ONLY = frozenset(('soundcloud', 'bandcamp', 'mixcloud', 'audiomack', 'applepodcasts', 'audius'))
+
+# UI slugs and gallery-dl module names are not always the same. This mapping
+# also drives image-post routing, so new sources do not need a second host list.
+IMAGE_MODULES = {slug: slug for slug in (
+    'tiktok', 'facebook', 'instagram', 'twitter', 'reddit', 'bilibili', 'pinterest',
+    'bluesky', 'flickr', 'imgur', 'tumblr', 'pixiv', 'deviantart', 'unsplash', 'vk',
+    'snapchat', 'weibo', 'artstation', 'behance', 'pexels', 'wallhaven', 'imgbb', 'lensdump',
+)}
+IMAGE_MODULES.update(fivehundredpx='500px', wikimediacommons='wikimedia')
 
 
 def platform_modes(slug, status, engine):
     """Separate media capabilities; module presence is not a live-site test."""
-    if slug == 'archive':
+    module = IMAGE_MODULES.get(slug)
+    if not module:
         image_status = 'unsupported'
     else:
-        image_status = ('supported' if slug in engine['modules'] else 'unsupported') if engine['available'] else 'missing'
+        image_status = ('supported' if module in engine['modules'] else 'unsupported') if engine['available'] else 'missing'
     return dict(video_status='unsupported' if slug in AUDIO_ONLY else status,
                 audio_status=status, image_status=image_status)
 

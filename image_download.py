@@ -16,6 +16,7 @@ import time
 from urllib.parse import unquote, urlsplit
 from urllib.request import Request, urlopen
 from image_quality import resize_image
+from download_engine import IMAGE_MODULES, PLATFORM_DOMAINS
 
 EXTENSIONS = ('jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'heic', 'heif', 'bmp', 'tif', 'tiff', 'jxl', 'ico')
 MAX_IMAGE_BYTES = 256 * 1024 * 1024
@@ -256,9 +257,7 @@ def download_images(url, folder, cancel, update, cookies='none', cookie_path='',
     # Known file links use streaming without needing the optional gallery CLI.
     # Extensionless links are probed only on hosts without gallery support.
     host = urlsplit(url).hostname.lower()
-    gallery_hosts = ('instagram.com', 'pinterest.com', 'pin.it', 'x.com', 'twitter.com', 'reddit.com',
-                     'redd.it', 'facebook.com', 'tiktok.com', 'flickr.com', 'imgur.com', 'tumblr.com',
-                     'pixiv.net', 'deviantart.com', 'unsplash.com')
+    gallery_hosts = tuple(domain for slug in IMAGE_MODULES for domain in PLATFORM_DOMAINS[slug])
     direct = is_direct_url(url)
     if direct or not any(host == domain or host.endswith('.' + domain) for domain in gallery_hosts):
         result = download_direct(url, folder, cancel, update, cookies, cookie_path)

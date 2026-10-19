@@ -114,3 +114,17 @@ translated navigation, and enabled/disabled keyboard focus were verified in the
 browser with no warning/error logs. The 59 Python tests, Node localization checks,
 JavaScript syntax, launcher check and whitespace check passed. Native Apple Silicon
 runtime/build validation remains outside this Windows verification.
+
+## Catalog expansion to 50 sources
+
+Added 20 sources with bundled platform marks, domains, and independent media-mode
+states. Image-post routing uses the registry, including the 500px and Wikimedia
+module aliases. Unsupported modes remain subdued even when gallery-dl is absent.
+The icon builder also regenerates the offline preview seed from the same registry.
+
+The Python suite passes 94 tests and the four-language Node checks pass. Actual
+browser checks verified all 50 entries, no broken images, source filtering,
+audio/video status changes, no console warnings/errors, and a scrollable source
+list without horizontal overflow at 780px. The browser screenshot service timed
+out; the bundled marks were inspected separately as a contact sheet. No live
+download test of all newly listed platforms or native macOS packaging was performed.

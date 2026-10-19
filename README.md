@@ -15,12 +15,19 @@ powered by yt-dlp. Original project materials are proprietary.
   dock across pages, and Ctrl/Cmd + Enter to start from Overview.
 - Dark design tokens, keyboard focus states, responsive auto-collapse, reduced
   motion and compact list preferences. No frontend framework or UI dependencies.
-- Searchable platform indicators for 30 services, sorted with supported sources
+- Searchable platform indicators for 50 services, sorted with supported sources
   first. Video, audio and image capabilities are reported separately.
 - New sources in the catalog: Bluesky, SoundCloud, Bandcamp, Mixcloud,
   Audiomack, Flickr, Imgur, Tumblr, Pixiv, DeviantArt, Unsplash, VK, RuTube,
   Rumble, Streamable, Internet Archive, Niconico, Douyin, and Snapchat Spotlight.
   Pixiv, DeviantArt and Unsplash use image mode. Music services use audio mode.
+- Expanded catalog: LinkedIn, Telegram, Weibo, Xiaohongshu / RED, Kick, Odysee,
+  PeerTube, TED, 9GAG, Medal.tv, Apple Podcasts, Audius, ArtStation, Behance,
+  Pexels, 500px, Wallhaven, ImgBB, Lensdump, and Wikimedia Commons.
+  Telegram uses public post embeds; PeerTube support depends on the instance.
+  Apple Podcasts requires episode links, and Audius uses audio mode.
+  ArtStation, Behance, Pexels, 500px, Wallhaven, ImgBB and Lensdump are image
+  sources in this catalog. RED is listed for video/audio, not photo albums.
 - Support for other sources available through the installed yt-dlp extractors.
 - Progress, transfer speed, estimated time remaining, cancellation, and the
   last eight successful downloads from the current session.
@@ -28,6 +35,8 @@ powered by yt-dlp. Original project materials are proprietary.
 
 Platform indicators report installed extractor support, not successful live
 tests of every service or URL. This project does not bypass DRM.
+The installed engines currently report 34 video, 40 audio and 25 image sources
+across the 50 entries; counts change with engine availability/version.
 
 ## Desktop interface
 

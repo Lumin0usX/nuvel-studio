@@ -38,7 +38,10 @@ source repository by default.
 YouTube, TikTok, Facebook, Instagram, X/Twitter, Reddit, Vimeo, Dailymotion,
 Twitch, Bilibili, Pinterest, Bluesky, SoundCloud, Bandcamp, Mixcloud, Audiomack,
 Flickr, Imgur, Tumblr, Pixiv, DeviantArt, Unsplash, VK, RuTube, Rumble,
-Streamable, Internet Archive, Niconico, Douyin, and Snapchat names and marks identify their respective
+Streamable, Internet Archive, Niconico, Douyin, Snapchat, LinkedIn, Telegram,
+Weibo, Xiaohongshu / RED, Kick, Odysee, PeerTube, TED, 9GAG, Medal.tv,
+Apple Podcasts, Audius, ArtStation, Behance, Pexels, 500px, Wallhaven,
+ImgBB, Lensdump, and Wikimedia Commons names and marks identify their respective
 platforms. They belong to their respective owners. Their inclusion does not
 imply endorsement, sponsorship, or affiliation.
 

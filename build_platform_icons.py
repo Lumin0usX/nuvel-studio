@@ -1,6 +1,6 @@
 """Render small, bundled platform marks; Pillow is only needed to rebuild assets."""
 from pathlib import Path
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 OUT = Path(__file__).resolve().parent / 'assets' / 'platforms'
 OUT.mkdir(parents=True, exist_ok=True)
@@ -19,6 +19,24 @@ def render(name, paint):
             draw.line([(x*S,y*S) for x,y in points], fill=fill, width=width*S, joint='curve')
         def polygon(self, points, fill):
             draw.polygon([(x*S,y*S) for x,y in points], fill=fill)
+        def text(self, value, box, fill, size=50):
+            cjk = any(ord(char) > 127 for char in value)
+            fonts = (('C:/Windows/Fonts/msyh.ttc', '/System/Library/Fonts/PingFang.ttc',
+                      '/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc') if cjk else
+                     ('C:/Windows/Fonts/arialbd.ttf', '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
+                      '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'))
+            font_path = next((path for path in fonts if Path(path).is_file()), None)
+            if cjk and not font_path:
+                raise RuntimeError('Install a CJK font to rebuild the RED wordmark.')
+            font = ImageFont.truetype(font_path, size*S) if font_path else ImageFont.load_default(size=size*S)
+            left, top, right, bottom = (v*S for v in box)
+            bounds = draw.textbbox((0,0), value, font=font)
+            scale = min((right-left)/max(1,bounds[2]-bounds[0]), (bottom-top)/max(1,bounds[3]-bounds[1]), 1)
+            if scale < 1:
+                font = ImageFont.truetype(font_path, max(1,int(size*S*scale))) if font_path else ImageFont.load_default(size=max(1,int(size*S*scale)))
+                bounds = draw.textbbox((0,0), value, font=font)
+            draw.text(((left+right-bounds[2]+bounds[0])/2-bounds[0],
+                       (top+bottom-bounds[3]+bounds[1])/2-bounds[1]), value, fill=fill, font=font)
         def path(self, start, curves, fill):
             points=[start]
             p=start
@@ -242,8 +260,166 @@ def snapchat(p):
     p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
 
 
+def linkedin(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def telegram(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def weibo(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def rednote(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def kick(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def odysee(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def peertube(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def ted(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def ninegag(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def medal(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def applepodcasts(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def audius(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def artstation(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def behance(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def pexels(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def fivehundredpx(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def wallhaven(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def imgbb(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def lensdump(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
+def wikimediacommons(p):
+    p.rect((12.5, 12.5, 87.5, 87.5), '#94a3b8', 8.3333333333)
+    p.rect((20.8333333333, 20.8333333333, 79.1666666667, 79.1666666667), (0, 0, 0, 0), 4.1666666667)
+    p.ellipse((29.1666666667, 29.1666666667, 41.6666666667, 41.6666666667), '#94a3b8')
+    p.line([(87.5, 62.5), (66.6666666667, 41.6666666667), (20.8333333333, 87.5)], '#94a3b8', 8)
+
+
 if __name__ == '__main__':
     from download_engine import PLATFORMS
     for _, _, name, _ in PLATFORMS:
         render(name,globals()[name])
     print(f'Rendered {len(PLATFORMS)} platform marks')
+    # Keep the offline browser preview in sync with the native API catalog.
+    import base64
+    import json
+    import re
+    from download_engine import PLATFORM_DOMAINS, AUDIO_ONLY, IMAGE_MODULES
+    catalog = [dict(name=label, slug=slug, color=color, status='unknown', domains=PLATFORM_DOMAINS[slug],
+                    video_status='unsupported' if not key or slug in AUDIO_ONLY else 'unknown',
+                    audio_status='unknown' if key else 'unsupported',
+                    image_status='unknown' if slug in IMAGE_MODULES else 'unsupported',
+                    icon='data:image/png;base64,' + base64.b64encode((OUT / (slug + '.png')).read_bytes()).decode())
+               for label, key, slug, color in PLATFORMS]
+    page = OUT.parents[1] / 'ui' / 'index.html'
+    html = page.read_text(encoding='utf-8')
+    html, count = re.subn(r'(<script id="platform-seed" type="application/json">).*?(</script>)',
+                         lambda match: match[1] + json.dumps(catalog, ensure_ascii=False) + match[2], html, flags=re.S)
+    if count != 1:
+        raise RuntimeError('Expected one platform-seed element in ui/index.html')
+    page.write_text(html, encoding='utf-8')

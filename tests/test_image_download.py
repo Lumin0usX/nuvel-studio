@@ -65,6 +65,32 @@ class DirectImageTests(unittest.TestCase):
             direct.assert_called_once()
             gallery.assert_not_called()
 
+    def test_catalog_image_posts_go_straight_to_gallery_without_html_probe(self):
+        hosts = ('www.artstation.com', 'www.behance.net', 'www.pexels.com', '500px.com',
+                 'wallhaven.cc', 'ibb.co', 'imgbb.com', 'lensdump.com', 'commons.wikimedia.org',
+                 'weibo.com', 'm.weibo.cn', 'bsky.app')
+        for host in hosts:
+            with self.subTest(host=host), patch.object(images, 'download_direct') as direct, \
+                 patch.object(images, 'download_gallery', return_value={'count': 1}) as gallery:
+                result = images.download_images('https://' + host + '/post/123', '.', threading.Event(), Mock())
+                self.assertEqual(result['count'], 1)
+                direct.assert_not_called()
+                gallery.assert_called_once()
+
+    def test_actual_image_links_on_gallery_hosts_still_use_direct_downloader(self):
+        with patch.object(images, 'download_direct', return_value={'count': 1}) as direct, \
+             patch.object(images, 'download_gallery') as gallery:
+            images.download_images('https://www.pexels.com/photo.jpg', '.', threading.Event(), Mock())
+            direct.assert_called_once()
+            gallery.assert_not_called()
+
+    def test_lookalike_host_is_not_treated_as_a_known_gallery(self):
+        with patch.object(images, 'download_direct', return_value={'count': 1}) as direct, \
+             patch.object(images, 'download_gallery') as gallery:
+            images.download_images('https://artstation.com.example.org/photo', '.', threading.Event(), Mock())
+            direct.assert_called_once()
+            gallery.assert_not_called()
+
     def test_gallery_cookies_are_explicit_and_config_is_ignored(self):
         args = images.gallery_args(['gallery-dl'], 'https://example.org/post', '.', 'none', '')
         self.assertIn('--config-ignore', args)
