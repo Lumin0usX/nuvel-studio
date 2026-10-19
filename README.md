@@ -57,6 +57,13 @@ backend does not reliably return a final file path for every mode and job.
 
 See [UI review and verification](DESIGN.md) for design decisions and QA limits.
 
+On macOS, close Studio and double-click `update_macos.command` in the Git clone
+to fetch the latest `main` and update dependencies. Choose option 2 to also build
+a new `.app`; replace the old app manually after the successful build.
+The private repository requires existing GitHub access. Local changes and
+diverged history stop the update without discarding files. See
+[macOS update instructions](README-macOS.md) for setup and limitations.
+
 ## Quality preferences
 
 All three modes default to the highest quality the source exposes.

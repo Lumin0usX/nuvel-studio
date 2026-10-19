@@ -10,5 +10,5 @@ fi
 "$VENV_PYTHON" -m pip install --upgrade pip
 "$VENV_PYTHON" -m pip install --upgrade -r requirements.txt
 require_environment
-chmod +x start_macos.command build_macos.command install_macos.command
+chmod +x start_macos.command build_macos.command install_macos.command update_macos.command
 printf '\nInstallation complete. Open start_macos.command.\n'
