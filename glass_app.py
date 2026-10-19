@@ -16,7 +16,7 @@ from urllib.parse import urlsplit
 from download_engine import PLATFORMS, PLATFORM_DOMAINS, platform_modes, platform_support, download_error
 from platform_runtime import resource_path, ffmpeg_path, open_directory
 from image_download import download_images, image_support
-from media_quality import validate_quality, quality_label, media_options
+from media_quality import validate_quality, quality_label, media_options, add_video_postprocessor
 from ui_preferences import load_preferences, save_preferences
 
 
@@ -219,6 +219,7 @@ class StudioAPI:
             if cookies not in ('none', 'file'):
                 opts['cookiesfrombrowser'] = (cookies,)
             with yt_dlp.YoutubeDL(opts) as ydl:
+                add_video_postprocessor(ydl, mode, check_cancel)
                 if cookies == 'file':
                     from yt_dlp.cookies import YoutubeDLCookieJar
                     jar = YoutubeDLCookieJar(cookie_path)

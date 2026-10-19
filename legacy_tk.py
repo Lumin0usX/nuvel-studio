@@ -8,6 +8,7 @@ import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from platform_runtime import resource_path, install_instructions, open_directory, scroll_units, ffmpeg_path
+from media_quality import media_options, add_video_postprocessor
 
 
 BG = "#101113"
@@ -404,8 +405,9 @@ class YTDLStudio:
             if mode == "audio":
                 opts.update({"format": "bestaudio/best", "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": "192"}]})
             else:
-                opts.update({"format": "bestvideo*+bestaudio/best", "merge_output_format": "mp4", "postprocessors": [{"key": "FFmpegVideoConvertor", "preferedformat": "mp4"}]})
+                opts.update(media_options('video'))
             with yt_dlp.YoutubeDL(opts) as ydl:
+                add_video_postprocessor(ydl, mode)
                 if jar is not None:
                     ydl.cookiejar = jar
                 result = ydl.download([url])
