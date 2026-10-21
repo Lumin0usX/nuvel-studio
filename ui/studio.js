@@ -6,7 +6,7 @@ const $ = id => document.getElementById(id);
 const token = location.hash.slice(1);
 const storageKey = 'ytdl-obsidian-preferences-v1';
 const settings = {folder: '', cookies: 'none', cookie_path: ''};
-const appearance = {sidebar: 'auto', reducedMotion: false, density: 'comfortable', language: 'th', theme: 'dark', visualStyle: 'obsidian', fonts: window.StudioFonts.clean()};
+const appearance = {sidebar: 'auto', reducedMotion: false, density: 'comfortable', language: 'th', theme: 'dark', visualStyle: 'obsidian', glassOpacity: 72, fonts: window.StudioFonts.clean()};
 const qualities = {video: 'best', audio: 'best', image: 'best'};
 const qualityChoices = {
   video: [['best','สูงสุดที่ต้นทางมี'],['4320','8K · ไม่เกิน 4320p'],['2160','4K · ไม่เกิน 2160p'],['1440','2K · ไม่เกิน 1440p'],['1080','Full HD · ไม่เกิน 1080p'],['720','HD · ไม่เกิน 720p'],['480','ไม่เกิน 480p'],['360','ไม่เกิน 360p']],
@@ -19,6 +19,7 @@ const activePhases = new Set(['connecting', 'downloading', 'processing', 'cancel
 let currentPage = 'overview', connected = false, ready = false, busy = false, submitting = false;
 let settingsDirty = false;
 let knownPlatforms = [], imageEngine = {available: false, modules: []};
+let sourcesExpanded = false, platformMode = '';
 let snapshot = {phase: 'idle', history: []}, lastPhase = 'idle', lastRequest = null;
 let toastTimer, analyzeTimer, metadataSequence = 0;
 let lastLists = '', lastPlatforms = '', polling = false, connecting = false;
@@ -108,6 +109,7 @@ try {
   if (window.StudioI18n.languages.includes(saved.language)) appearance.language = saved.language;
   if (window.StudioTheme.modes.includes(saved.theme)) appearance.theme = saved.theme;
   if (window.StudioAppearance.styles.includes(saved.visualStyle)) appearance.visualStyle = saved.visualStyle;
+  appearance.glassOpacity = window.StudioAppearance.normalizeOpacity(saved.glassOpacity);
   appearance.fonts = window.StudioFonts.clean(saved.fonts);
 } catch { /* Storage may be disabled by the embedded browser. */ }
 window.StudioI18n.setLanguage(appearance.language);
@@ -138,6 +140,7 @@ function applyAppearance() {
   $('collapse-sidebar').title = label;
   $('collapse-sidebar').querySelector('span').textContent = label;
   window.StudioAppearance.syncSelections();
+  renderGlassOpacity();
 }
 narrowWindow.addEventListener('change', applyAppearance);
 $('collapse-sidebar').addEventListener('click', async () => {
@@ -156,9 +159,9 @@ function renderQuality() {
   }
   $('quality').value = value;
   $('output-format').textContent = current === 'video' ? 'MP4' : current === 'audio' ? (value === 'best' ? t('ต้นฉบับ') : 'MP3') : t('ต้นฉบับ');
-  $('quality-hint').textContent = current === 'video' ? (value === 'best' ? t('เลือกความละเอียดสูงสุดจากต้นทาง โดยไม่ขยายวิดีโอ') : t('เลือกไฟล์ที่ดีที่สุดซึ่งความสูงไม่เกิน ') + value + t('px · ถ้าไม่มีจะแจ้งให้เลือกใหม่')) :
-    current === 'audio' ? (value === 'best' ? t('เก็บเสียงคุณภาพสูงสุดใน codec ต้นทางเมื่อทำได้ เช่น M4A หรือ Opus') : t('แปลงเป็น MP3 ') + value + t(' kbps · ไม่เพิ่มคุณภาพเกินต้นฉบับ')) :
-    value === 'best' ? t('เก็บไฟล์ภาพตามที่ต้นทางส่งให้ โดยไม่ย่อหรือแปลงซ้ำ') : t('ย่อด้านยาวไม่เกิน ') + value + t('px · คงสัดส่วน ไม่ขยายภาพเล็ก');
+  $('quality-hint').textContent = current === 'video' ? t('Source resolution is never upscaled.') :
+    current === 'audio' ? (value === 'best' ? t('Keeps the best original audio format.') : t('Converts to MP3; source quality still applies.')) :
+    value === 'best' ? t('Keeps the original image file.') : t('Resizes without enlarging smaller images.');
   $('image-hint').hidden = current !== 'image';
   renderPlatforms(knownPlatforms); updateButtons();
 }
@@ -172,12 +175,14 @@ function updateButtons() {
   $('download').disabled = !connected || busy || submitting || !valid;
   $('download').querySelector('span').textContent = submitting ? t('กำลังเริ่ม…') : busy ? t('กำลังดาวน์โหลด…') : t('ดาวน์โหลด') + modeNames[mode()];
   $('analyze').disabled = !connected || !valid || $('analyze').dataset.loading === 'true';
+  $('analyze').title = !valid ? t('Paste a valid link to analyze it.') : !connected ? t('ยังไม่เชื่อมต่อ') : '';
+  $('download').title = !valid ? t('Paste a valid link to download.') : !connected ? t('ยังไม่เชื่อมต่อ') : '';
 }
 function updateSource() {
   const value = $('url').value.trim(), parsed = parseURL(value);
   $('clear-url').hidden = !value;
   if (parsed) { const platform = platformFor(parsed); $('url-hint').textContent = platform ? platform.name + ' · ' + parsed.hostname : parsed.hostname; }
-  else $('url-hint').textContent = value ? t('ใช้ลิงก์แบบเต็ม เช่น https://…') : t('ใช้ลิงก์คลิปหรือโพสต์โดยตรง');
+  else $('url-hint').textContent = value ? t('ใช้ลิงก์แบบเต็ม เช่น https://…') : t('Paste a media link to get started.');
   updateButtons();
 }
 function resetMetadata() {
@@ -311,6 +316,20 @@ function renderMotionStatus() {
     window.StudioAppearance.motionEnabled ? 'Animations are on.' : 'System Reduce Motion is active; animations are off.';
   $('motion-feedback').textContent = t(message);
 }
+function renderGlassOpacity() {
+  const {glassSupported, transparencyReduced} = window.StudioAppearance;
+  $('glass-opacity-row').hidden = appearance.visualStyle !== 'glass';
+  const slider = $('glass-opacity');
+  if (slider.value !== String(appearance.glassOpacity)) slider.value = String(appearance.glassOpacity);
+  slider.disabled = !glassSupported || transparencyReduced;
+  slider.style.setProperty('--glass-position', appearance.glassOpacity + '%');
+  slider.setAttribute('aria-valuetext', t('{value}% opacity', {value: appearance.glassOpacity}));
+  $('glass-opacity-value').textContent = appearance.glassOpacity + '%';
+  $('reset-glass-opacity').disabled = slider.disabled || appearance.glassOpacity === 72;
+  $('glass-opacity-feedback').textContent = transparencyReduced ? t('System Reduce Transparency is active; glass is opaque.') :
+    !glassSupported ? t('Glass transparency is unavailable in this renderer.') : '';
+}
+window.matchMedia('(prefers-reduced-transparency: reduce)').addEventListener('change', renderGlassOpacity);
 window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', renderMotionStatus);
 function renderFontSettings() {
   const language = appearance.language, group = window.StudioFonts.catalog[language];
@@ -397,6 +416,24 @@ for (const id of ['visual-style', 'animations']) $(id).addEventListener('change'
     if (result.error) toast(result.error);
   } catch (error) {toast(error.message);}
 });
+async function saveGlassOpacity() {
+  try {
+    const result = await saveDevicePreferences();
+    $('settings-feedback').textContent = result.error ? translateBackend(result.error) : t('Appearance saved.');
+    if (result.error) toast(result.error);
+  } catch (error) {toast(error.message);}
+}
+$('glass-opacity').addEventListener('input', () => {
+  appearance.glassOpacity = window.StudioAppearance.normalizeOpacity($('glass-opacity').valueAsNumber);
+  window.StudioAppearance.set(appearance); renderGlassOpacity();
+  persistPreferences();
+});
+$('glass-opacity').addEventListener('change', saveGlassOpacity);
+$('reset-glass-opacity').addEventListener('click', () => {
+  appearance.glassOpacity = 72;
+  window.StudioAppearance.set(appearance); renderGlassOpacity();
+  saveGlassOpacity();
+});
 $('cookies').addEventListener('change', () => $('cookie-file-row').hidden = $('cookies').value !== 'file');
 $('settings-form').addEventListener('input', () => settingsDirty = true);
 $('settings-form').addEventListener('change', () => settingsDirty = true);
@@ -434,11 +471,17 @@ function renderPlatforms(platforms) {
   const key = current + displayed.map(p => p.slug + p.status).join();
   if (key === lastPlatforms) return;
   lastPlatforms = key;
-  $('support-mode-label').textContent = t('ตัวรองรับสำหรับ') + modeNames[current];
+  if (platformMode !== current) $('platforms').scrollTop = 0;
+  platformMode = current;
+  $('support-mode-label').textContent = t('Supported in {mode} mode', {mode: modeNames[current]});
   const supported = displayed.filter(p => p.status === 'supported').length;
-  $('support-number').textContent = supported + ' / ' + platforms.length;
+  $('support-number').textContent = t('{supported} of {total}', {supported, total: platforms.length});
+  const supportDescription = t('{supported} of {total} sources support {mode}.', {supported, total: platforms.length, mode: modeNames[current]});
+  $('support-number').setAttribute('aria-label', supportDescription);
+  $('support-number').title = supportDescription;
   $('support-summary').textContent = t('สถานะจากตัวรองรับที่ติดตั้ง ไม่ใช่ผลทดสอบทุกลิงก์');
   $('platform-detail').textContent = t('เลือกแหล่งเพื่อดูรายละเอียด');
+  $('platform-detail').hidden = true;
   $('image-support-note').hidden = current !== 'image';
   $('image-support-note').textContent = imageEngine.available ? t('ภาพจากโพสต์ใช้ gallery-dl · บางแหล่งต้องใช้บัญชี') : t('ภาพจากโพสต์ต้องติดตั้ง gallery-dl เพิ่ม · ลิงก์ไฟล์ภาพโดยตรงใช้ได้');
   const labels = {supported: t('มีตัวรองรับ'), unsupported: t('ไม่รองรับในโหมดนี้'), missing: current === 'image' ? t('ต้องติดตั้ง gallery-dl') : t('ยังไม่พบตัวรองรับ'), broken: t('ตัวรองรับมีปัญหา'), unknown: t('กำลังตรวจสอบ')};
@@ -457,6 +500,7 @@ function renderPlatforms(platforms) {
       $('platforms').querySelectorAll('button').forEach(el => {el.classList.remove('chosen'); el.setAttribute('aria-pressed', 'false');});
       button.classList.add('chosen'); button.setAttribute('aria-pressed', 'true');
       $('platform-detail').textContent = button.title + (platform.status === 'supported' ? t(' · บางโพสต์อาจต้องใช้ cookies หรือบัญชี') : '');
+      $('platform-detail').hidden = false;
     });
     $('platforms').append(button);
   }
@@ -464,10 +508,21 @@ function renderPlatforms(platforms) {
 }
 function filterPlatforms() {
   const query = $('platform-search').value.trim().toLowerCase(); let visible = 0;
-  for (const button of $('platforms').children) {button.hidden = !button.dataset.search.includes(query); if (!button.hidden) visible++;}
+  const compact = !sourcesExpanded && !query;
+  for (const button of $('platforms').children) {
+    const matches = button.dataset.search.includes(query);
+    button.hidden = !matches || (compact && visible >= 8);
+    if (!button.hidden) visible++;
+  }
+  $('platforms').classList.toggle('expanded', sourcesExpanded || !!query);
+  $('expand-platforms').textContent = sourcesExpanded ? t('Show fewer') : t('View all {count} sources', {count: knownPlatforms.length});
+  $('expand-platforms').setAttribute('aria-expanded', String(sourcesExpanded));
+  $('expand-platforms').hidden = !!query || knownPlatforms.length <= 8;
+  $('support-summary').hidden = compact;
   $('platform-empty').hidden = visible > 0;
 }
-$('platform-search').addEventListener('input', filterPlatforms);
+$('platform-search').addEventListener('input', () => {$('platforms').scrollTop = 0; filterPlatforms();});
+$('expand-platforms').addEventListener('click', () => {sourcesExpanded = !sourcesExpanded; $('platforms').scrollTop = 0; filterPlatforms();});
 
 function bytesLabel(bytes) {
   if (!Number.isFinite(bytes) || bytes <= 0) return '';
@@ -531,6 +586,9 @@ function renderLists(force = false) {
   const focusRow = focused?.closest('.transfer-row')?.dataset.key;
   const focusLabel = focused?.getAttribute('aria-label');
   const history = snapshot.history || [], hasCurrent = snapshot.phase !== 'idle';
+  const hasActivity = hasCurrent || history.length > 0;
+  document.querySelector('.workspace').classList.toggle('has-activity', hasActivity);
+  $('recent-section').classList.toggle('is-empty', !hasActivity);
   const downloads = $('downloads-list'), recent = $('recent-list'); downloads.replaceChildren(); recent.replaceChildren();
   if (hasCurrent) {downloads.append(transferRow(snapshot, true)); recent.append(transferRow(snapshot, true, true));}
   // A successful current transfer is already represented by the first history entry.
@@ -538,7 +596,7 @@ function renderLists(force = false) {
   for (const item of older) downloads.append(transferRow(item, false, true));
   for (const item of (hasCurrent ? older.slice(0, 2) : history.slice(0, 3))) recent.append(transferRow(item, false, true));
   if (!downloads.children.length) downloads.append(emptyState(t('ยังไม่มีรายการดาวน์โหลด'), t('วางลิงก์ใน Overview เพื่อเริ่ม งานที่กำลังทำจะแสดงที่นี่'), 'download', true));
-  if (!recent.children.length) recent.append(emptyState(t('พร้อมสำหรับลิงก์แรก'), t('ความคืบหน้าและรายการล่าสุดจะแสดงที่นี่'), 'download'));
+  if (!recent.children.length) recent.append(node('p', 'recent-empty', t('Your recent downloads will appear here.')));
   renderHistory();
   if (focusList && focusRow && focusLabel) {
     const row = [...$(focusList).children].find(element => element.dataset.key === focusRow);
@@ -574,6 +632,7 @@ function render(state) {
     if (preferences && Object.keys(preferences).length) {
       Object.assign(appearance, {sidebar: preferences.sidebar, density: preferences.density, reducedMotion: preferences.reducedMotion, language: preferences.language || 'th', theme: preferences.theme || 'dark'});
       appearance.visualStyle = preferences.visualStyle || 'obsidian';
+      appearance.glassOpacity = window.StudioAppearance.normalizeOpacity(preferences.glassOpacity);
       appearance.fonts = window.StudioFonts.clean(preferences.fonts);
       settings.folder = preferences.folder; applyAppearance();
     } else if (!settings.folder) settings.folder = state.folder;

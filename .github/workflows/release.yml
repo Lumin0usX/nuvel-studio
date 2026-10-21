@@ -50,8 +50,10 @@ jobs:
       - run: python -m unittest discover -s tests
       - run: node tests/test_theme.cjs
       - run: node tests/test_appearance.cjs
+      - run: node tests/test_workspace.cjs
       - run: node tests/test_fonts.cjs
       - run: node tests/test_i18n.cjs
+      - run: node tests/test_platform_directory.cjs
       - run: python build_windows.py --run-build
         if: runner.os == 'Windows'
       - run: python build_macos.py

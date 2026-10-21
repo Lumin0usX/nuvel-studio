@@ -28,7 +28,7 @@ assert.equal(light.root.dataset.theme, 'light');
 light.osChange(false); light.osChange(true);
 assert.equal(light.root.dataset.theme, 'light');
 assert.equal(light.meta['meta[name="color-scheme"]'], 'light');
-assert.equal(light.meta['meta[name="theme-color"]'], '#f1f3f7');
+assert.equal(light.meta['meta[name="theme-color"]'], '#f2f3f6');
 const system = boot('{"theme":"system"}', false);
 assert.equal(system.root.dataset.theme, 'light');
 system.osChange(true); assert.equal(system.root.dataset.theme, 'dark');

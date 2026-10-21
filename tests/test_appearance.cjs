@@ -4,14 +4,17 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '../ui/appearance.js'), 'utf8');
-function boot(saved, reduced = false, blocked = false) {
+function boot(saved, reduced = false, blocked = false, glassSupported = true, transparencyReduced = false) {
   let listener;
   const media = {matches: reduced, addEventListener: (_, callback) => {listener = callback;}};
-  const root = {dataset: {}};
-  const context = {window: {matchMedia: () => media}, document: {documentElement: root},
+  const properties = {};
+  const transparency = {matches: transparencyReduced};
+  const root = {dataset: {}, style: {setProperty: (name, value) => {properties[name] = value;}}};
+  const context = {window: {matchMedia: query => query.includes('transparency') ? transparency : media,
+    CSS: {supports: () => glassSupported}}, document: {documentElement: root},
     localStorage: {getItem: () => {if (blocked) throw new Error('Blocked storage'); return saved;}}};
   vm.runInNewContext(source, context);
-  return {ui: context.window.StudioAppearance, root,
+  return {ui: context.window.StudioAppearance, root, properties,
     osChange: value => {media.matches = value; listener();}};
 }
 function animatedElement() {
@@ -51,4 +54,19 @@ app.ui.set({visualStyle: 'invalid'}); assert.equal(app.root.dataset.visualStyle,
 const hidden = animatedElement(); hidden.hidden = true;
 app.ui.enter(hidden); assert.equal(hidden.calls.length, 0);
 app.ui.enter({hidden: false}); // Older engines without WAAPI remain functional.
-console.log('Appearance passed: original default, glass cache, live motion toggle, interruption and system Reduce Motion precedence');
+for (const opacity of [0, 1, 35, 72, 99, 100]) {
+  const restored = boot(JSON.stringify({visualStyle: 'glass', glassOpacity: opacity}));
+  assert.equal(restored.properties['--glass-opacity'], String(opacity / 100));
+  restored.ui.set({visualStyle: 'obsidian', glassOpacity: opacity});
+  assert.equal(restored.properties['--glass-opacity'], String(opacity / 100));
+  restored.osChange(true); restored.osChange(false);
+  assert.equal(restored.properties['--glass-opacity'], String(opacity / 100));
+}
+for (const opacity of [null, false, '35', -1, 101, 3.5, 'url(https://example.com)']) {
+  const restored = boot(JSON.stringify({glassOpacity: opacity}));
+  assert.equal(restored.properties['--glass-opacity'], '0.72');
+}
+assert.equal(boot(null, false, true).properties['--glass-opacity'], '0.72');
+assert.equal(boot(null, false, false, false).ui.glassSupported, false);
+assert.equal(boot(null, false, false, true, true).ui.transparencyReduced, true);
+console.log('Appearance passed: style cache, live motion toggle, cancellation, glass opacity bounds/cache and OS accessibility preferences');

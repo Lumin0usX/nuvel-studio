@@ -74,6 +74,25 @@ class PreferencesTests(unittest.TestCase):
                 save_preferences(dict(values, visualStyle='unknown'))
             self.assertEqual(Path(folder, 'prefs.json').read_bytes(), before)
 
+    def test_glass_opacity_migrates_and_persists_independently_of_style_and_theme(self):
+        with tempfile.TemporaryDirectory() as folder, patch('ui_preferences.preferences_path', return_value=Path(folder, 'prefs.json')):
+            values = dict(folder=folder, sidebar='auto', density='comfortable', reducedMotion=False)
+            path = Path(folder, 'prefs.json')
+            path.write_text(json.dumps(values))
+            self.assertEqual(load_preferences()['glassOpacity'], 72)
+            defaults = load_preferences()
+            for opacity in (0, 1, 35, 72, 99, 100):
+                for style, theme in (('glass', 'dark'), ('glass', 'light'), ('obsidian', 'dark')):
+                    saved = save_preferences(dict(values, visualStyle=style, theme=theme, glassOpacity=opacity))
+                    self.assertEqual(load_preferences(), saved)
+                    self.assertEqual(saved['glassOpacity'], opacity)
+                    self.assertEqual(saved['fonts'], defaults['fonts'])
+            before = path.read_bytes()
+            for opacity in (None, True, '35', -1, 101, 3.5):
+                with self.subTest(opacity=opacity), self.assertRaises(ValueError):
+                    save_preferences(dict(values, glassOpacity=opacity))
+                self.assertEqual(path.read_bytes(), before)
+
     def test_font_choices_remain_separate_across_language_changes(self):
         with tempfile.TemporaryDirectory() as folder, patch('ui_preferences.preferences_path', return_value=Path(folder, 'prefs.json')):
             values = dict(folder=folder, sidebar='auto', density='comfortable', reducedMotion=False)

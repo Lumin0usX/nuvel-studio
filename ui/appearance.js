@@ -4,15 +4,24 @@
   const root = document.documentElement;
   const styles = Object.freeze(['obsidian', 'glass']);
   const systemMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const systemTransparency = window.matchMedia('(prefers-reduced-transparency: reduce)');
+  const glassSupported = Boolean(window.CSS?.supports('backdrop-filter', 'blur(20px)') ||
+    window.CSS?.supports('-webkit-backdrop-filter', 'blur(20px)'));
   const animations = new Map();
   let visualStyle = 'obsidian', reducedMotion = false;
+  let glassOpacity = 72;
   let mounted = false;
   let navSurface, formatSurface;
   const ease = 'cubic-bezier(.22, 1, .36, 1)';
 
+  function normalizeOpacity(value) {
+    return Number.isInteger(value) && value >= 0 && value <= 100 ? value : 72;
+  }
+
   function apply() {
     root.dataset.visualStyle = visualStyle;
     root.dataset.motion = reducedMotion || systemMotion.matches ? 'off' : 'on';
+    root.style.setProperty('--glass-opacity', String(glassOpacity / 100));
     if (root.dataset.motion === 'off') {
       for (const animation of animations.values()) animation.cancel();
       animations.clear();
@@ -21,6 +30,7 @@
   function set(values = {}) {
     visualStyle = styles.includes(values.visualStyle) ? values.visualStyle : 'obsidian';
     reducedMotion = values.reducedMotion === true;
+    glassOpacity = normalizeOpacity(values.glassOpacity);
     apply();
   }
   function enter(element, kind = 'page') {
@@ -85,9 +95,11 @@
     const saved = JSON.parse(localStorage.getItem('ytdl-obsidian-preferences-v1') || '{}');
     if (styles.includes(saved?.visualStyle)) visualStyle = saved.visualStyle;
     reducedMotion = saved?.reducedMotion === true;
+    glassOpacity = normalizeOpacity(saved?.glassOpacity);
   } catch { /* The original appearance stays usable when storage is unavailable. */ }
   systemMotion.addEventListener('change', apply);
-  window.StudioAppearance = Object.freeze({styles, set, enter, mount, syncSelections,
+  window.StudioAppearance = Object.freeze({styles, set, enter, mount, syncSelections, normalizeOpacity, glassSupported,
+    get transparencyReduced() { return systemTransparency.matches; },
     get motionEnabled() { return root.dataset.motion === 'on'; }});
   apply();
 })();

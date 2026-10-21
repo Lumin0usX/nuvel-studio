@@ -388,7 +388,7 @@ def main(native_only=False):
     api = StudioAPI()
     window = webview.create_window('YTDL Studio', str(resource_path('ui', 'index.html')),
                                    js_api=api, width=1240, height=860, min_size=(780, 640),
-                                   background_color='#f1f3f7' if api._preferences.get('theme') == 'light' else '#090B10', vibrancy=False)
+                                   background_color='#f2f3f6' if api._preferences.get('theme') == 'light' else '#0d1016', vibrancy=False)
     api._window = window
     def closing():
         if api.snapshot()['phase'] in ('connecting', 'downloading', 'processing', 'cancelling'):

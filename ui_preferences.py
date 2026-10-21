@@ -36,9 +36,12 @@ def validate_preferences(values):
     visual_style = values.get('visualStyle', 'obsidian')
     if visual_style not in ('obsidian', 'glass'):
         raise ValueError('Invalid interface style preference.')
+    glass_opacity = values.get('glassOpacity', 72)
+    if type(glass_opacity) is not int or not 0 <= glass_opacity <= 100:
+        raise ValueError('Invalid glass opacity preference.')
     return dict(folder=str(folder.resolve()), sidebar=values['sidebar'],
                 density=values['density'], reducedMotion=values['reducedMotion'], language=language, theme=theme, visualStyle=visual_style,
-                fonts=validate_fonts(values.get('fonts')))
+                fonts=validate_fonts(values.get('fonts')), glassOpacity=glass_opacity)
 
 
 def load_preferences():

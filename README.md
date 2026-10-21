@@ -108,6 +108,14 @@ across the 50 entries; counts change with engine availability/version.
 
 The HTML/CSS/JavaScript interface runs in the existing pywebview shell (or its
 authenticated localhost fallback). Native window controls remain unchanged.
+The overview keeps a bounded composer close to the sidebar, with compact media
+choices and quality, output format, destination and download action grouped
+together. Empty recent activity is a single line below the composer. A dedicated
+activity column appears on wide windows only when real jobs or history exist;
+smaller windows keep activity below the workflow. Source counts refer to support
+in the currently selected media mode; fixed output formats are labels, not controls.
+Supported sources initially show eight entries; **View all sources** expands the
+directory, and search always covers the entire list, including hidden entries.
 Metadata reads use yt-dlp without starting a download; unavailable previews do
 not block downloading. Image-post metadata is read only during the actual job.
 
@@ -137,6 +145,14 @@ material, softly lit edges and glass selection surfaces to the existing workflow
 both styles support Dark, Light, Follow system and every bundled font. Materials
 use an opaque fallback when backdrop filtering is unavailable and respect system
 Reduce Transparency where supported. This is an in-app material, not OS desktop vibrancy.
+
+In Liquid Glass, **Glass opacity** adjusts the material from **0% (clear)** to
+**100% (solid)**, with a **72%** default and a Reset action. Dragging updates glass
+surfaces immediately; releasing the slider or using the keyboard saves the value.
+Text, icons and download actions do not fade. The same value works in Dark and
+Light and is retained when switching styles or restarting. If system Reduce
+Transparency is enabled or the renderer lacks backdrop filtering, surfaces remain
+opaque and the slider explains why it is unavailable; the saved value is preserved.
 
 **Animations** switches motion on or off immediately and saves the preference.
 Enabled motion includes a moving selection surface in navigation and media modes,

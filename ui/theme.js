@@ -12,7 +12,7 @@
     const resolved = mode === 'system' ? (system.matches ? 'dark' : 'light') : mode;
     document.documentElement.dataset.theme = resolved;
     for (const [name, value] of Object.entries({
-      'color-scheme': resolved, 'theme-color': resolved === 'dark' ? '#090b10' : '#f1f3f7'
+      'color-scheme': resolved, 'theme-color': resolved === 'dark' ? '#0d1016' : '#f2f3f6'
     })) document.querySelector('meta[name="' + name + '"]')?.setAttribute('content', value);
   }
   function set(value) {
