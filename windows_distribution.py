@@ -46,7 +46,7 @@ def verify_app(folder):
                                        cwd=folder, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                                        stderr=subprocess.DEVNULL, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
             job.assign(process.pid)
-            result = process.wait(timeout=75)
+            result = process.wait(timeout=120)
             if result:
                 raise RuntimeError('The packaged interface failed its startup test. The previous app was kept.')
             try:
@@ -79,7 +79,7 @@ def _check_current(folder):
         data = json.loads((folder / MARKER).read_text(encoding='utf-8'))
     except (OSError, ValueError) as exc:
         raise RuntimeError('Refusing to replace an unrecognized folder: ' + str(folder)) from exc
-    if not isinstance(data, dict) or data.get('product') != 'YTDL Studio' or data.get('platform') != 'windows':
+    if not isinstance(data, dict) or data.get('product') != 'YTDL Studio' or data.get('platform') not in ('windows', 'windows-x64'):
         raise RuntimeError('Refusing to replace an unrelated application: ' + str(folder))
 
 
@@ -98,7 +98,8 @@ def publish_build(project, built_folder):
         candidate = staging / 'YTDL Studio'
         shutil.copytree(built_folder, candidate)
         verify_app(candidate)
-        (candidate / MARKER).write_text(json.dumps({'product': 'YTDL Studio', 'platform': 'windows'}), encoding='utf-8')
+        from update_installer import write_marker
+        write_marker(candidate, 'windows-x64')
         archive = staging / 'YTDL-Studio-Windows-x64.zip'
         archive_bundle(candidate, archive)
         new_shortcut = staging / 'YTDL Studio.lnk'

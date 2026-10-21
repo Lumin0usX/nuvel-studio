@@ -18,7 +18,7 @@ def verify_app(app):
     with tempfile.TemporaryDirectory(prefix='ytdl-launch-check-') as temporary:
         proof = Path(temporary) / 'result.json'
         subprocess.run(['/usr/bin/open', '-n', '-W', str(app), '--args', '--self-test',
-                        '--smoke-result', str(proof)], check=True, timeout=75, capture_output=True)
+                        '--smoke-result', str(proof)], check=True, timeout=120, capture_output=True)
         try:
             result = json.loads(proof.read_text(encoding='utf-8'))
         except (OSError, ValueError) as exc:

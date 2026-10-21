@@ -1,5 +1,6 @@
 """One-step isolated Windows build; only a verified bundle replaces the current app."""
 import argparse
+import os
 from datetime import datetime
 from pathlib import Path
 import platform
@@ -52,11 +53,23 @@ def build():
     shutil.copy2(imageio_ffmpeg.get_ffmpeg_exe(), ffmpeg)
     subprocess.run([str(ffmpeg), '-version'], check=True, capture_output=True, timeout=10,
                    creationflags=subprocess.CREATE_NO_WINDOW)
+    from app_version import VERSION, version_tuple
+    from build_gallery_tool import build_tool
+    gallery, gallery_source = build_tool(output)
+    version = staging / 'version.txt'
+    numeric = repr((*version_tuple(VERSION), 0))
+    version.write_text("VSVersionInfo(ffi=FixedFileInfo(filevers=" + numeric + ", prodvers=" + numeric +
+                       ", mask=0x3f, flags=0, OS=0x40004, fileType=1, subtype=0, date=(0,0)), "
+                       "kids=[StringFileInfo([StringTable('040904B0', [StringStruct('ProductName', 'YTDL Studio'), "
+                       "StringStruct('FileVersion', '" + VERSION + "'), StringStruct('ProductVersion', '" + VERSION +
+                       "')])]), VarFileInfo([VarStruct('Translation', [1033,1200])])])", encoding='utf-8')
     PyInstaller.__main__.run([
         str(PROJECT / 'desktop_launcher.py'), '--name', 'YTDL Studio', '--windowed', '--onedir', '--noupx',
         '--distpath', str(output), '--workpath', str(output / 'work'), '--specpath', str(output),
         '--add-data', str(PROJECT / 'assets') + ';assets', '--add-data', str(PROJECT / 'ui') + ';ui',
         '--add-binary', str(ffmpeg) + ';bin',
+        '--add-binary', str(gallery) + ';bin', '--version-file', str(version),
+        '--add-data', str(gallery_source) + ';third-party/gallery-dl',
         '--collect-all', 'yt_dlp', '--collect-all', 'yt_dlp_ejs', '--collect-all', 'curl_cffi',
         '--collect-all', 'certifi', '--collect-all', 'webview', '--collect-all', 'pythonnet',
         '--collect-all', 'clr_loader', '--hidden-import', 'webview.platforms.winforms',
@@ -68,12 +81,21 @@ def build():
     bundle = output / 'YTDL Studio'
     for name in ('LICENSE', 'THIRD_PARTY_NOTICES.md'):
         shutil.copy2(PROJECT / name, bundle / name)
+    if os.environ.get('CI'):
+        from update_installer import write_marker
+        from windows_distribution import verify_app, archive_bundle
+        write_marker(bundle, 'windows-x64')
+        verify_app(bundle)
+        archive_bundle(bundle, output / 'YTDL-Studio-Windows-x64.zip')
+        print('Verified Windows release archive:', output / 'YTDL-Studio-Windows-x64.zip')
+        return
     from windows_distribution import publish_build
     executable = publish_build(PROJECT, bundle)
-    try:
-        subprocess.run(['explorer.exe', '/select,', str(PROJECT / 'YTDL Studio.lnk')], check=False)
-    except OSError:
-        pass  # Revealing the shortcut is optional; publication already succeeded.
+    if not os.environ.get('CI'):
+        try:
+            subprocess.run(['explorer.exe', '/select,', str(PROJECT / 'YTDL Studio.lnk')], check=False)
+        except OSError:
+            pass  # Revealing the shortcut is optional; publication already succeeded.
     print('Build complete. Verified native interface without a console:', executable)
     print('Open the YTDL Studio shortcut in the project folder.')
 

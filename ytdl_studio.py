@@ -2,7 +2,10 @@
 import sys
 
 if __name__ == '__main__':
-    if '--classic' in sys.argv:
+    if sys.argv[1:2] == ['--apply-update']:
+        from update_installer import helper_main
+        raise SystemExit(helper_main(sys.argv[2], sys.argv[3]))
+    elif '--classic' in sys.argv:
         import tkinter as tk
         from legacy_tk import YTDLStudio
         root = tk.Tk()

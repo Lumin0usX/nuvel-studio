@@ -1,4 +1,4 @@
-"""Image transfers and an external gallery-dl CLI adapter (never imported/bundled)."""
+"""Image transfers and an isolated gallery-dl CLI adapter (never imported here)."""
 from collections import deque
 from datetime import datetime
 import importlib.util
@@ -25,6 +25,11 @@ CREATE_FLAGS = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
 
 def gallery_command():
+    if getattr(sys, 'frozen', False):
+        from platform_runtime import resource_path
+        bundled = resource_path('bin', 'gallery-dl.exe' if sys.platform == 'win32' else 'gallery-dl')
+        if bundled.is_file():
+            return [str(bundled)]
     if not getattr(sys, 'frozen', False) and importlib.util.find_spec('gallery_dl'):
         return [sys.executable, '-m', 'gallery_dl']
     # A local Windows build keeps its external CLI in the managed build environment.

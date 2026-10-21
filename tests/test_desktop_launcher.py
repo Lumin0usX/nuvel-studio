@@ -63,6 +63,20 @@ class DesktopLauncherTests(unittest.TestCase):
             self.assertNotIn(str(launcher.PROJECT / 'desktop_launcher.py'), command)
             self.assertEqual(command[-2:], ['--smoke-result', str(proof)])
 
+    def test_update_helper_starts_only_after_the_owned_gui_session_has_ended(self):
+        order = []
+        def closed_gui(command, log, gate):
+            (gate.parent / 'update.json').write_text(json.dumps({'plan': 'prepared-plan.json'}))
+            order.append('gui session closed')
+            return 0
+        with tempfile.TemporaryDirectory() as temporary, \
+                patch.object(launcher, 'logs_directory', return_value=Path(temporary)), \
+                patch.object(sys, 'frozen', True, create=True), \
+                patch.object(launcher, 'supervise', side_effect=closed_gui), \
+                patch('update_installer.launch_helper', side_effect=lambda path: order.append('helper started')):
+            self.assertEqual(launcher.launch(), 0)
+        self.assertEqual(order, ['gui session closed', 'helper started'])
+
     def test_closing_busy_window_requires_confirmation_then_cancels(self):
         for confirmation in (False, True):
             with self.subTest(confirmation=confirmation):

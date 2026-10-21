@@ -6,6 +6,10 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'ui/i18n.js'), 'utf8');
 const catalog = JSON.parse(source.match(/\/\* CATALOG_START \*\/([\s\S]*?)\/\* CATALOG_END \*\//)[1]);
+const updateCatalog = JSON.parse(source.match(/\/\* UPDATE_CATALOG_START \*\/([\s\S]*?)\/\* UPDATE_CATALOG_END \*\//)[1]);
+for (const [key, values] of Object.entries(updateCatalog)) {
+  catalog.th[key] = values[0]; catalog.en[key] = key; catalog.ja[key] = values[1]; catalog['zh-CN'][key] = values[2];
+}
 const context = {window: {}};
 vm.createContext(context); vm.runInContext(source, context);
 const i18n = context.window.StudioI18n;

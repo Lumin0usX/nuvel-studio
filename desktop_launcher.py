@@ -2,6 +2,7 @@
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime
 import os
+import json
 from pathlib import Path
 import signal
 import subprocess
@@ -120,6 +121,7 @@ def supervise(command, log, gate):
     try:
         process = subprocess.Popen(command, cwd=PROJECT, stdin=subprocess.DEVNULL,
                                    stdout=log, stderr=log,
+                                   env=dict(os.environ, YTDL_UPDATE_HANDOFF=str(gate.parent / 'update.json')),
                                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
                                    start_new_session=sys.platform != 'win32')
         if job:
@@ -195,6 +197,10 @@ def launch(self_test=False, applet=False, check=False, smoke_result=None):
                         if smoke_result:
                             command.extend(['--smoke-result', str(smoke_result)])
                     result = supervise(command, log, gate)
+                    handoff = gate.parent / 'update.json'
+                    if result == 0 and handoff.is_file() and getattr(sys, 'frozen', False) and not self_test:
+                        from update_installer import launch_helper
+                        launch_helper(Path(json.loads(handoff.read_text(encoding='utf-8'))['plan']))
                 if result:
                     raise RuntimeError(f'The native interface exited with code {result}.')
                 print('Session closed; owned child processes stopped.', flush=True)
@@ -216,6 +222,9 @@ def launch(self_test=False, applet=False, check=False, smoke_result=None):
 
 
 def main():
+    if sys.argv[1:2] == ['--apply-update']:
+        from update_installer import helper_main
+        return helper_main(sys.argv[2], sys.argv[3])
     smoke_result = None
     if '--smoke-result' in sys.argv:
         smoke_result = Path(sys.argv[sys.argv.index('--smoke-result') + 1])

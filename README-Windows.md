@@ -1,5 +1,19 @@
 # YTDL Studio — Windows x64
 
+## แอปพร้อมใช้และอัปเดตในแอป
+
+ดาวน์โหลด **YTDL-Studio-Windows-x64.zip** จาก Releases ของ repo ส่วนตัว
+แตก ZIP ทั้งโฟลเดอร์ แล้วเปิด **YTDL Studio.exe** โดยไม่ต้องติดตั้ง Python หรือ Git
+เก็บโฟลเดอร์ `_internal` ไว้ข้างไฟล์ exe เสมอ ต้องมี Microsoft Edge WebView2 Runtime
+ซึ่งโดยปกติติดตั้งมาแล้วบน Windows 10/11
+
+อัปเดตครั้งถัดไปผ่าน **Settings → App updates** ได้เลย สำหรับ repo ส่วนตัว
+ตั้ง fine-grained GitHub token ที่อ่าน Contents ของ repo นี้ได้เพียงครั้งแรก
+แอปเก็บ token ใน Windows Credential Manager ไม่เขียนลงไฟล์ตั้งค่า
+รายละเอียดการออก release อยู่ใน [README.md](README.md#download-the-ready-to-use-app)
+
+ขั้นตอนด้านล่างสำหรับผู้ที่ต้องการ build จาก source เอง
+
 ## เริ่มใช้งาน
 
 1. ติดตั้ง Python 3.10+ แบบ x64 และเลือก Add Python to PATH
@@ -12,9 +26,8 @@ Windows ต้องมี Microsoft Edge WebView2 Runtime
 
 ZIP สำหรับส่งต่ออยู่ใน `dist/windows-<เวลาที่ build>` แตก ZIP แล้วเปิด `.exe` ได้
 เครื่องปลายทางไม่ต้องติดตั้ง Python แต่ยังต้องมี WebView2 Runtime
-ภาพจากโพสต์ใช้ gallery-dl CLI แยก ตัวที่ build ในโปรเจกต์จะหา CLI ใน environment ให้เอง
-หากส่งเฉพาะ ZIP ไปเครื่องอื่น โหมดโพสต์ภาพต้องมี CLI นี้แยกตามเดิม
-ลิงก์ไฟล์ภาพโดยตรงใช้ได้โดยไม่ต้องมี CLI
+ภาพจากโพสต์ใช้ gallery-dl CLI ที่แพ็กเป็นโปรเซสแยกไปด้วยแล้ว
+เครื่องปลายทางไม่ต้องติดตั้ง CLI เอง ลิงก์ไฟล์ภาพโดยตรงใช้ตัวดาวน์โหลดในแอป
 
 ## อัปเดต
 

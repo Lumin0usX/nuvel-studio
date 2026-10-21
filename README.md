@@ -3,6 +3,72 @@
 A desktop video, audio and image downloader with the Obsidian Futuristic interface,
 powered by yt-dlp. Original project materials are proprietary.
 
+## Download the ready-to-use app
+
+Open [Releases](https://github.com/Lumin0usX/ytdl-studio/releases) while signed in
+to a GitHub account with access to this private repository. Download the ZIP
+asset, not GitHub's automatically generated source-code archive.
+
+- Windows x64: extract **YTDL-Studio-Windows-x64.zip**, keep the entire
+  **YTDL Studio** folder, and open **YTDL Studio.exe**. Windows 10/11 needs
+  [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
+  (normally already installed). Python, Git and a terminal are not needed.
+- Mac Apple Silicon: extract **YTDL-Studio-macOS-arm64.zip**, move
+  **YTDL Studio.app** to a writable location such as your user's Applications
+  folder, and open it. Python, Homebrew and a terminal are not needed.
+
+Both packages include FFmpeg and an isolated gallery-dl CLI for image posts.
+Local builds are ad-hoc signed, not Apple-notarized or Windows Authenticode-signed;
+OS trust prompts can appear on a first download. A release is published only
+after both native build jobs and their startup checks succeed.
+
+### Update from inside the app
+
+Use **Settings → App updates → Check for updates**. For this private repository,
+expand **Private repository access** and save a fine-grained GitHub token scoped
+to **Lumin0usX/ytdl-studio**, with **Contents: read-only**. Windows Credential
+Manager or macOS Keychain stores it; it is not written to preferences, release
+files, localStorage or the source repository. Use **Remove saved access** to
+delete the saved credential. Browser GitHub sign-in alone does not authenticate
+the desktop updater.
+If the OS credential store is unavailable, access is kept in memory for the
+current session only and the app clearly says so; no plain-text fallback is used.
+
+Choose **Download update**, then **Restart and install**. The app checks the
+release version, SHA-256 and package layout, then tests the staged native app.
+Installation is disabled during media downloads. Once requested, it replaces the
+app at its existing path, tests it again, and restarts it. A failed startup restores the previous app.
+Downloaded media and per-user preferences are not replaced. The previous bundle
+is kept in the adjacent `.ytdl-update-*` directory. Updates require a writable
+installation folder and sufficient space for the download, staged app and backup.
+Network or access failures leave the existing app usable.
+
+Existing source users must update and build **this version once** using their
+normal folder updater; older apps do not contain an in-app updater. Source launches
+can check releases but cannot replace the running Python environment in-app.
+Until a release is published, the app reports that no packaged release is available.
+
+### Publish a version (maintainer)
+
+Set `VERSION` in `app_version.py`, commit, and push a matching tag, for example
+`v1.1.0`. `.github/workflows/release.yml` builds Windows x64 and macOS ARM64 on
+their native GitHub runners, runs tests and native startup checks, and uploads
+both ZIPs plus `studio-update.json` to a draft release. Only the complete release
+is published. Re-running is supported for drafts; published versions must not
+be overwritten. This is separate from the Git-based source updater below.
+
+```powershell
+git add .
+git commit -m "Add packaged releases and in-app updates"
+git push origin main
+git tag v1.1.0
+git push origin v1.1.0
+```
+
+The workflow must be enabled in this private repository. No personal token or
+signing credential is embedded in its artifacts. The workflow uses GitHub's
+short-lived repository token only for publishing release assets.
+
 ## Features
 
 - Download video as MP4; save native audio or choose an MP3 bitrate.
@@ -66,10 +132,10 @@ backend does not reliably return a final file path for every mode and job.
 
 See [UI review and verification](DESIGN.md) for design decisions and QA limits.
 
-Close Studio and double-click `update.bat` on Windows or `update_macos.command`
-on macOS in the Git clone to fetch the latest `main` and update dependencies.
-On macOS, choose option 2 to also build a new `.app`; replace the old app manually
-after the successful build.
+For a source checkout, close Studio and double-click `update.bat` on Windows or
+`update_macos.command` on macOS in the Git clone. Both fetch the latest `main`,
+update dependencies, build and verify the native app, and replace the project's
+app only after a successful check. There is no build/skip-build choice.
 The private repository requires existing GitHub access. Local changes and
 diverged history stop the update without discarding files. See
 [macOS update instructions](README-macOS.md) for setup and limitations.
@@ -118,9 +184,8 @@ images; partial/failed jobs are not added to the success history. Direct
 images have a 256 MB per-file limit. SVG and arbitrary HTML scraping are not
 supported. Video thumbnails are not used as a substitute for image posts.
 
-The packaged macOS `.app` does not bundle gallery-dl. Install the external CLI
-with `brew install gallery-dl` or `pipx install gallery-dl`, then reopen the app.
-Direct image links still work without that CLI.
+Both packaged apps include gallery-dl as a separate CLI. No independent CLI
+installation is needed for new builds. Direct images use the built-in downloader.
 
 Image transfers are covered by local automated tests (including a simulated
 gallery subprocess). Live social-site downloads have not been verified here;
@@ -170,10 +235,8 @@ previous app. Open the **YTDL Studio** shortcut after success.
 Git for Windows must be installed, and Git must have access to the private repo.
 The first update requires `git pull --ff-only origin main` to receive update.bat.
 Local changes or conflicting Git history stop the update without discarding files.
-Locally built apps use gallery-dl from the managed build environment as a separate
-process. The portable ZIP excludes that CLI, as on macOS; an independent CLI
-installation is needed for image posts on a machine receiving only the ZIP.
-Direct image URLs work without it. See [the Windows guide](README-Windows.md).
+Both local builds and release ZIPs include the isolated image-post CLI.
+See [the Windows guide](README-Windows.md).
 
 ## macOS Apple Silicon
 

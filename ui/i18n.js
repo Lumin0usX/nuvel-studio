@@ -1047,6 +1047,51 @@
     "Could not resize {name} · Original preserved. Choose original quality.": "无法缩放 {name}，原始图片已保留，请选择原始质量"
   }
 }/* CATALOG_END */;
+  const UPDATE_CATALOG = /* UPDATE_CATALOG_START */{
+    "Secure storage is unavailable. Access is kept only until you close the app.": ["ใช้ที่เก็บข้อมูลรับรองของ OS ไม่ได้ สิทธิ์นี้จะใช้ได้เฉพาะจนกว่าคุณจะปิดแอป", "資格情報ストアを利用できないため、アクセス情報はアプリを閉じるまでのみ保持されます。", "安全凭据存储不可用。访问凭据仅保留至应用关闭。"],
+    "App updates": ["อัปเดตแอป", "アプリの更新", "应用更新"],
+    "Check for updates": ["ตรวจสอบอัปเดต", "更新を確認", "检查更新"],
+    "Download verified releases without rebuilding.": ["ดาวน์โหลดเวอร์ชันพร้อมใช้ โดยไม่ต้อง build ใหม่", "ビルド不要の検証済みアプリをダウンロードできます。", "下载经过验证的应用，无需重新构建。"],
+    "Download update": ["ดาวน์โหลดอัปเดต", "更新をダウンロード", "下载更新"],
+    "Restart and install": ["เริ่มใหม่และติดตั้ง", "再起動してインストール", "重启并安装"],
+    "Cancel update": ["ยกเลิกอัปเดต", "更新をキャンセル", "取消更新"],
+    "Update download progress": ["ความคืบหน้าการดาวน์โหลดอัปเดต", "更新のダウンロード状況", "更新下载进度"],
+    "Private repository access": ["สิทธิ์เข้าถึง repo ส่วนตัว", "非公開リポジトリへのアクセス", "私有仓库访问权限"],
+    "Create a fine-grained GitHub token for Lumin0usX/ytdl-studio with Contents: read-only. It is stored in Windows Credential Manager or macOS Keychain, never in app settings.": ["สร้าง fine-grained token ของ GitHub สำหรับ Lumin0usX/ytdl-studio โดยให้สิทธิ์ Contents: read-only ข้อมูลจะเก็บใน Windows Credential Manager หรือ macOS Keychain แยกจากไฟล์ตั้งค่าแอป", "Lumin0usX/ytdl-studio 用の GitHub fine-grained token を Contents: read-only 権限で作成してください。トークンは設定ファイルではなく Windows 資格情報マネージャーまたは macOS キーチェーンに保存されます。", "为 Lumin0usX/ytdl-studio 创建具有 Contents: read-only 权限的 GitHub 细粒度令牌。令牌保存在 Windows 凭据管理器或 macOS 钥匙串中，不写入应用设置。"],
+    "GitHub access token": ["โทเค็นเข้าถึง GitHub", "GitHub アクセストークン", "GitHub 访问令牌"],
+    "Save access": ["บันทึกสิทธิ์", "アクセス情報を保存", "保存访问凭据"],
+    "Create token on GitHub": ["สร้าง token บน GitHub", "GitHub でトークンを作成", "在 GitHub 创建令牌"],
+    "Remove saved access": ["ลบสิทธิ์ที่บันทึก", "保存したアクセス情報を削除", "移除已保存的凭据"],
+    "Release notes": ["รายละเอียดเวอร์ชัน", "リリースノート", "版本说明"],
+    "GitHub access is required. Add a token with read access to this private repository, or replace an expired token.": ["ต้องมีสิทธิ์ GitHub เพื่อเข้าถึง repo ส่วนตัว ใส่ token ที่อ่าน repo นี้ได้ หรือเปลี่ยน token ที่หมดอายุ", "この非公開リポジトリの読み取り権限を持つ GitHub トークンが必要です。有効期限が切れた場合は更新してください。", "需要有权读取此私有仓库的 GitHub 令牌。若令牌已过期，请更换。"],
+    "Could not access the secure credential store. Unlock your Keychain or Windows account and try again.": ["เข้าถึงที่เก็บข้อมูลรับรองไม่สำเร็จ ปลดล็อก Keychain หรือบัญชี Windows แล้วลองใหม่", "資格情報ストアにアクセスできません。キーチェーンまたは Windows アカウントのロックを解除し、再試行してください。", "无法访问安全凭据存储。请解锁钥匙串或 Windows 账户后重试。"],
+    "No ready-to-use release has been published yet.": ["ยังไม่มีเวอร์ชันพร้อมใช้เผยแพร่ใน Releases", "ビルド済みのリリースはまだ公開されていません。", "尚未发布可直接使用的版本。"],
+    "Could not reach GitHub. Check your connection and try again. Your app still works offline.": ["เชื่อมต่อ GitHub ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่ แอปยังเปิดใช้แบบออฟไลน์ได้", "GitHub に接続できません。接続を確認して再試行してください。アプリはオフラインでも起動できます。", "无法连接 GitHub。请检查网络后重试。应用仍可离线启动。"],
+    "This release is incomplete or has an invalid update manifest. Your current app was kept.": ["เวอร์ชันนี้มีไฟล์ไม่ครบหรือข้อมูลอัปเดตไม่ถูกต้อง แอปเดิมยังอยู่", "リリースが不完全、または更新情報が無効です。現在のアプリは保持されています。", "此版本文件不完整或更新清单无效。当前应用已保留。"],
+    "The update did not pass verification. Your current app was kept. Check for updates and try again.": ["ไฟล์อัปเดตไม่ผ่านการตรวจสอบ แอปเดิมยังอยู่ ตรวจสอบอัปเดตแล้วลองใหม่", "更新ファイルの検証に失敗しました。現在のアプリは保持されています。更新を確認して再試行してください。", "更新未通过验证，当前应用已保留。请检查更新后重试。"],
+    "The update could not be prepared. Check free disk space and your connection, then try again.": ["เตรียมอัปเดตไม่สำเร็จ ตรวจสอบพื้นที่ว่างและอินเทอร์เน็ตแล้วลองใหม่", "更新を準備できません。空き容量と接続を確認して再試行してください。", "无法准备更新。请检查剩余空间和网络后重试。"],
+    "This app is in a read-only location. Move the full app to a folder you can write to and try again.": ["แอปอยู่ในตำแหน่งที่เขียนไม่ได้ ย้ายแอปทั้งชุดไปยังโฟลเดอร์ที่คุณเขียนได้แล้วลองใหม่", "現在の場所は読み取り専用です。アプリ全体を書き込み可能なフォルダーに移して再試行してください。", "应用所在位置为只读。请将整个应用移至可写入的文件夹后重试。"],
+    "Close other copies of YTDL Studio before installing the update.": ["ปิด YTDL Studio หน้าต่างอื่นก่อนติดตั้งอัปเดต", "更新前に、ほかの YTDL Studio を閉じてください。", "安装更新前，请关闭其他 YTDL Studio 实例。"],
+    "This is a source launch. Build this version once to enable in-app installation. The existing folder updater still works.": ["กำลังรันจาก source ต้อง build เวอร์ชันนี้หนึ่งครั้งเพื่อเปิดใช้อัปเดตในแอป ตัวอัปเดตในโฟลเดอร์ยังใช้ได้ตามเดิม", "ソースから起動しています。このバージョンを一度ビルドするとアプリ内更新が使えます。従来のフォルダー更新も引き続き使用できます。", "当前从源码启动。构建此版本一次后即可使用应用内安装，原有文件夹更新工具仍可使用。"],
+    "Ready-to-use updates support Windows x64 and macOS Apple Silicon.": ["อัปเดตแบบพร้อมใช้รองรับ Windows x64 และ macOS Apple Silicon", "ビルド済み更新は Windows x64 と macOS Apple Silicon に対応しています。", "即用更新支持 Windows x64 和 macOS Apple Silicon。"],
+    "An app update is already in progress.": ["กำลังดำเนินการอัปเดตแอปอยู่", "アプリの更新はすでに進行中です。", "应用更新已在进行中。"],
+    "Wait for the active media download to finish before restarting to update.": ["รอให้ดาวน์โหลดสื่อเสร็จก่อนเริ่มใหม่เพื่อติดตั้งอัปเดต", "実行中のメディアダウンロードが完了してから更新してください。", "请等待当前媒体下载完成后再重启更新。"],
+    "Open the desktop app to install updates.": ["เปิดผ่านแอปเดสก์ท็อปเพื่อติดตั้งอัปเดต", "更新のインストールにはデスクトップアプリを開いてください。", "请打开桌面应用以安装更新。"],
+    "Check for updates first.": ["ตรวจสอบอัปเดตก่อน", "先に更新を確認してください。", "请先检查更新。"],
+    "Update download cancelled. Your current app was kept.": ["ยกเลิกการดาวน์โหลดอัปเดตแล้ว แอปเดิมยังอยู่", "更新のダウンロードをキャンセルしました。現在のアプリは保持されています。", "更新下载已取消，当前应用已保留。"],
+    "Checking GitHub releases…": ["กำลังตรวจสอบเวอร์ชันบน GitHub…", "GitHub のリリースを確認中…", "正在检查 GitHub 版本…"],
+    "You are using the latest version.": ["คุณใช้เวอร์ชันล่าสุดแล้ว", "最新バージョンを使用しています。", "当前已是最新版本。"],
+    "A new version is available.": ["มีเวอร์ชันใหม่พร้อมดาวน์โหลด", "新しいバージョンがあります。", "有新版本可用。"],
+    "Downloading update…": ["กำลังดาวน์โหลดอัปเดต…", "更新をダウンロード中…", "正在下载更新…"],
+    "Verifying the package and testing the new app…": ["กำลังตรวจสอบไฟล์และทดสอบเปิดแอปใหม่…", "パッケージを検証し、新しいアプリの起動をテスト中…", "正在验证更新包并测试新应用…"],
+    "Update ready. Your app will restart; downloaded media and preferences are preserved.": ["อัปเดตพร้อมติดตั้ง แอปจะเริ่มใหม่โดยเก็บสื่อที่ดาวน์โหลดและการตั้งค่าไว้", "更新の準備ができました。再起動後もダウンロード済みメディアと設定は保持されます。", "更新已就绪。应用将重启，已下载的媒体和设置会保留。"],
+    "Closing the app to install the update…": ["กำลังปิดแอปเพื่อติดตั้งอัปเดต…", "更新のインストールのため終了しています…", "正在关闭应用以安装更新…"],
+    "Update not completed.": ["อัปเดตยังไม่สำเร็จ", "更新は完了していません。", "更新尚未完成。"]
+  }/* UPDATE_CATALOG_END */;
+  for (const [key, values] of Object.entries(UPDATE_CATALOG)) {
+    CATALOG.th[key] = values[0]; CATALOG.en[key] = key;
+    CATALOG.ja[key] = values[1]; CATALOG['zh-CN'][key] = values[2];
+  }
   let language = 'th';
   const owns = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
   const reverse = new Map();

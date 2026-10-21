@@ -21,11 +21,12 @@ upstream projects and in the installed packages.
 - Pillow: https://github.com/python-pillow/Pillow
 
 Image-post extraction invokes gallery-dl as a separate command-line process.
-The source installer installs it into the Python environment; the Windows and
-macOS app builders explicitly exclude it from the application bundle. A local
-Windows build can invoke the CLI in its separate build environment. Install the CLI
-separately for packaged apps. Its code and license remain separate from the
-original proprietary application code.
+The source installer installs it into the Python environment. The Windows and
+macOS builders exclude gallery-dl from the GUI interpreter and package it as a
+separate command-line executable under `bin`. It is launched only as a child
+process. Its corresponding Python source, GPL-2.0 license and build description
+are included under `third-party/gallery-dl` in the bundled resources. Its code
+and license remain separate from the original proprietary application code.
 
 Before distributing a packaged application, review the exact dependency
 versions and FFmpeg build that are included, preserve their required notices,

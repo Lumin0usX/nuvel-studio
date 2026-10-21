@@ -24,6 +24,7 @@ let toastTimer, analyzeTimer, metadataSequence = 0;
 let lastLists = '', lastPlatforms = '', polling = false, connecting = false;
 let previewData = null, metadataState = {kind: 'empty'}, formError = '';
 let engineVersion = '', preferenceSave = Promise.resolve();
+let appUpdate = {phase: 'idle', current: '', packaged: false};
 
 function node(tag, className, text) {
   const element = document.createElement(tag);
@@ -292,7 +293,7 @@ function applyLanguage() {
   lastLists = ''; lastPlatforms = '';
   renderQuality(); renderLists(true); renderDock(); applyAppearance(); updateFolder();
   showError(formError); renderMetadataStatus(); renderPreview();
-  renderEngineVersion();
+  renderEngineVersion(); renderAppUpdate();
   $('page-name').textContent = t({overview:'Overview', downloads:'Downloads', history:'History', settings:'Settings'}[currentPage]);
   $('analyze').textContent = $('analyze').dataset.loading === 'true' ? t('กำลังอ่านข้อมูล…') : t('ตรวจสอบลิงก์');
   $('connection-label').textContent = connected ? t('Local workspace') : t('ยังไม่เชื่อมต่อ');
@@ -476,7 +477,7 @@ function renderDock() {
 }
 function render(state) {
   const notify = ready;
-  const {platforms, image_engine, version, preferences, ...job} = state;
+  const {platforms, image_engine, version, preferences, app_update, ...job} = state;
   snapshot = job;
   if (!ready) {
     if (preferences && Object.keys(preferences).length) {
@@ -490,6 +491,8 @@ function render(state) {
   if (platforms) renderPlatforms(platforms);
   engineVersion = version; renderEngineVersion();
   busy = activePhases.has(state.phase);
+  if (app_update) appUpdate = app_update;
+  renderAppUpdate();
   updateButtons(); renderLists(); renderDock();
   if (notify && state.phase === 'done' && lastPhase !== 'done') toast(t('ดาวน์โหลดสำเร็จ · บันทึกไฟล์แล้ว'));
   if (notify && state.phase === 'error' && lastPhase !== 'error') toast(t('ดาวน์โหลดไม่สำเร็จ · ดูรายละเอียดที่ Downloads'));
@@ -498,6 +501,85 @@ function render(state) {
 function renderEngineVersion() {
   $('engine-version').textContent = engineVersion ? 'yt-dlp ' + engineVersion + ' · gallery-dl ' + (imageEngine.available ? t('พร้อมใช้งาน') : t('ยังไม่ติดตั้ง')) : t('กำลังตรวจสอบ…');
 }
+const updateMessages = {
+  access_required: 'GitHub access is required. Add a token with read access to this private repository, or replace an expired token.',
+  credential_error: 'Could not access the secure credential store. Unlock your Keychain or Windows account and try again.',
+  no_release: 'No ready-to-use release has been published yet.',
+  network_error: 'Could not reach GitHub. Check your connection and try again. Your app still works offline.',
+  invalid_release: 'This release is incomplete or has an invalid update manifest. Your current app was kept.',
+  invalid_package: 'The update did not pass verification. Your current app was kept. Check for updates and try again.',
+  update_failed: 'The update could not be prepared. Check free disk space and your connection, then try again.',
+  install_readonly: 'This app is in a read-only location. Move the full app to a folder you can write to and try again.',
+  install_locked: 'Close other copies of YTDL Studio before installing the update.',
+  source_build: 'This is a source launch. Build this version once to enable in-app installation. The existing folder updater still works.',
+  unsupported_system: 'Ready-to-use updates support Windows x64 and macOS Apple Silicon.',
+  update_busy: 'An app update is already in progress.',
+  download_active: 'Wait for the active media download to finish before restarting to update.',
+  native_required: 'Open the desktop app to install updates.',
+  check_first: 'Check for updates first.',
+  cancelled: 'Update download cancelled. Your current app was kept.'
+};
+function renderAppUpdate() {
+  const phase = appUpdate.phase;
+  const working = ['checking','downloading','verifying','installing'].includes(phase);
+  $('app-version').textContent = 'YTDL Studio ' + (appUpdate.current || '—');
+  const messages = {
+    idle: 'Download verified releases without rebuilding.', checking: 'Checking GitHub releases…',
+    up_to_date: 'You are using the latest version.', available: 'A new version is available.',
+    downloading: 'Downloading update…', verifying: 'Verifying the package and testing the new app…',
+    ready: 'Update ready. Your app will restart; downloaded media and preferences are preserved.',
+    installing: 'Closing the app to install the update…', error: 'Update not completed.'
+  };
+  $('update-status').textContent = t(messages[phase] || messages.idle) +
+    (appUpdate.latest && ['available','downloading','verifying','ready'].includes(phase) ? ' · v' + appUpdate.latest : '');
+  $('update-error').textContent = appUpdate.error ? t(updateMessages[appUpdate.error] || updateMessages.update_failed) : '';
+  $('update-error').hidden = !appUpdate.error;
+  $('update-source-note').hidden = appUpdate.packaged || !appUpdate.current;
+  $('update-session-note').hidden = !appUpdate.session_only;
+  $('check-update').disabled = working || phase === 'ready' || !connected;
+  $('download-update').hidden = phase !== 'available';
+  $('download-update').disabled = !appUpdate.packaged;
+  $('download-update').title = appUpdate.packaged ? '' : t(updateMessages.source_build);
+  $('install-update').hidden = phase !== 'ready'; $('install-update').disabled = busy;
+  $('install-update').title = busy ? t(updateMessages.download_active) : '';
+  $('cancel-update').hidden = phase !== 'downloading';
+  $('update-progress').hidden = !['downloading','verifying'].includes(phase);
+  if (phase === 'verifying') $('update-progress').removeAttribute('value');
+  else $('update-progress').value = appUpdate.percent || 0;
+  for (const id of ['connect-updates','forget-update-token']) $(id).disabled = working || phase === 'ready';
+  $('update-release').hidden = !appUpdate.notes;
+  $('update-release-notes').textContent = appUpdate.notes || '';
+  if (appUpdate.error === 'access_required') $('update-access').open = true;
+}
+async function updateAction(method, ...args) {
+  try {
+    const result = await api(method, ...args);
+    if (result.error) toast(t(updateMessages[result.error] || updateMessages.update_failed));
+    else await poll();
+    return result;
+  } catch { toast(t(updateMessages.network_error)); return {error: 'connection'}; }
+}
+$('check-update').addEventListener('click', () => updateAction('check_app_update'));
+$('download-update').addEventListener('click', () => updateAction('download_app_update'));
+$('cancel-update').addEventListener('click', () => updateAction('cancel_app_update'));
+$('install-update').addEventListener('click', async () => {
+  $('install-update').disabled = true;
+  try {
+    const result = await api('install_app_update');
+    if (result.error) toast(t(updateMessages[result.error] || updateMessages.update_failed));
+  } catch { /* The native bridge closes with the app during installation. */ }
+});
+$('connect-updates').addEventListener('click', async () => {
+  const secret = $('update-token').value; $('update-token').value = '';
+  if (!secret.trim()) { $('update-token').focus(); return; }
+  const result = await updateAction('connect_updates', secret);
+  if (!result.error) { $('update-access').open = false; await updateAction('check_app_update'); }
+});
+$('update-token').addEventListener('keydown', event => {
+  if (event.key === 'Enter') {event.preventDefault(); $('connect-updates').click();}
+});
+$('forget-update-token').addEventListener('click', () => updateAction('connect_updates', '', true));
+$('create-update-token').addEventListener('click', () => updateAction('open_update_access'));
 async function poll() {
   if (polling) return;
   polling = true;

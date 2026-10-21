@@ -1,0 +1,83 @@
+name: Build desktop release
+
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag (must match app_version.py)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows-x64
+            architecture: x64
+          - os: macos-14
+            platform: macos-arm64
+            architecture: arm64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: ${{ matrix.architecture }}
+      - run: python release_tools.py check-version --tag "$env:RELEASE_TAG"
+        if: runner.os == 'Windows'
+      - run: python release_tools.py check-version --tag "$RELEASE_TAG"
+        if: runner.os == 'macOS'
+      - run: python -m pip install -r requirements.txt "pyinstaller>=6.16,<7"
+      - run: python -m unittest discover -s tests
+      - run: python build_windows.py --run-build
+        if: runner.os == 'Windows'
+      - run: python build_macos.py
+        if: runner.os == 'macOS'
+      - run: python release_tools.py collect --platform ${{ matrix.platform }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}
+          path: release/*.zip
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+      - run: python release_tools.py publish --folder release --tag "$RELEASE_TAG"

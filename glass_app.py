@@ -18,6 +18,7 @@ from platform_runtime import resource_path, ffmpeg_path, open_directory
 from image_download import download_images, image_support
 from media_quality import validate_quality, quality_label, media_options, add_video_postprocessor
 from ui_preferences import load_preferences, save_preferences
+from app_updates import AppUpdates
 
 
 class StudioAPI:
@@ -25,6 +26,7 @@ class StudioAPI:
         self._window = None
         self._lock = threading.RLock()
         self._cancel = threading.Event()
+        self._updates = AppUpdates()
         self._preferences = load_preferences()
         self._state = dict(phase='idle', percent=0, title='', detail='', speed='', eta='',
                            folder=self._preferences.get('folder', str(Path.home() / 'Downloads')), history=[], error='',
@@ -56,7 +58,35 @@ class StudioAPI:
         with self._lock:
             return dict(**copy.deepcopy(self._state), platforms=copy.deepcopy(self._platforms),
                         version=self._version, image_engine=copy.deepcopy(self._image_engine),
-                        preferences=copy.deepcopy(self._preferences))
+                        preferences=copy.deepcopy(self._preferences), app_update=self._updates.snapshot())
+
+    def check_app_update(self):
+        return self._updates.check()
+
+    def connect_updates(self, token='', forget=False):
+        return self._updates.connect(token, forget)
+
+    def download_app_update(self):
+        return self._updates.download()
+
+    def cancel_app_update(self):
+        self._updates.cancel.set()
+        return dict(ok=True)
+
+    def install_app_update(self):
+        with self._lock:
+            if self._state['phase'] in ('connecting', 'downloading', 'processing', 'cancelling'):
+                return dict(error='download_active')
+            if self._window is None:
+                return dict(error='native_required')
+            result = self._updates.request_install()
+            if not result.get('error'):
+                self._window.destroy()
+            return result
+
+    def open_update_access(self):
+        webbrowser.open('https://github.com/settings/personal-access-tokens/new')
+        return dict(ok=True)
 
     def save_preferences(self, values):
         try:
@@ -145,6 +175,8 @@ class StudioAPI:
         if not isinstance(options, dict):
             return dict(error='ข้อมูลการดาวน์โหลดไม่ถูกต้อง')
         with self._lock:
+            if self._updates.snapshot()['phase'] == 'installing':
+                return dict(error='update_busy')
             if self._state['phase'] in ('connecting', 'downloading', 'processing', 'cancelling'):
                 return dict(error='มีงานกำลังทำอยู่ กรุณารอให้งานเสร็จก่อน')
             url = str(options.get('url', '')).strip()
@@ -266,7 +298,8 @@ def _serve(api):
     """Fallback has no external listening port and requires a random session token."""
     token = secrets.token_urlsafe(32)
     ui_root = resource_path('ui')
-    allowed = {'snapshot', 'start_download', 'cancel_download', 'open_folder', 'choose_folder', 'choose_cookies', 'analyze_url', 'remove_history', 'save_preferences'}
+    allowed = {'snapshot', 'start_download', 'cancel_download', 'open_folder', 'choose_folder', 'choose_cookies', 'analyze_url', 'remove_history', 'save_preferences',
+               'check_app_update', 'connect_updates', 'download_app_update', 'cancel_app_update', 'install_app_update', 'open_update_access'}
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_):
             pass
@@ -362,6 +395,13 @@ def main(native_only=False):
     smoke_closed = None
     if '--self-test' in sys.argv:
         subprocess.run([ffmpeg_path(), '-version'], check=True, capture_output=True, timeout=10)
+        if getattr(sys, 'frozen', False):
+            gallery = resource_path('bin', 'gallery-dl.exe' if sys.platform == 'win32' else 'gallery-dl')
+            result = subprocess.run([str(gallery), '--config-ignore', '--list-modules'], check=True,
+                                    capture_output=True, timeout=45,
+                                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+            if not result.stdout.strip():
+                raise RuntimeError('The packaged image engine did not report any extractors.')
         tested = threading.Event()
         smoke_closed = threading.Event()
         def smoke_test():
@@ -388,6 +428,7 @@ def main(native_only=False):
         webview.start(gui='edgechromium' if sys.platform == 'win32' else None)
     finally:
         api._cancel.set()
+        api._updates.cancel.set()
         if smoke_closed is not None:
             smoke_closed.set()
     if tested is not None:
@@ -403,6 +444,15 @@ def main(native_only=False):
                 get_console.restype = wintypes.HWND
                 result['console_attached'] = bool(get_console())
             proof.write_text(json.dumps(result), encoding='utf-8')
+    elif api._updates.snapshot().get('phase') == 'installing' and api._updates.plan:
+        # Windows' supervisor starts the helper outside its child Job Object.
+        # macOS has no supervisor and can launch a detached helper directly.
+        handoff = os.environ.get('YTDL_UPDATE_HANDOFF')
+        if sys.platform == 'win32' and handoff:
+            Path(handoff).write_text(json.dumps(dict(plan=str(api._updates.plan))), encoding='utf-8')
+        else:
+            from update_installer import launch_helper
+            launch_helper(api._updates.plan)
 
 
 if __name__ == '__main__':
