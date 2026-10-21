@@ -10,6 +10,5 @@ fi
 "$VENV_PYTHON" -m pip install --upgrade pip
 "$VENV_PYTHON" -m pip install --upgrade -r requirements.txt
 require_environment
-"$VENV_PYTHON" "$PROJECT_DIR/create_macos_launcher.py"
 chmod +x start_macos.command build_macos.command install_macos.command update_macos.command
-printf '\nInstallation complete. Open YTDL Studio Launcher.app (no Terminal).\n'
+printf '\nBuild environment ready.\n'

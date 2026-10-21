@@ -314,6 +314,8 @@ def main(native_only=False):
     try:
         import webview
     except ImportError:
+        if getattr(sys, 'frozen', False):
+            raise RuntimeError('The application bundle is incomplete. Reinstall YTDL Studio.')
         if native_only:
             raise RuntimeError('The windowless launcher requires pywebview. Run ' +
                                ('install_macos.command' if sys.platform == 'darwin' else 'install.bat'))
@@ -356,19 +358,29 @@ def main(native_only=False):
                 api.cancel_download()
             return confirmed
     window.events.closing += closing
+    tested = None
+    smoke_closed = None
     if '--self-test' in sys.argv:
-        subprocess.run([ffmpeg_path(), '-version'], check=True, capture_output=True)
+        subprocess.run([ffmpeg_path(), '-version'], check=True, capture_output=True, timeout=10)
         tested = threading.Event()
+        smoke_closed = threading.Event()
         def smoke_test():
             try:
-                ok = window.evaluate_js('Boolean(window.studioReady && document.querySelector("#download"))')
-                if not ok:
-                    os._exit(1)
-                tested.set()
+                deadline = time.monotonic() + 15
+                requested = False
+                while time.monotonic() < deadline:
+                    ready = window.evaluate_js('Boolean(window.studioReady && document.querySelector("#download") && window.pywebview?.api?.snapshot)')
+                    if ready and not requested:
+                        window.evaluate_js('window.__studioSmoke = false; window.pywebview.api.snapshot().then(s => {window.__studioSmoke = Boolean(s && s.preferences && Array.isArray(s.history));}).catch(() => {});')
+                        requested = True
+                    if requested and window.evaluate_js('window.__studioSmoke === true'):
+                        tested.set()
+                        break
+                    time.sleep(.1)
             finally:
                 window.destroy()
         def timeout():
-            if not tested.wait(30):
+            if not smoke_closed.wait(45):
                 os._exit(1)
         window.events.loaded += smoke_test
         threading.Thread(target=timeout, daemon=True).start()
@@ -376,6 +388,14 @@ def main(native_only=False):
         webview.start(gui='edgechromium' if sys.platform == 'win32' else None)
     finally:
         api._cancel.set()
+        if smoke_closed is not None:
+            smoke_closed.set()
+    if tested is not None:
+        if not tested.is_set():
+            raise RuntimeError('The native UI or Python bridge did not become ready.')
+        if '--smoke-result' in sys.argv:
+            proof = Path(sys.argv[sys.argv.index('--smoke-result') + 1])
+            proof.write_text(json.dumps(dict(ok=True, executable=str(Path(sys.executable).resolve()))), encoding='utf-8')
 
 
 if __name__ == '__main__':

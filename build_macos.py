@@ -36,11 +36,11 @@ def main():
         '--copy-metadata', 'yt-dlp',
     ])
     app = output / 'YTDL Studio.app'
-    # A packaged smoke test opens the new WebKit interface.
-    subprocess.run([str(app / 'Contents/MacOS/YTDL Studio'), '--self-test'], check=True)
-    subprocess.run(['/usr/bin/ditto', '-c', '-k', '--sequesterRsrc', '--keepParent',
-                    str(app), str(output / 'YTDL-Studio-macOS-arm64.zip')], check=True)
-    print('Built and smoke-tested:', app)
+    from macos_distribution import publish_build
+    installed = publish_build(project, app)
+    print('Build complete. Verified through macOS LaunchServices:', installed)
+    print('Open YTDL Studio.app in the project folder. No Terminal is needed.')
+    subprocess.run(['/usr/bin/open', '-R', str(installed)], check=False)
     print('This local build is ad-hoc signed, not notarized for public distribution.')
 
 

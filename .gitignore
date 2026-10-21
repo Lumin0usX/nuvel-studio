@@ -25,6 +25,8 @@ dist/
 *.zip
 *.dmg
 *.app/
+/*.app
+/.studio-publish-*/
 *.lnk
 *.part
 *.ytdl

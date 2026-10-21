@@ -80,7 +80,7 @@ def update_source(project, allowed_origins=ORIGINS):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Update the YTDL Studio source folder on Windows or macOS.')
-    parser.add_argument('--build', action='store_true', help='Also build a new macOS .app.')
+    parser.add_argument('--build', action='store_true', help='Compatibility option: macOS updates always build the app.')
     parser.add_argument('--check', action='store_true', help='Check Python, pip and Git without updating or installing.')
     args = parser.parse_args(argv)
     if sys.platform not in ('darwin', 'win32'):
@@ -107,15 +107,10 @@ def main(argv=None):
                             "import glass_app; print('YTDL Studio launcher: OK')"], cwd=project, check=True)
             subprocess.run([sys.executable, str(project / 'create_windows_launcher.py')], cwd=project, check=True)
         else:
-            subprocess.run(['/bin/bash', str(project / 'install_macos.command')], cwd=project, check=True)
-        if args.build:
             print('Building the updated macOS app...', flush=True)
             subprocess.run(['/bin/bash', str(project / 'build_macos.command')], cwd=project, check=True)
-            print('Update and build complete. Replace your old app with the new one in dist.', flush=True)
-            subprocess.run(['/usr/bin/open', str(project / 'dist')], check=False)
-        else:
-            launcher = 'YTDL Studio shortcut' if sys.platform == 'win32' else 'YTDL Studio Launcher.app'
-            print('Update complete. Open ' + launcher + ' to use the new version.', flush=True)
+        launcher = 'YTDL Studio shortcut' if sys.platform == 'win32' else 'YTDL Studio.app'
+        print('Update complete. Open ' + launcher + ' in the project folder.', flush=True)
         return 0
     except UpdateError as exc:
         print('\nUpdate stopped:\n' + str(exc), file=sys.stderr)

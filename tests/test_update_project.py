@@ -168,21 +168,21 @@ class UpdateWorkflowTests(unittest.TestCase):
             result = main(args)
         return result, update, run, output.getvalue()
 
-    def test_normal_update_installs_without_building(self):
+    def test_normal_mac_update_builds_and_publishes_the_app(self):
         result, update, run, output = self.run_main([])
         self.assertEqual(result, 0)
         update.assert_called_once()
         self.assertEqual(run.call_count, 1)
-        self.assertTrue(run.call_args.args[0][-1].endswith('install_macos.command'))
+        self.assertTrue(run.call_args.args[0][-1].endswith('build_macos.command'))
         self.assertIn('Update complete', output)
+        self.assertIn('Open YTDL Studio.app in the project folder', output)
 
-    def test_build_option_installs_builds_and_opens_dist(self):
+    def test_old_build_flag_keeps_the_same_single_mac_update_flow(self):
         result, _, run, output = self.run_main(['--build'])
         self.assertEqual(result, 0)
-        self.assertEqual(run.call_count, 3)
-        self.assertTrue(run.call_args_list[1].args[0][-1].endswith('build_macos.command'))
-        self.assertEqual(run.call_args_list[2].args[0][0], '/usr/bin/open')
-        self.assertIn('Update and build complete', output)
+        self.assertEqual(run.call_count, 1)
+        self.assertTrue(run.call_args.args[0][-1].endswith('build_macos.command'))
+        self.assertIn('Update complete', output)
 
     def test_git_failure_never_starts_install_or_build(self):
         result, _, run, output = self.run_main(['--build'], update_error=UpdateError('offline'))

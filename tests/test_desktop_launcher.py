@@ -1,6 +1,4 @@
 """Exercise real hidden Windows sessions, process ownership and native-only startup."""
-from contextlib import redirect_stdout
-import io
 import json
 import os
 from pathlib import Path
@@ -22,6 +20,14 @@ class DesktopLauncherTests(unittest.TestCase):
                 patch.object(glass_app, '_serve') as serve, patch.object(glass_app, 'StudioAPI') as api:
             with self.assertRaisesRegex(RuntimeError, 'requires pywebview'):
                 glass_app.main(native_only=True)
+        serve.assert_not_called()
+        api.assert_not_called()
+
+    def test_incomplete_packaged_app_never_falls_back_to_a_hidden_server(self):
+        with patch.dict(sys.modules, {'webview': None}), patch.object(sys, 'frozen', True, create=True), \
+                patch.object(glass_app, '_serve') as serve, patch.object(glass_app, 'StudioAPI') as api:
+            with self.assertRaisesRegex(RuntimeError, 'bundle is incomplete'):
+                glass_app.main()
         serve.assert_not_called()
         api.assert_not_called()
 
@@ -62,15 +68,45 @@ class DesktopLauncherTests(unittest.TestCase):
                 self.assertEqual(api.cancel_download.call_count, int(confirmation))
                 api._cancel.set.assert_called_once()
 
-    def test_mac_launcher_uses_local_compiler_and_keeps_paths_as_arguments(self):
-        import create_macos_launcher
-        with patch.object(create_macos_launcher.sys, 'platform', 'darwin'), \
-                patch.object(create_macos_launcher.subprocess, 'run') as run, redirect_stdout(io.StringIO()):
-            create_macos_launcher.main()
-        args = run.call_args.args[0]
-        self.assertEqual(args[0], '/usr/bin/osacompile')
-        self.assertEqual(Path(args[2]).name, 'YTDL Studio Launcher.app')
-        self.assertEqual(Path(args[3]).name, 'macos_launcher.applescript')
+    def test_native_startup_proof_requires_a_bridge_round_trip_and_window_shutdown(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            proof = Path(temporary) / 'startup.json'
+            api, window, bridge = Mock(), Mock(), Mock()
+            api.snapshot.return_value = {'phase': 'idle'}
+            bridge.create_window.return_value = window
+            loaded = []
+            window.events.loaded.__iadd__ = lambda _, handler: loaded.append(handler)
+            window.events.closing.__iadd__ = lambda _, handler: None
+            window.evaluate_js.side_effect = [True, None, True]
+            def run_window(**kwargs):
+                loaded[0]()
+                window.destroy.assert_called_once()
+                self.assertFalse(proof.exists(), 'Startup proof was written before the window loop ended')
+            bridge.start.side_effect = run_window
+            with patch.dict(sys.modules, {'webview': bridge}), \
+                    patch.object(glass_app, 'StudioAPI', return_value=api), \
+                    patch.object(glass_app.threading, 'Thread'), \
+                    patch.object(glass_app.subprocess, 'run'), \
+                    patch.object(glass_app, 'ffmpeg_path', return_value='ffmpeg'), \
+                    patch.object(sys, 'argv', ['studio', '--self-test', '--smoke-result', str(proof)]):
+                glass_app.main(native_only=True)
+            self.assertTrue(json.loads(proof.read_text())['ok'])
+            self.assertTrue(any('api.snapshot().then' in call.args[0] for call in window.evaluate_js.call_args_list))
+
+    def test_closed_window_without_ready_ui_does_not_produce_success_proof(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            proof = Path(temporary) / 'startup.json'
+            window, bridge = Mock(), Mock()
+            bridge.create_window.return_value = window
+            window.events.loaded.__iadd__ = lambda _, handler: None
+            window.events.closing.__iadd__ = lambda _, handler: None
+            with patch.dict(sys.modules, {'webview': bridge}), patch.object(glass_app, 'StudioAPI'), \
+                    patch.object(glass_app.threading, 'Thread'), patch.object(glass_app.subprocess, 'run'), \
+                    patch.object(glass_app, 'ffmpeg_path', return_value='ffmpeg'), \
+                    patch.object(sys, 'argv', ['studio', '--self-test', '--smoke-result', str(proof)]):
+                with self.assertRaisesRegex(RuntimeError, 'did not become ready'):
+                    glass_app.main(native_only=True)
+            self.assertFalse(proof.exists())
 
 
 @unittest.skipUnless(sys.platform == 'win32', 'Windows process and console APIs required')

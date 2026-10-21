@@ -177,36 +177,34 @@ Local changes or conflicting Git history stop the update without discarding file
 Use native ARM64 Python 3.12+ and run these commands from the project directory:
 
 ```bash
-bash install_macos.command
-```
-
-The installer creates **YTDL Studio Launcher.app** beside the source files.
-Double-click it for normal use without Terminal. Keep it inside the project
-folder; use a Finder alias or add it to the Dock for easier access. It uses
-`.venv-macos` and the current source, so updating the folder does not require
-a PyInstaller rebuild. Updater option 1 also refreshes this launcher.
-Logs are in `~/Library/Logs/YTDLStudio`. `start_macos.command` remains the
-terminal diagnostic entry point. This small launcher is distinct from the
-self-contained `.app` built below; it still requires this source installation.
-
-Build a local `.app` **on an Apple Silicon Mac**:
-
-```bash
 bash build_macos.command
 ```
+
+The build prepares dependencies and produces **YTDL Studio.app** directly in
+the project folder. Open this app for normal use without Terminal. It contains
+the Python runtime, UI, video/audio engines and FFmpeg; you may copy it into
+Applications. The distributable ZIP is also kept in `dist/<build timestamp>`.
+
+Double-click **update_macos.command** to update and rebuild in one flow, with
+no source/packaged mode choice. The app in the project folder is replaced only
+after the new bundle passes a native startup test. Previous apps are preserved
+in `dist`. If you made a separate copy in Applications, replace that copy with
+the newly built app. The old AppleScript launcher is migrated automatically to
+a link to the main app. No runtime repair commands are part of normal setup.
 
 See [the macOS guide](README-macOS.md). The build is ad-hoc signed, not notarized
 for public distribution. A macOS binary cannot be built by this project on Windows.
 
 ## Validation status
 
-- Windowless source launchers: 101 Python tests pass, including a real Windows
-  shortcut launched from a Thai path and a hidden session that stops a remaining
-  subprocess when its GUI exits. Dependency checks and script syntax checks pass.
-  The native WebView UI smoke test did not receive a loaded event in this
-  environment with either the terminal entry point or the windowless entry point;
-  native rendering is therefore not verified for this change. The macOS launcher
-  must still be compiled and tested on an Apple Silicon Mac.
+- Windows tests exercise a real shortcut launched from a Thai path and a hidden
+  session that stops a remaining subprocess when its GUI exits.
+- macOS publication tests cover startup failure, missing startup proof, rollback,
+  preservation of previous apps and refusal to replace unrelated applications.
+  Each actual Mac build tests the relocated app through LaunchServices and
+  requires success proof from its native UI before publishing the app or ZIP.
+  That native acceptance test cannot be run on this Windows development machine;
+  the new packaging flow still requires verification on Apple Silicon.
 - Python unit tests cover platform adapters, download transitions, validation,
   cancellation, and successful/failed jobs using mocks.
 - Windows launcher checks and the authenticated local HTTP bridge were tested.

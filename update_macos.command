@@ -7,15 +7,8 @@ main() {
     printf '\nYTDL Studio - Update\n\n'
     printf 'Close YTDL Studio before continuing, including any running downloads.\n'
     printf 'This updater uses your existing GitHub access to the private repository.\n\n'
-    printf '1. Update source and YTDL Studio Launcher.app\n'
-    printf '2. Update and build a new YTDL Studio.app\n\n'
-    local choice
-    read -r -p 'Choose 1 or 2, then press Return [1]: ' choice
+    printf 'The updater builds and verifies the app before replacing the previous version.\n\n'
     choose_python
-    case "${choice:-1}" in
-        1) "$BASE_PYTHON" -u "$PROJECT_DIR/update_project.py" ;;
-        2) "$BASE_PYTHON" -u "$PROJECT_DIR/update_project.py" --build ;;
-        *) printf '\nInvalid choice. No update was started.\n'; return 1 ;;
-    esac
+    "$BASE_PYTHON" -u "$PROJECT_DIR/update_project.py"
 }
 main "$@"

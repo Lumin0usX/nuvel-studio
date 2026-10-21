@@ -1,6 +1,5 @@
 * text=auto
 *.bat text eol=crlf
-*.applescript text eol=lf
 *.command text eol=lf
 *.sh text eol=lf
 *.py text eol=lf
