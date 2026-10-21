@@ -25,6 +25,7 @@ dist/
 *.zip
 *.dmg
 *.app/
+*.lnk
 *.part
 *.ytdl
 *.mp4

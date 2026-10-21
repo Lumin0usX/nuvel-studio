@@ -132,11 +132,25 @@ Install Python 3.10+ and enable **Add Python to PATH**, then run:
 
 ```bat
 install.bat
-start.bat
 ```
 
+Then double-click **YTDL Studio** (`YTDL Studio.lnk`) in the project folder.
+The installer and updater create this shortcut using the same Python they use
+for dependencies. It opens only the native application, without a terminal.
+You can copy the shortcut to your Desktop. Keep the project folder in place;
+rerun the installer if you move it or change Python installations.
+For an already installed environment, run `python create_windows_launcher.py`
+once to create the shortcut without reinstalling dependencies.
+
 The native interface requires pywebview and Microsoft Edge WebView2 Runtime.
-When pywebview is not installed, the launcher serves the UI on an authenticated
+The windowless launcher reports startup failures with a dialog and a log in
+`%LOCALAPPDATA%\YTDLStudio\logs`. It requires the native bridge; it never leaves
+an invisible browser server running. Closing the window ends its session and
+stops owned download/conversion processes. Closing during a download asks for
+confirmation and can leave partial files.
+
+`start.bat` remains available for terminal diagnostics. When pywebview is not
+installed, that diagnostic launcher serves the UI on an authenticated
 loopback address and opens Edge/Chrome in app mode, or the default browser.
 Keep the launcher terminal open in this fallback mode. Folder and cookie file
 paths can be entered manually; native file dialogs require pywebview.
@@ -152,7 +166,7 @@ update.bat --check
 To update, close Studio and double-click **update.bat** in the project folder.
 It updates code, upgrades dependencies with the same Python selected by the
 launcher, and checks that the launcher imports successfully. It leaves the
-window open so errors can be read. Open **start.bat** after it reports success.
+window open so errors can be read. Open the **YTDL Studio** shortcut after success.
 Git for Windows must be installed, and Git must have access to the private repo.
 The first update requires `git pull --ff-only origin main` to receive update.bat.
 This updates the source installation; it does not replace a packaged `.exe`.
@@ -164,8 +178,16 @@ Use native ARM64 Python 3.12+ and run these commands from the project directory:
 
 ```bash
 bash install_macos.command
-bash start_macos.command
 ```
+
+The installer creates **YTDL Studio Launcher.app** beside the source files.
+Double-click it for normal use without Terminal. Keep it inside the project
+folder; use a Finder alias or add it to the Dock for easier access. It uses
+`.venv-macos` and the current source, so updating the folder does not require
+a PyInstaller rebuild. Updater option 1 also refreshes this launcher.
+Logs are in `~/Library/Logs/YTDLStudio`. `start_macos.command` remains the
+terminal diagnostic entry point. This small launcher is distinct from the
+self-contained `.app` built below; it still requires this source installation.
 
 Build a local `.app` **on an Apple Silicon Mac**:
 
@@ -178,6 +200,13 @@ for public distribution. A macOS binary cannot be built by this project on Windo
 
 ## Validation status
 
+- Windowless source launchers: 101 Python tests pass, including a real Windows
+  shortcut launched from a Thai path and a hidden session that stops a remaining
+  subprocess when its GUI exits. Dependency checks and script syntax checks pass.
+  The native WebView UI smoke test did not receive a loaded event in this
+  environment with either the terminal entry point or the windowless entry point;
+  native rendering is therefore not verified for this change. The macOS launcher
+  must still be compiled and tested on an Apple Silicon Mac.
 - Python unit tests cover platform adapters, download transitions, validation,
   cancellation, and successful/failed jobs using mocks.
 - Windows launcher checks and the authenticated local HTTP bridge were tested.

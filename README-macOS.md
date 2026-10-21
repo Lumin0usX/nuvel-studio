@@ -8,8 +8,8 @@
 
 1. ปิด YTDL Studio และรอให้งานดาวน์โหลดจบ
 2. ดับเบิลคลิก `update_macos.command` ในโฟลเดอร์โปรเจกต์
-3. เลือก **1** เพื่ออัปเดตโค้ดและส่วนประกอบ แล้วเปิด `start_macos.command` ตามเดิม
-4. ถ้าใช้ `.app` ให้เลือก **2** เพื่ออัปเดตและ build แอปใหม่ เมื่อสำเร็จ Finder จะเปิด `dist`
+3. เลือก **1** เพื่ออัปเดตโค้ดและส่วนประกอบ แล้วเปิด `YTDL Studio Launcher.app` โดยไม่มี Terminal
+4. ถ้าใช้ `.app` แบบแพ็กแยกใน Applications ให้เลือก **2** เพื่ออัปเดตและ build แอปใหม่ เมื่อสำเร็จ Finder จะเปิด `dist`
    ให้เข้าโฟลเดอร์เวลาล่าสุด แล้วนำแอปใหม่ไปแทนตัวเก่าใน Applications
 
 ตัวอัปเดตแสดงผลใน Terminal และรอให้กด Return ก่อนปิดหน้าต่าง
@@ -73,12 +73,20 @@ UI หลักไม่ต้องใช้ Tk; preflight รุ่นให�
 
 ```bash
 bash install_macos.command
-bash start_macos.command
 ```
 
-ตัวติดตั้งสร้าง `.venv-macos` แยกจาก Python ระบบ และตรวจ ARM64, Tk, โลโก้,
+ตัวติดตั้งสร้าง `.venv-macos` แยกจาก Python ระบบ และตรวจ ARM64, WebKit, โลโก้,
 yt-dlp, curl-cffi และ FFmpeg ก่อนแจ้งว่าติดตั้งสำเร็จ หลังติดตั้งสามารถดับเบิลคลิก
-`start_macos.command` ได้ ไม่ต้องใช้ไฟล์ `.bat`
+**`YTDL Studio Launcher.app`** ในโฟลเดอร์โปรเจกต์ได้ โดยไม่เปิด Terminal
+ตัวเปิดนี้ใช้ Python และซอร์สเดิม ไม่ใช่แอปแบบแพ็กแยก ไม่ต้อง build ใหม่เมื่ออัปเดตโค้ด
+เก็บตัวเปิดไว้ข้างไฟล์โปรเจกต์ ใช้ Finder alias หรือเพิ่มใน Dock แทนการย้ายไป Applications
+ถ้าติดตั้ง environment ไว้แล้ว รัน `.venv-macos/bin/python create_macos_launcher.py`
+ครั้งเดียวเพื่อสร้างตัวเปิดโดยไม่ติดตั้งส่วนประกอบซ้ำ
+
+ปิดหน้าต่างแอปแล้ว session และโปรเซสดาวน์โหลด/แปลงไฟล์ของ session จะหยุดตาม
+ถ้ามีงานกำลังทำอยู่ จะถามยืนยันก่อนปิด และอาจเหลือไฟล์บางส่วน
+ถ้าเปิดไม่สำเร็จจะแสดงกล่องแจ้งเตือน ตรวจ log ได้ใน `~/Library/Logs/YTDLStudio`
+ยังใช้ `start_macos.command` ได้เมื่อต้องการดูข้อผิดพลาดผ่าน Terminal
 
 หากมีหลาย Python ให้ระบุด้วย `YTDL_PYTHON=/path/to/python3 bash install_macos.command`
 หากใช้ Homebrew ต้องติดตั้ง Tk ที่ตรงรุ่น Python เพิ่มเอง; ตัวติดตั้ง python.org สะดวกกว่า

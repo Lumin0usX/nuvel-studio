@@ -24,8 +24,11 @@ if /i "%~1"=="--check" goto check
 %YTDL_PYTHON% -m pip install --upgrade -r "%~dp0requirements.txt"
 set "YTDL_EXIT=%errorlevel%"
 if not "%YTDL_EXIT%"=="0" goto failed
+%YTDL_PYTHON% "%~dp0create_windows_launcher.py"
+set "YTDL_EXIT=%errorlevel%"
+if not "%YTDL_EXIT%"=="0" goto failed
 echo.
-echo Installation complete. Open start.bat.
+echo Installation complete. Open "YTDL Studio" shortcut (no Terminal).
 pause
 exit /b 0
 

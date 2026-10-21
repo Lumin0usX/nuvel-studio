@@ -1,6 +1,19 @@
 YTDL STUDIO
 ===========
 
+เปิดแอปโดยไม่มี Terminal
+Windows: ดับเบิลคลิก shortcut "YTDL Studio" ในโฟลเดอร์โปรเจกต์
+ถ้ายังไม่มี shortcut ให้รัน install.bat หรือ python create_windows_launcher.py หนึ่งครั้ง
+macOS: รัน install_macos.command แล้วเปิด "YTDL Studio Launcher.app"
+เก็บ launcher ของ Mac ไว้ในโฟลเดอร์โปรเจกต์ ใช้ alias หรือ Dock แทนการย้ายตัว launcher
+อัปเดต source ตามเดิม ตัวติดตั้ง/ตัวอัปเดตจะสร้าง launcher ให้ ไม่ต้อง build แอปแบบแพ็กแยก
+ปิดหน้าต่างแอปแล้วโปรเซสลูกของ session จะหยุดด้วย ถ้ามีงานอยู่จะถามยืนยันก่อน
+Windows logs: %LOCALAPPDATA%\YTDLStudio\logs
+macOS logs: ~/Library/Logs/YTDLStudio
+start.bat / start_macos.command ยังเก็บไว้สำหรับตรวจข้อผิดพลาดผ่าน Terminal
+
+ข้อมูลรุ่นก่อนและคำแนะนำ classic ด้านล่างอาจไม่ตรงหน้าจอปัจจุบัน ดู README.md เป็นหลัก
+
 LIQUID GLASS UI
 หน้าจอหลักใหม่ใช้ WebView พร้อมกระจกโปร่งแสง แสงมุกฟ้า-ลาเวนเดอร์
 การ์ด MP4/MP3, แผงโลโก้เลือกดูสถานะ, กิจกรรมล่าสุด และปุ่มหยุดงาน

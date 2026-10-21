@@ -7,7 +7,7 @@ main() {
     printf '\nYTDL Studio - Update\n\n'
     printf 'Close YTDL Studio before continuing, including any running downloads.\n'
     printf 'This updater uses your existing GitHub access to the private repository.\n\n'
-    printf '1. Update (I launch start_macos.command)\n'
+    printf '1. Update source and YTDL Studio Launcher.app\n'
     printf '2. Update and build a new YTDL Studio.app\n\n'
     local choice
     read -r -p 'Choose 1 or 2, then press Return [1]: ' choice

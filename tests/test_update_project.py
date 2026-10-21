@@ -203,13 +203,15 @@ class UpdateWorkflowTests(unittest.TestCase):
         result, update, run, output = self.run_main([], platform='win32')
         self.assertEqual(result, 0)
         update.assert_called_once()
-        self.assertEqual(run.call_count, 2)
+        self.assertEqual(run.call_count, 3)
         self.assertEqual(run.call_args_list[0].args[0][:5],
                          ['chosen-python', '-m', 'pip', 'install', '--upgrade'])
         self.assertTrue(run.call_args_list[0].args[0][-1].endswith('requirements.txt'))
         self.assertEqual(run.call_args_list[1].args[0][:2], ['chosen-python', '-c'])
         self.assertIn('import glass_app', run.call_args_list[1].args[0][2])
-        self.assertIn('Open start.bat', output)
+        self.assertEqual(run.call_args_list[2].args[0][0], 'chosen-python')
+        self.assertTrue(run.call_args_list[2].args[0][1].endswith('create_windows_launcher.py'))
+        self.assertIn('Open YTDL Studio shortcut', output)
 
     def test_windows_pip_failure_does_not_claim_success_or_check_launcher(self):
         result, _, run, output = self.run_main([], platform='win32',

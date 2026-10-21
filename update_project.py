@@ -105,6 +105,7 @@ def main(argv=None):
                             '-r', str(project / 'requirements.txt')], cwd=project, check=True)
             subprocess.run([sys.executable, '-c',
                             "import glass_app; print('YTDL Studio launcher: OK')"], cwd=project, check=True)
+            subprocess.run([sys.executable, str(project / 'create_windows_launcher.py')], cwd=project, check=True)
         else:
             subprocess.run(['/bin/bash', str(project / 'install_macos.command')], cwd=project, check=True)
         if args.build:
@@ -113,7 +114,7 @@ def main(argv=None):
             print('Update and build complete. Replace your old app with the new one in dist.', flush=True)
             subprocess.run(['/usr/bin/open', str(project / 'dist')], check=False)
         else:
-            launcher = 'start.bat' if sys.platform == 'win32' else 'start_macos.command'
+            launcher = 'YTDL Studio shortcut' if sys.platform == 'win32' else 'YTDL Studio Launcher.app'
             print('Update complete. Open ' + launcher + ' to use the new version.', flush=True)
         return 0
     except UpdateError as exc:

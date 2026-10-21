@@ -310,13 +310,16 @@ def _serve(api):
     return server, f'http://127.0.0.1:{server.server_port}/#{token}'
 
 
-def main():
-    api = StudioAPI()
+def main(native_only=False):
     try:
         import webview
     except ImportError:
+        if native_only:
+            raise RuntimeError('The windowless launcher requires pywebview. Run ' +
+                               ('install_macos.command' if sys.platform == 'darwin' else 'install.bat'))
         if '--self-test' in sys.argv:
             raise SystemExit('pywebview is required to test the packaged app')
+        api = StudioAPI()
         server, url = _serve(api)
         print('YTDL Studio is running locally. Close this terminal to stop it.')
         candidates = []
@@ -337,6 +340,7 @@ def main():
         except KeyboardInterrupt:
             server.shutdown()
         return
+    api = StudioAPI()
     window = webview.create_window('YTDL Studio', str(resource_path('ui', 'index.html')),
                                    js_api=api, width=1240, height=860, min_size=(780, 640),
                                    background_color='#090B10', vibrancy=False)
@@ -347,7 +351,10 @@ def main():
                       'en': ('Download in progress', 'Close the app and stop this download?'),
                       'ja': ('ダウンロード中', 'アプリを閉じてダウンロードを停止しますか？'),
                       'zh-CN': ('正在下载', '关闭应用并停止此次下载？')}
-            return window.create_confirmation_dialog(*labels.get(api._preferences.get('language'), labels['th']))
+            confirmed = window.create_confirmation_dialog(*labels.get(api._preferences.get('language'), labels['th']))
+            if confirmed:
+                api.cancel_download()
+            return confirmed
     window.events.closing += closing
     if '--self-test' in sys.argv:
         subprocess.run([ffmpeg_path(), '-version'], check=True, capture_output=True)
@@ -365,7 +372,10 @@ def main():
                 os._exit(1)
         window.events.loaded += smoke_test
         threading.Thread(target=timeout, daemon=True).start()
-    webview.start(gui='edgechromium' if sys.platform == 'win32' else None)
+    try:
+        webview.start(gui='edgechromium' if sys.platform == 'win32' else None)
+    finally:
+        api._cancel.set()
 
 
 if __name__ == '__main__':
