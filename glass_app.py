@@ -395,7 +395,14 @@ def main(native_only=False):
             raise RuntimeError('The native UI or Python bridge did not become ready.')
         if '--smoke-result' in sys.argv:
             proof = Path(sys.argv[sys.argv.index('--smoke-result') + 1])
-            proof.write_text(json.dumps(dict(ok=True, executable=str(Path(sys.executable).resolve()))), encoding='utf-8')
+            result = dict(ok=True, executable=str(Path(sys.executable).resolve()))
+            if sys.platform == 'win32':
+                import ctypes
+                from ctypes import wintypes
+                get_console = ctypes.windll.kernel32.GetConsoleWindow
+                get_console.restype = wintypes.HWND
+                result['console_attached'] = bool(get_console())
+            proof.write_text(json.dumps(result), encoding='utf-8')
 
 
 if __name__ == '__main__':

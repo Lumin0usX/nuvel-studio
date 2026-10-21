@@ -2,8 +2,8 @@ YTDL STUDIO
 ===========
 
 Windows
-1. ติดตั้ง Python 3.10+ และเลือก Add Python to PATH
-2. เปิด install.bat หนึ่งครั้ง
+1. ติดตั้ง Python 3.10+ แบบ x64 และเลือก Add Python to PATH
+2. เปิด build_windows.bat เพื่อเตรียมส่วนประกอบและสร้างแอป
 3. เปิด shortcut "YTDL Studio" ในโฟลเดอร์โปรเจกต์ โดยไม่มี Terminal
 อัปเดต: ปิดแอป แล้วเปิด update.bat
 
@@ -18,5 +18,5 @@ macOS Apple Silicon
 สถานะแพลตฟอร์มแสดงความสามารถของ extractor ที่ติดตั้ง ไม่ใช่การรับประกันทุก URL
 คลิปที่ต้องใช้บัญชีสามารถเลือก cookies ได้ โปรแกรมไม่แก้ไฟล์ cookies ต้นฉบับ
 
-รายละเอียด: README.md และ README-macOS.md
+รายละเอียด: README.md, README-Windows.md และ README-macOS.md
 โค้ดต้นฉบับของโปรเจกต์สงวนสิทธิ์ตาม LICENSE

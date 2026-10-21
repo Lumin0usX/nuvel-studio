@@ -199,23 +199,18 @@ class UpdateWorkflowTests(unittest.TestCase):
         self.assertIn('installation/build failed', output)
         self.assertNotIn('Update and build complete', output)
 
-    def test_windows_uses_selected_python_for_pip_and_launcher_check(self):
+    def test_windows_uses_selected_python_to_build_and_verify_the_app(self):
         result, update, run, output = self.run_main([], platform='win32')
         self.assertEqual(result, 0)
         update.assert_called_once()
-        self.assertEqual(run.call_count, 3)
-        self.assertEqual(run.call_args_list[0].args[0][:5],
-                         ['chosen-python', '-m', 'pip', 'install', '--upgrade'])
-        self.assertTrue(run.call_args_list[0].args[0][-1].endswith('requirements.txt'))
-        self.assertEqual(run.call_args_list[1].args[0][:2], ['chosen-python', '-c'])
-        self.assertIn('import glass_app', run.call_args_list[1].args[0][2])
-        self.assertEqual(run.call_args_list[2].args[0][0], 'chosen-python')
-        self.assertTrue(run.call_args_list[2].args[0][1].endswith('create_windows_launcher.py'))
+        self.assertEqual(run.call_count, 1)
+        self.assertEqual(run.call_args.args[0][0], 'chosen-python')
+        self.assertTrue(run.call_args.args[0][1].endswith('build_windows.py'))
         self.assertIn('Open YTDL Studio shortcut', output)
 
-    def test_windows_pip_failure_does_not_claim_success_or_check_launcher(self):
+    def test_windows_build_failure_does_not_claim_success(self):
         result, _, run, output = self.run_main([], platform='win32',
-            command_error=subprocess.CalledProcessError(1, ['chosen-python', '-m', 'pip']))
+            command_error=subprocess.CalledProcessError(1, ['chosen-python', 'build_windows.py']))
         self.assertEqual(result, 1)
         self.assertEqual(run.call_count, 1)
         self.assertNotIn('Update complete', output)
@@ -235,13 +230,13 @@ class UpdateWorkflowTests(unittest.TestCase):
                          [['git', '--version'], ['chosen-python', '-m', 'pip', '--version']])
         self.assertIn('No updates were applied', output)
 
-    def test_windows_rejects_build_before_fetching(self):
-        with patch('update_project.sys', SimpleNamespace(platform='win32')), \
-             patch('update_project.update_source') as update, redirect_stderr(io.StringIO()), \
-             self.assertRaises(SystemExit) as error:
-            main(['--build'])
-        self.assertEqual(error.exception.code, 2)
-        update.assert_not_called()
+    def test_windows_accepts_legacy_build_flag_using_the_same_workflow(self):
+        result, update, run, output = self.run_main(['--build'], platform='win32')
+        self.assertEqual(result, 0)
+        update.assert_called_once()
+        self.assertEqual(run.call_count, 1)
+        self.assertTrue(run.call_args.args[0][1].endswith('build_windows.py'))
+        self.assertIn('Update complete', output)
 
 
 @unittest.skipUnless(sys.platform == 'win32', 'Windows batch launcher tests')

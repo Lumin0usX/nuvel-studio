@@ -80,13 +80,11 @@ def update_source(project, allowed_origins=ORIGINS):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Update the YTDL Studio source folder on Windows or macOS.')
-    parser.add_argument('--build', action='store_true', help='Compatibility option: macOS updates always build the app.')
+    parser.add_argument('--build', action='store_true', help='Compatibility option: updates always build the app.')
     parser.add_argument('--check', action='store_true', help='Check Python, pip and Git without updating or installing.')
     args = parser.parse_args(argv)
     if sys.platform not in ('darwin', 'win32'):
         parser.error('Run update.bat on Windows or update_macos.command on macOS.')
-    if args.build and sys.platform != 'darwin':
-        parser.error('--build is only supported on macOS. Windows uses start.bat.')
     project = Path(__file__).resolve().parent
     try:
         if args.check:
@@ -99,13 +97,8 @@ def main(argv=None):
         update_source(project)
         print('Updating dependencies and checking the environment...', flush=True)
         if sys.platform == 'win32':
-            # Use the interpreter chosen by update.bat, just as start.bat does.
-            # Calling pip directly also avoids an extra install.bat pause.
-            subprocess.run([sys.executable, '-m', 'pip', 'install', '--upgrade',
-                            '-r', str(project / 'requirements.txt')], cwd=project, check=True)
-            subprocess.run([sys.executable, '-c',
-                            "import glass_app; print('YTDL Studio launcher: OK')"], cwd=project, check=True)
-            subprocess.run([sys.executable, str(project / 'create_windows_launcher.py')], cwd=project, check=True)
+            print('Building the updated Windows app...', flush=True)
+            subprocess.run([sys.executable, str(project / 'build_windows.py')], cwd=project, check=True)
         else:
             print('Building the updated macOS app...', flush=True)
             subprocess.run(['/bin/bash', str(project / 'build_macos.command')], cwd=project, check=True)

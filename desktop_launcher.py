@@ -139,7 +139,7 @@ def supervise(command, log, gate):
             job.close()
 
 
-def native_child(gate, log_path, self_test=False):
+def native_child(gate, log_path, self_test=False, smoke_result=None):
     deadline = time.monotonic() + 15
     while not gate.is_file():
         if time.monotonic() >= deadline:
@@ -155,6 +155,8 @@ def native_child(gate, log_path, self_test=False):
             from glass_app import main
             if self_test:
                 sys.argv.append('--self-test')
+                if smoke_result and '--smoke-result' not in sys.argv:
+                    sys.argv.extend(['--smoke-result', str(smoke_result)])
             main(native_only=True)
             return 0
         except Exception:
@@ -162,7 +164,7 @@ def native_child(gate, log_path, self_test=False):
             return 1
 
 
-def launch(self_test=False, applet=False, check=False):
+def launch(self_test=False, applet=False, check=False, smoke_result=None):
     log_path = None
     try:
         directory = logs_directory()
@@ -184,10 +186,14 @@ def launch(self_test=False, applet=False, check=False):
                     executable = Path(sys.executable)
                     if sys.platform == 'win32' and executable.name.lower() == 'pythonw.exe':
                         executable = executable.with_name('python.exe')
-                    command = [str(executable), str(PROJECT / 'desktop_launcher.py'),
-                               '--native-child', str(gate), str(log_path)]
+                    command = [str(executable)]
+                    if not getattr(sys, 'frozen', False):
+                        command.append(str(PROJECT / 'desktop_launcher.py'))
+                    command.extend(['--native-child', str(gate), str(log_path)])
                     if self_test:
                         command.append('--self-test')
+                        if smoke_result:
+                            command.extend(['--smoke-result', str(smoke_result)])
                     result = supervise(command, log, gate)
                 if result:
                     raise RuntimeError(f'The native interface exited with code {result}.')
@@ -198,17 +204,24 @@ def launch(self_test=False, applet=False, check=False):
                 raise
     except Exception:
         if not applet and not check and not self_test:
-            hint = 'install_macos.command' if sys.platform == 'darwin' else 'install.bat'
-            message = f'YTDL Studio could not start or closed unexpectedly.\nRun {hint} if dependencies are missing.'
+            message = 'YTDL Studio could not start or closed unexpectedly.'
+            if getattr(sys, 'frozen', False):
+                message += '\nReopen the app. If this continues, reinstall the application.'
+            else:
+                hint = 'install_macos.command' if sys.platform == 'darwin' else 'install.bat'
+                message += f'\nRun {hint} if dependencies are missing.'
             message += f'\n\nLog: {log_path}' if log_path else '\nThe startup log could not be created.'
             notify_error(message)
         return 1
 
 
 def main():
+    smoke_result = None
+    if '--smoke-result' in sys.argv:
+        smoke_result = Path(sys.argv[sys.argv.index('--smoke-result') + 1])
     if sys.argv[1:2] == ['--native-child']:
-        return native_child(Path(sys.argv[2]), Path(sys.argv[3]), '--self-test' in sys.argv[4:])
-    return launch('--self-test' in sys.argv, '--applet' in sys.argv, '--check' in sys.argv)
+        return native_child(Path(sys.argv[2]), Path(sys.argv[3]), '--self-test' in sys.argv[4:], smoke_result)
+    return launch('--self-test' in sys.argv, '--applet' in sys.argv, '--check' in sys.argv, smoke_result)
 
 
 if __name__ == '__main__':

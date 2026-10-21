@@ -50,6 +50,19 @@ class DesktopLauncherTests(unittest.TestCase):
                 self.assertEqual(launcher.launch(applet=True), 1)
                 notify.assert_not_called()
 
+    def test_packaged_supervisor_restarts_the_executable_and_forwards_startup_proof(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            proof = Path(temporary) / 'result.json'
+            with patch.object(launcher, 'logs_directory', return_value=Path(temporary)), \
+                    patch.object(sys, 'frozen', True, create=True), \
+                    patch.object(launcher, 'supervise', return_value=0) as supervise:
+                self.assertEqual(launcher.launch(self_test=True, smoke_result=proof), 0)
+            command = supervise.call_args.args[0]
+            self.assertEqual(command[0], sys.executable)
+            self.assertEqual(command[1], '--native-child')
+            self.assertNotIn(str(launcher.PROJECT / 'desktop_launcher.py'), command)
+            self.assertEqual(command[-2:], ['--smoke-result', str(proof)])
+
     def test_closing_busy_window_requires_confirmation_then_cancels(self):
         for confirmation in (False, True):
             with self.subTest(confirmation=confirmation):

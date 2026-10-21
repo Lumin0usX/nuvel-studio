@@ -15,7 +15,7 @@ def install_instructions():
         if getattr(sys, 'frozen', False):
             return 'build_macos.command (build a new app)'
         return 'install_macos.command'
-    return 'install.bat'
+    return 'build_windows.bat (build a new app)' if getattr(sys, 'frozen', False) else 'install.bat'
 
 
 def open_directory(path):
@@ -36,8 +36,8 @@ def scroll_units(delta):
 
 
 def ffmpeg_path():
-    bundled = resource_path('bin', 'ffmpeg')
-    if sys.platform == 'darwin' and bundled.is_file():
+    bundled = resource_path('bin', 'ffmpeg.exe' if sys.platform == 'win32' else 'ffmpeg')
+    if bundled.is_file():
         return str(bundled)
     import imageio_ffmpeg
     return imageio_ffmpeg.get_ffmpeg_exe()

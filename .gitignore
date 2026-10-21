@@ -27,6 +27,7 @@ dist/
 *.app/
 /*.app
 /.studio-publish-*/
+/app-windows/
 *.lnk
 *.part
 *.ytdl

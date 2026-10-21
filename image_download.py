@@ -27,6 +27,14 @@ CREATE_FLAGS = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 def gallery_command():
     if not getattr(sys, 'frozen', False) and importlib.util.find_spec('gallery_dl'):
         return [sys.executable, '-m', 'gallery_dl']
+    # A local Windows build keeps its external CLI in the managed build environment.
+    # Portable distributions still use an independently installed gallery-dl CLI.
+    if getattr(sys, 'frozen', False) and sys.platform == 'win32':
+        app_folder = Path(sys.executable).resolve().parent
+        if app_folder.name == 'app-windows':
+            managed = app_folder.parent / '.venv-windows-build/Scripts/gallery-dl.exe'
+            if managed.is_file():
+                return [str(managed)]
     executable = shutil.which('gallery-dl')
     candidates = [Path(sysconfig.get_path('scripts')) / ('gallery-dl.exe' if sys.platform == 'win32' else 'gallery-dl'),
                   Path.home() / '.local/bin/gallery-dl', Path('/opt/homebrew/bin/gallery-dl'),
