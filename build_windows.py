@@ -43,9 +43,11 @@ def build():
     for _, _, slug, _ in PLATFORMS:
         if not (PROJECT / 'assets/platforms' / (slug + '.png')).is_file():
             raise RuntimeError('A required platform icon is missing: ' + slug)
-    for filename in ('index.html', 'studio.css', 'i18n.js', 'studio.js'):
+    for filename in ('index.html', 'studio.css', 'i18n.js', 'studio.js', 'theme.js', 'appearance.js', 'fonts.js', 'fonts.css', 'font-catalog.js'):
         if not (PROJECT / 'ui' / filename).is_file():
             raise RuntimeError('A required UI resource is missing: ' + filename)
+    from font_assets import check_font_assets
+    check_font_assets()
     output = PROJECT / 'dist' / datetime.now().strftime('windows-%Y%m%d-%H%M%S-%f')
     staging = output / 'build-input'
     staging.mkdir(parents=True)

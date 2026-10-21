@@ -6,7 +6,7 @@ const $ = id => document.getElementById(id);
 const token = location.hash.slice(1);
 const storageKey = 'ytdl-obsidian-preferences-v1';
 const settings = {folder: '', cookies: 'none', cookie_path: ''};
-const appearance = {sidebar: 'auto', reducedMotion: false, density: 'comfortable', language: 'th'};
+const appearance = {sidebar: 'auto', reducedMotion: false, density: 'comfortable', language: 'th', theme: 'dark', visualStyle: 'obsidian', fonts: window.StudioFonts.clean()};
 const qualities = {video: 'best', audio: 'best', image: 'best'};
 const qualityChoices = {
   video: [['best','สูงสุดที่ต้นทางมี'],['4320','8K · ไม่เกิน 4320p'],['2160','4K · ไม่เกิน 2160p'],['1440','2K · ไม่เกิน 1440p'],['1080','Full HD · ไม่เกิน 1080p'],['720','HD · ไม่เกิน 720p'],['480','ไม่เกิน 480p'],['360','ไม่เกิน 360p']],
@@ -25,6 +25,8 @@ let lastLists = '', lastPlatforms = '', polling = false, connecting = false;
 let previewData = null, metadataState = {kind: 'empty'}, formError = '';
 let engineVersion = '', preferenceSave = Promise.resolve();
 let appUpdate = {phase: 'idle', current: '', packaged: false};
+let fontOptionLanguage = '';
+const fontLoading = new Set(), fontStatus = {}, pendingFonts = {};
 
 function node(tag, className, text) {
   const element = document.createElement(tag);
@@ -48,6 +50,7 @@ function action(label, iconName, handler) {
 }
 function toast(text) {
   clearTimeout(toastTimer); $('toast').textContent = translateBackend(text); $('toast').hidden = false;
+  window.StudioAppearance.enter($('toast'), 'toast');
   toastTimer = setTimeout(() => $('toast').hidden = true, 4200);
 }
 async function api(method, ...args) {
@@ -77,6 +80,7 @@ function showError(text) {
 }
 function showPage(page, focus = false) {
   if (!['overview', 'downloads', 'history', 'settings'].includes(page)) return;
+  const changed = currentPage !== page;
   currentPage = page;
   for (const name of ['overview', 'downloads', 'history', 'settings']) $(name + '-page').hidden = name !== page;
   document.querySelectorAll('[data-page]').forEach(button => {
@@ -87,6 +91,8 @@ function showPage(page, focus = false) {
   $('page-name').textContent = t({overview: 'Overview', downloads: 'Downloads', history: 'History', settings: 'Settings'}[page]);
   if (page === 'settings' && !settingsDirty) fillSettings();
   if (focus) { window.scrollTo({top: 0, behavior: 'instant'}); $('main').focus({preventScroll: true}); }
+  window.StudioAppearance.syncSelections();
+  if (changed) window.StudioAppearance.enter($(page + '-page'));
 }
 document.querySelectorAll('[data-page]').forEach(button => button.addEventListener('click', () => showPage(button.dataset.page, true)));
 document.querySelector('.brand').addEventListener('click', event => {event.preventDefault(); showPage('overview', true); $('url').focus();});
@@ -100,6 +106,9 @@ try {
   if (typeof saved.reducedMotion === 'boolean') appearance.reducedMotion = saved.reducedMotion;
   if (['comfortable','compact'].includes(saved.density)) appearance.density = saved.density;
   if (window.StudioI18n.languages.includes(saved.language)) appearance.language = saved.language;
+  if (window.StudioTheme.modes.includes(saved.theme)) appearance.theme = saved.theme;
+  if (window.StudioAppearance.styles.includes(saved.visualStyle)) appearance.visualStyle = saved.visualStyle;
+  appearance.fonts = window.StudioFonts.clean(saved.fonts);
 } catch { /* Storage may be disabled by the embedded browser. */ }
 window.StudioI18n.setLanguage(appearance.language);
 window.StudioI18n.translateStatic();
@@ -110,22 +119,25 @@ function persistPreferences() {
 async function saveDevicePreferences() {
   persistPreferences();
   if (!connected) return {error: t('ยังไม่เชื่อมต่อกับแอป · ใช้การตั้งค่าในรอบนี้')};
-  const values = {...appearance, folder: settings.folder};
+  const values = {...appearance, fonts: {...appearance.fonts}, folder: settings.folder};
   // Rapid language changes must reach the device store in selection order.
   preferenceSave = preferenceSave.catch(() => {}).then(() => api('save_preferences', values));
   return preferenceSave;
 }
 const narrowWindow = matchMedia('(max-width: 1023px)');
 function applyAppearance() {
+  window.StudioAppearance.set(appearance);
+  window.StudioTheme.set(appearance.theme);
+  window.StudioFonts.apply(appearance.language, appearance.fonts);
   const collapsed = appearance.sidebar === 'collapsed' || (appearance.sidebar === 'auto' && narrowWindow.matches);
   document.body.classList.toggle('sidebar-collapsed', collapsed);
-  document.body.classList.toggle('reduce-motion', appearance.reducedMotion);
   document.body.classList.toggle('density-compact', appearance.density === 'compact');
   const label = collapsed ? t('ขยายเมนู') : t('ย่อเมนู');
   $('collapse-sidebar').setAttribute('aria-label', label);
   $('collapse-sidebar').setAttribute('aria-expanded', String(!collapsed));
   $('collapse-sidebar').title = label;
   $('collapse-sidebar').querySelector('span').textContent = label;
+  window.StudioAppearance.syncSelections();
 }
 narrowWindow.addEventListener('change', applyAppearance);
 $('collapse-sidebar').addEventListener('click', async () => {
@@ -153,6 +165,7 @@ function renderQuality() {
 $('quality').addEventListener('change', () => {qualities[mode()] = $('quality').value; renderQuality();});
 document.querySelectorAll('input[name="mode"]').forEach(input => input.addEventListener('change', () => {
   renderQuality(); resetMetadata(); if (parseURL($('url').value.trim())) scheduleAnalysis();
+  window.StudioAppearance.syncSelections();
 }));
 function updateButtons() {
   const valid = !!parseURL($('url').value.trim());
@@ -223,6 +236,7 @@ function renderMetadataStatus() {
 function renderPreview() {
   if (!previewData) return;
   const {result, url} = previewData;
+  const newlyVisible = $('media-preview').hidden;
   $('media-preview').hidden = false;
   $('preview-title').textContent = result.title || t('ต้นทางไม่ได้ระบุชื่อสื่อ');
   $('preview-source').textContent = platformFor(parseURL(url))?.name || (result.source === 'Generic' ? parseURL(url).hostname : result.source);
@@ -231,6 +245,7 @@ function renderPreview() {
   const thumb = parseURL(result.thumbnail || '');
   if (thumb) {if ($('preview-thumbnail').src !== thumb.href) $('preview-thumbnail').src = thumb.href; $('preview-thumbnail').hidden = false;}
   else $('preview-thumbnail').hidden = true;
+  if (newlyVisible) window.StudioAppearance.enter($('media-preview'));
 }
 $('analyze').addEventListener('click', analyzeURL);
 $('preview-thumbnail').addEventListener('error', () => $('preview-thumbnail').hidden = true);
@@ -279,13 +294,52 @@ $('change-folder').addEventListener('click', async () => {
 $('advanced').addEventListener('click', () => {showPage('settings', true); $('cookies').focus();});
 $('dock-open').addEventListener('click', () => showPage('downloads', true));
 $('dock-cancel').addEventListener('click', cancelDownload);
-$('help').addEventListener('click', () => $('help-dialog').showModal());
+$('help').addEventListener('click', () => { $('help-dialog').showModal(); window.StudioAppearance.enter($('help-dialog'), 'dialog'); });
 
 function fillSettings() {
   $('folder-path').value = settings.folder; $('cookies').value = settings.cookies; $('cookie-path').value = settings.cookie_path;
   $('cookie-file-row').hidden = settings.cookies !== 'file';
-  $('sidebar-preference').value = appearance.sidebar; $('reduced-motion').checked = appearance.reducedMotion; $('density').value = appearance.density;
+  $('sidebar-preference').value = appearance.sidebar; $('animations').checked = !appearance.reducedMotion; $('density').value = appearance.density;
   $('language').value = appearance.language;
+  $('theme').value = appearance.theme;
+  $('visual-style').value = appearance.visualStyle;
+  renderMotionStatus();
+  renderFontSettings();
+}
+function renderMotionStatus() {
+  const message = appearance.reducedMotion ? 'Animations are off.' :
+    window.StudioAppearance.motionEnabled ? 'Animations are on.' : 'System Reduce Motion is active; animations are off.';
+  $('motion-feedback').textContent = t(message);
+}
+window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', renderMotionStatus);
+function renderFontSettings() {
+  const language = appearance.language, group = window.StudioFonts.catalog[language];
+  const select = $('font-family');
+  if (fontOptionLanguage !== language) {
+    select.replaceChildren();
+    for (const font of group.fonts) {
+      const option = node('option', '', font.name); option.value = font.id; select.append(option);
+    }
+    fontOptionLanguage = language;
+  }
+  select.value = pendingFonts[language] || appearance.fonts[language];
+  select.disabled = !ready || !connected || fontLoading.has(language);
+  $('font-preview').textContent = group.sample;
+  const messages = {idle:'Bundled fonts work offline.', loading:'Loading font…', saved:'Font saved.',
+    error:'Could not load this font. Your previous font was kept.',
+    unavailable:'Could not load the selected font. Restart the app and try again.',
+    save_error:'Font changed, but could not save it on this device.'};
+  const state = fontStatus[language] || 'idle';
+  $('font-feedback').textContent = t(messages[state]);
+  $('font-feedback').dataset.error = String(['error','unavailable','save_error'].includes(state));
+}
+async function checkActiveFont() {
+  const language = appearance.language, id = appearance.fonts[language];
+  if (fontLoading.has(language)) return;
+  fontLoading.add(language); fontStatus[language] = 'loading'; renderFontSettings();
+  try { await window.StudioFonts.load(language, id); fontStatus[language] = 'idle'; }
+  catch { fontStatus[language] = 'unavailable'; }
+  finally {fontLoading.delete(language); renderFontSettings();}
 }
 function applyLanguage() {
   window.StudioI18n.setLanguage(appearance.language);
@@ -298,13 +352,49 @@ function applyLanguage() {
   $('analyze').textContent = $('analyze').dataset.loading === 'true' ? t('กำลังอ่านข้อมูล…') : t('ตรวจสอบลิงก์');
   $('connection-label').textContent = connected ? t('Local workspace') : t('ยังไม่เชื่อมต่อ');
   $('language').value = appearance.language;
+  renderMotionStatus();
+  renderFontSettings(); checkActiveFont();
 }
+$('font-family').addEventListener('change', async () => {
+  const language = appearance.language, id = $('font-family').value;
+  if (fontLoading.has(language)) return;
+  pendingFonts[language] = id; fontLoading.add(language); fontStatus[language] = 'loading'; renderFontSettings();
+  let applied = false;
+  try {
+    await window.StudioFonts.load(language, id);
+    appearance.fonts[language] = id;
+    window.StudioFonts.apply(appearance.language, appearance.fonts);
+    applied = true;
+    const saved = await saveDevicePreferences();
+    fontStatus[language] = saved.error ? 'save_error' : 'saved';
+  } catch {fontStatus[language] = applied ? 'save_error' : 'error';}
+  finally {delete pendingFonts[language]; fontLoading.delete(language); renderFontSettings();}
+});
 $('language').addEventListener('change', async () => {
   appearance.language = $('language').value; applyLanguage();
   try {
     const result = await saveDevicePreferences();
     $('settings-feedback').textContent = result.error ? translateBackend(result.error) : t('เปลี่ยนภาษาแล้ว');
     toast($('settings-feedback').textContent);
+  } catch (error) {toast(error.message);}
+});
+$('theme').addEventListener('change', async () => {
+  appearance.theme = $('theme').value;
+  applyAppearance();
+  try {
+    const result = await saveDevicePreferences();
+    $('settings-feedback').textContent = result.error ? translateBackend(result.error) : t('Theme saved.');
+    toast($('settings-feedback').textContent);
+  } catch (error) {toast(error.message);}
+});
+for (const id of ['visual-style', 'animations']) $(id).addEventListener('change', async () => {
+  if (id === 'visual-style') appearance.visualStyle = $(id).value;
+  else appearance.reducedMotion = !$(id).checked;
+  applyAppearance(); renderMotionStatus();
+  try {
+    const result = await saveDevicePreferences();
+    $('settings-feedback').textContent = result.error ? translateBackend(result.error) : t('Appearance saved.');
+    if (result.error) toast(result.error);
   } catch (error) {toast(error.message);}
 });
 $('cookies').addEventListener('change', () => $('cookie-file-row').hidden = $('cookies').value !== 'file');
@@ -323,7 +413,7 @@ $('settings-form').addEventListener('submit', async event => {
   const folder = $('folder-path').value.trim();
   if (!folder) {toast(t('ใส่โฟลเดอร์ปลายทางก่อน')); $('folder-path').focus(); return;}
   settings.folder = folder; settings.cookies = $('cookies').value; settings.cookie_path = $('cookie-path').value.trim();
-  appearance.sidebar = $('sidebar-preference').value; appearance.reducedMotion = $('reduced-motion').checked; appearance.density = $('density').value;
+  appearance.sidebar = $('sidebar-preference').value; appearance.reducedMotion = !$('animations').checked; appearance.density = $('density').value;
   applyAppearance(); updateFolder();
   $('save-settings').disabled = true;
   try {
@@ -355,6 +445,7 @@ function renderPlatforms(platforms) {
   $('platforms').replaceChildren();
   for (const platform of displayed) {
     const button = node('button', 'platform ' + platform.status); button.type = 'button';
+    button.dataset.platform = platform.slug;
     button.dataset.search = platform.name.toLowerCase() + ' ' + (platform.domains || []).join(' ');
     button.title = platform.name + ' · ' + labels[platform.status]; button.setAttribute('aria-label', button.title); button.setAttribute('aria-pressed', 'false');
     const img = node('img'); img.src = platform.icon; img.alt = ''; img.draggable = false;
@@ -481,7 +572,9 @@ function render(state) {
   snapshot = job;
   if (!ready) {
     if (preferences && Object.keys(preferences).length) {
-      Object.assign(appearance, {sidebar: preferences.sidebar, density: preferences.density, reducedMotion: preferences.reducedMotion, language: preferences.language || 'th'});
+      Object.assign(appearance, {sidebar: preferences.sidebar, density: preferences.density, reducedMotion: preferences.reducedMotion, language: preferences.language || 'th', theme: preferences.theme || 'dark'});
+      appearance.visualStyle = preferences.visualStyle || 'obsidian';
+      appearance.fonts = window.StudioFonts.clean(preferences.fonts);
       settings.folder = preferences.folder; applyAppearance();
     } else if (!settings.folder) settings.folder = state.folder;
     applyLanguage(); updateFolder(); ready = true;
@@ -493,6 +586,7 @@ function render(state) {
   busy = activePhases.has(state.phase);
   if (app_update) appUpdate = app_update;
   renderAppUpdate();
+  renderFontSettings();
   updateButtons(); renderLists(); renderDock();
   if (notify && state.phase === 'done' && lastPhase !== 'done') toast(t('ดาวน์โหลดสำเร็จ · บันทึกไฟล์แล้ว'));
   if (notify && state.phase === 'error' && lastPhase !== 'error') toast(t('ดาวน์โหลดไม่สำเร็จ · ดูรายละเอียดที่ Downloads'));
@@ -596,6 +690,7 @@ renderQuality(); updateFolder(); renderLists(true);
 const seed = $('platform-seed');
 if (seed) {renderPlatforms(JSON.parse(seed.textContent)); $('support-number').textContent = '—'; $('support-summary').textContent = t('กำลังตรวจสอบตัวรองรับ…');}
 showPage('overview');
+window.StudioAppearance.mount();
 window.studioReady = true;
 if (!token) setTimeout(() => {
   if (!window.pywebview?.api && !ready) { $('connection-label').textContent = t('ยังไม่เชื่อมต่อ'); $('support-summary').textContent = t('เปิดจากแอปเพื่อดูสถานะจริง'); }

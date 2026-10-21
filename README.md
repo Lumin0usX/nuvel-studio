@@ -51,7 +51,7 @@ Until a release is published, the app reports that no packaged release is availa
 ### Publish a version (maintainer)
 
 Set `VERSION` in `app_version.py`, commit, and push a matching tag, for example
-`v1.1.0`. `.github/workflows/release.yml` builds Windows x64 and macOS ARM64 on
+`v1.1.1`. `.github/workflows/release.yml` builds Windows x64 and macOS ARM64 on
 their native GitHub runners, runs tests and native startup checks, and uploads
 both ZIPs plus `studio-update.json` to a draft release. Only the complete release
 is published. Re-running is supported for drafts; published versions must not
@@ -59,10 +59,10 @@ be overwritten. This is separate from the Git-based source updater below.
 
 ```powershell
 git add .
-git commit -m "Add packaged releases and in-app updates"
+git commit -m "Add themes, fonts and Liquid Glass appearance"
 git push origin main
-git tag v1.1.0
-git push origin v1.1.0
+git tag v1.1.1
+git push origin v1.1.1
 ```
 
 The workflow must be enabled in this private repository. No personal token or
@@ -113,9 +113,10 @@ not block downloading. Image-post metadata is read only during the actual job.
 
 Settings use an atomic, per-user JSON file under `YTDLStudio/preferences.json`:
 Local AppData on Windows, Application Support on macOS, or XDG config on Linux.
-Destination, appearance and language preferences persist; cookies and cookie-file
-paths remain in memory. Inter and Noto Sans Thai are preferred when installed,
-with native system font fallbacks; the UI makes no external font requests.
+Destination, appearance, language and per-language font preferences persist;
+cookies and cookie-file paths remain in memory. The UI fonts and their licenses
+are bundled; the app makes no external font requests and does not install fonts
+into the operating system.
 
 Choose **Settings → General → Language** for English, Thai, Japanese, or
 Simplified Chinese. The interface switches immediately and remembers the choice
@@ -123,6 +124,46 @@ across app launches. All translation assets are bundled for offline use, includi
 quality options, status messages, help and accessibility labels. Media titles,
 filenames, platform names and raw third-party diagnostics stay in their original
 form. Switching languages preserves quality selections and settings drafts.
+
+Choose **Settings → Appearance → Theme** for Dark, Light, or Follow system.
+Dark is the default, including for older preferences without a theme setting.
+Theme changes apply immediately and persist on this device. Follow system tracks
+OS appearance changes; explicit Dark or Light choices stay fixed. Light uses a
+soft gray canvas with matching controls, dialogs and progress colors.
+
+Choose **Settings → Appearance → Interface style** for **Obsidian (original)**
+or **Liquid Glass**. Obsidian remains the default. Liquid Glass adds translucent
+material, softly lit edges and glass selection surfaces to the existing workflow;
+both styles support Dark, Light, Follow system and every bundled font. Materials
+use an opaque fallback when backdrop filtering is unavailable and respect system
+Reduce Transparency where supported. This is an in-app material, not OS desktop vibrancy.
+
+**Animations** switches motion on or off immediately and saves the preference.
+Enabled motion includes a moving selection surface in navigation and media modes,
+brief page, preview, dialog and toast entrances, and gentle button/switch feedback.
+There is no ambient animation or idle rendering loop. Turning motion off cancels
+active entrance effects and removes CSS transitions/animations, including progress
+sweeps; actual progress information continues updating. System **Reduce Motion**
+always takes precedence, and the settings row explains when it is active. Older
+saved Reduce Motion preferences continue to work. Style and motion settings persist
+across app launches independently of language, theme and fonts.
+
+Choose **Settings → Appearance → Interface font**. The list follows the selected
+interface language and remembers a different choice for each language:
+
+| Language | Bundled choices |
+| --- | --- |
+| English | Inter, Roboto, Open Sans, Montserrat, Lato |
+| Thai | Noto Sans Thai, Sarabun, Kanit, Prompt, IBM Plex Sans Thai |
+| Japanese | Noto Sans JP, Noto Serif JP, M PLUS 1p |
+| Simplified Chinese | Noto Sans SC, Noto Serif SC, ZCOOL XiaoWei |
+
+A sample is shown below the selector. Changes apply and save immediately after
+the actual font loads. Other scripts in media titles retain language-appropriate
+fallbacks. Default families are Inter, Noto Sans Thai, Noto Sans JP and Noto Sans SC.
+The original font files from Google Fonts are included under `ui/fonts` with
+OFL licenses, source links and SHA-256 hashes. Native builds validate the files,
+weights and sample glyphs; startup checks also require a bundled font to render.
 
 Downloads supports the existing single-job workflow, cancellation, retry in the
 current UI session, and opening folders. There is no pause/resume or queue.

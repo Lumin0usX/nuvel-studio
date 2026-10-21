@@ -1,5 +1,5 @@
 """Application version, independent of the download-engine version."""
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 REPOSITORY = 'Lumin0usX/ytdl-studio'
 
 

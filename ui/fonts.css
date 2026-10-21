@@ -1,0 +1,23 @@
+/* Vendored original font files. Licenses and hashes: fonts/catalog.json. */
+@font-face { font-family: "Studio-inter"; src: url("fonts/inter-variable.ttf") format("truetype"); font-style: normal; font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Studio-roboto"; src: url("fonts/roboto-variable.ttf") format("truetype"); font-style: normal; font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Studio-opensans"; src: url("fonts/opensans-variable.ttf") format("truetype"); font-style: normal; font-weight: 300 800; font-display: swap; }
+@font-face { font-family: "Studio-montserrat"; src: url("fonts/montserrat-variable.ttf") format("truetype"); font-style: normal; font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Studio-lato"; src: url("fonts/lato-400.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Studio-lato"; src: url("fonts/lato-600.ttf") format("truetype"); font-style: normal; font-weight: 600; font-display: swap; }
+@font-face { font-family: "Studio-notosansthai"; src: url("fonts/notosansthai-variable.ttf") format("truetype"); font-style: normal; font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Studio-sarabun"; src: url("fonts/sarabun-400.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Studio-sarabun"; src: url("fonts/sarabun-600.ttf") format("truetype"); font-style: normal; font-weight: 600; font-display: swap; }
+@font-face { font-family: "Studio-kanit"; src: url("fonts/kanit-400.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Studio-kanit"; src: url("fonts/kanit-600.ttf") format("truetype"); font-style: normal; font-weight: 600; font-display: swap; }
+@font-face { font-family: "Studio-prompt"; src: url("fonts/prompt-400.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Studio-prompt"; src: url("fonts/prompt-600.ttf") format("truetype"); font-style: normal; font-weight: 600; font-display: swap; }
+@font-face { font-family: "Studio-ibmplexsansthai"; src: url("fonts/ibmplexsansthai-400.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Studio-ibmplexsansthai"; src: url("fonts/ibmplexsansthai-600.ttf") format("truetype"); font-style: normal; font-weight: 600; font-display: swap; }
+@font-face { font-family: "Studio-notosansjp"; src: url("fonts/notosansjp-variable.ttf") format("truetype"); font-style: normal; font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Studio-notoserifjp"; src: url("fonts/notoserifjp-variable.ttf") format("truetype"); font-style: normal; font-weight: 200 900; font-display: swap; }
+@font-face { font-family: "Studio-mplus1p"; src: url("fonts/mplus1p-400.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Studio-mplus1p"; src: url("fonts/mplus1p-700.ttf") format("truetype"); font-style: normal; font-weight: 700; font-display: swap; }
+@font-face { font-family: "Studio-notosanssc"; src: url("fonts/notosanssc-variable.ttf") format("truetype"); font-style: normal; font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Studio-notoserifsc"; src: url("fonts/notoserifsc-variable.ttf") format("truetype"); font-style: normal; font-weight: 200 900; font-display: swap; }
+@font-face { font-family: "Studio-zcoolxiaowei"; src: url("fonts/zcoolxiaowei-400.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }

@@ -1,0 +1,295 @@
+{
+  "schema": 1,
+  "languages": {
+    "en": {
+      "default": "inter",
+      "sample": "The quick brown fox jumps over the lazy dog. 0123456789",
+      "fonts": [
+        {
+          "id": "inter",
+          "name": "Inter",
+          "license": "inter-OFL.txt",
+          "files": [
+            {
+              "file": "inter-variable.ttf",
+              "weight": "100 900",
+              "size": 876576,
+              "sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+              "source": "https://github.com/google/fonts/blob/main/ofl/inter/Inter%5Bopsz%2Cwght%5D.ttf"
+            }
+          ]
+        },
+        {
+          "id": "roboto",
+          "name": "Roboto",
+          "license": "roboto-OFL.txt",
+          "files": [
+            {
+              "file": "roboto-variable.ttf",
+              "weight": "100 900",
+              "size": 488584,
+              "sha256": "d7598e12c5dbef095ff8272cfc55da0250bd07fbdecbac8a530b9b277872a134",
+              "source": "https://github.com/google/fonts/blob/main/ofl/roboto/Roboto%5Bwdth%2Cwght%5D.ttf"
+            }
+          ]
+        },
+        {
+          "id": "opensans",
+          "name": "Open Sans",
+          "license": "opensans-OFL.txt",
+          "files": [
+            {
+              "file": "opensans-variable.ttf",
+              "weight": "300 800",
+              "size": 532636,
+              "sha256": "36643644f318a812aab2d2ed3bb98f8cf0872527f835fe9398d95fe6b9adb878",
+              "source": "https://github.com/google/fonts/blob/main/ofl/opensans/OpenSans%5Bwdth%2Cwght%5D.ttf"
+            }
+          ]
+        },
+        {
+          "id": "montserrat",
+          "name": "Montserrat",
+          "license": "montserrat-OFL.txt",
+          "files": [
+            {
+              "file": "montserrat-variable.ttf",
+              "weight": "100 900",
+              "size": 744936,
+              "sha256": "0f7b311b2f3279e4eef9b2f968bcdbab6e28f4daeb1f049f4f278a902bcd82f7",
+              "source": "https://github.com/google/fonts/blob/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf"
+            }
+          ]
+        },
+        {
+          "id": "lato",
+          "name": "Lato",
+          "license": "lato-OFL.txt",
+          "files": [
+            {
+              "file": "lato-400.ttf",
+              "weight": "400",
+              "size": 656568,
+              "sha256": "d636e4683231f931eda222d588e944d082bfd3bdba02f928bee461c0f185b251",
+              "source": "https://github.com/google/fonts/blob/main/ofl/lato/Lato-Regular.ttf"
+            },
+            {
+              "file": "lato-600.ttf",
+              "weight": "600",
+              "size": 668548,
+              "sha256": "71b8b7decbe75a881ed267be539d402bd1e9420b799658aada4e0d1bd5af803c",
+              "source": "https://github.com/google/fonts/blob/main/ofl/lato/Lato-SemiBold.ttf"
+            }
+          ]
+        }
+      ]
+    },
+    "th": {
+      "default": "notosansthai",
+      "sample": "บันทึกสื่อคุณภาพสูง อ่านง่ายทุกวัน",
+      "fonts": [
+        {
+          "id": "notosansthai",
+          "name": "Noto Sans Thai",
+          "license": "notosansthai-OFL.txt",
+          "files": [
+            {
+              "file": "notosansthai-variable.ttf",
+              "weight": "100 900",
+              "size": 218652,
+              "sha256": "5a1c559bb539583c8a1fd99d1c5b9491e5e14478c9cd2bd0970d5c3096cc9ef8",
+              "source": "https://github.com/google/fonts/blob/main/ofl/notosansthai/NotoSansThai%5Bwdth%2Cwght%5D.ttf"
+            }
+          ]
+        },
+        {
+          "id": "sarabun",
+          "name": "Sarabun",
+          "license": "sarabun-OFL.txt",
+          "files": [
+            {
+              "file": "sarabun-400.ttf",
+              "weight": "400",
+              "size": 90220,
+              "sha256": "226d4f368fbc0457990ddef2692679badfd2c1a4e89e5ac4d43c10ba7743b2f1",
+              "source": "https://github.com/google/fonts/blob/main/ofl/sarabun/Sarabun-Regular.ttf"
+            },
+            {
+              "file": "sarabun-600.ttf",
+              "weight": "600",
+              "size": 90200,
+              "sha256": "c0bb057d86e4a12097d701ac0953597e315788d47a446f5b63a6604ab21dceba",
+              "source": "https://github.com/google/fonts/blob/main/ofl/sarabun/Sarabun-SemiBold.ttf"
+            }
+          ]
+        },
+        {
+          "id": "kanit",
+          "name": "Kanit",
+          "license": "kanit-OFL.txt",
+          "files": [
+            {
+              "file": "kanit-400.ttf",
+              "weight": "400",
+              "size": 173148,
+              "sha256": "27170c049660b2f962d3ed28441fd20f4c743503ca031fec9c2b4542d6c52736",
+              "source": "https://github.com/google/fonts/blob/main/ofl/kanit/Kanit-Regular.ttf"
+            },
+            {
+              "file": "kanit-600.ttf",
+              "weight": "600",
+              "size": 174796,
+              "sha256": "67e64baf1a7e6e076435518ff0e6bf25c4d74b98143cd1a2688db906c0abce11",
+              "source": "https://github.com/google/fonts/blob/main/ofl/kanit/Kanit-SemiBold.ttf"
+            }
+          ]
+        },
+        {
+          "id": "prompt",
+          "name": "Prompt",
+          "license": "prompt-OFL.txt",
+          "files": [
+            {
+              "file": "prompt-400.ttf",
+              "weight": "400",
+              "size": 168932,
+              "sha256": "dbd497803cec3caffbc6b7f599ca6fed8beea0ed7e0ad1e098130c5ebbc4fd42",
+              "source": "https://github.com/google/fonts/blob/main/ofl/prompt/Prompt-Regular.ttf"
+            },
+            {
+              "file": "prompt-600.ttf",
+              "weight": "600",
+              "size": 175300,
+              "sha256": "3285c9e6a4ebc480a6476a1a26b44d6eb0f9874025fa96e42afd52172b7f02b9",
+              "source": "https://github.com/google/fonts/blob/main/ofl/prompt/Prompt-SemiBold.ttf"
+            }
+          ]
+        },
+        {
+          "id": "ibmplexsansthai",
+          "name": "IBM Plex Sans Thai",
+          "license": "ibmplexsansthai-OFL.txt",
+          "files": [
+            {
+              "file": "ibmplexsansthai-400.ttf",
+              "weight": "400",
+              "size": 116004,
+              "sha256": "eee061d1bac39be40f9bb94498898cd1894f5d3d9a2f0ee6cbd48a6bd03d052b",
+              "source": "https://github.com/google/fonts/blob/main/ofl/ibmplexsansthai/IBMPlexSansThai-Regular.ttf"
+            },
+            {
+              "file": "ibmplexsansthai-600.ttf",
+              "weight": "600",
+              "size": 116484,
+              "sha256": "9d7526a0c8dfad63c49815d0cce9eea1026f018468b81c579997e953620a67d3",
+              "source": "https://github.com/google/fonts/blob/main/ofl/ibmplexsansthai/IBMPlexSansThai-SemiBold.ttf"
+            }
+          ]
+        }
+      ]
+    },
+    "ja": {
+      "default": "notosansjp",
+      "sample": "動画を保存、音楽と写真。",
+      "fonts": [
+        {
+          "id": "notosansjp",
+          "name": "Noto Sans JP",
+          "license": "notosansjp-OFL.txt",
+          "files": [
+            {
+              "file": "notosansjp-variable.ttf",
+              "weight": "100 900",
+              "size": 9589900,
+              "sha256": "c2f3b4d463500a2ddcd3849cded1fceeb9fd6d1c32e6cbecd568453ba50fc68f",
+              "source": "https://github.com/google/fonts/blob/main/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf"
+            }
+          ]
+        },
+        {
+          "id": "notoserifjp",
+          "name": "Noto Serif JP",
+          "license": "notoserifjp-OFL.txt",
+          "files": [
+            {
+              "file": "notoserifjp-variable.ttf",
+              "weight": "200 900",
+              "size": 13574352,
+              "sha256": "2fd527ba12b6a44ec30d796d633360da0aeba6c5d4af1304ce12bb4dc15a7dfc",
+              "source": "https://github.com/google/fonts/blob/main/ofl/notoserifjp/NotoSerifJP%5Bwght%5D.ttf"
+            }
+          ]
+        },
+        {
+          "id": "mplus1p",
+          "name": "M PLUS 1p",
+          "license": "mplus1p-OFL.txt",
+          "files": [
+            {
+              "file": "mplus1p-400.ttf",
+              "weight": "400",
+              "size": 1758688,
+              "sha256": "2f294ad496432b1608f070d310e3aa2adcf1de4af429f4901df97ec4bd361ed1",
+              "source": "https://github.com/google/fonts/blob/main/ofl/mplus1p/MPLUS1p-Regular.ttf"
+            },
+            {
+              "file": "mplus1p-700.ttf",
+              "weight": "700",
+              "size": 1766552,
+              "sha256": "76eb077b0a31ca33ca40238e47da5a17e2786741607cec09678d7d2e5ab1afc1",
+              "source": "https://github.com/google/fonts/blob/main/ofl/mplus1p/MPLUS1p-Bold.ttf"
+            }
+          ]
+        }
+      ]
+    },
+    "zh-CN": {
+      "default": "notosanssc",
+      "sample": "保存视频、音频与图片。",
+      "fonts": [
+        {
+          "id": "notosanssc",
+          "name": "Noto Sans SC",
+          "license": "notosanssc-OFL.txt",
+          "files": [
+            {
+              "file": "notosanssc-variable.ttf",
+              "weight": "100 900",
+              "size": 17772300,
+              "sha256": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
+              "source": "https://github.com/google/fonts/blob/main/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf"
+            }
+          ]
+        },
+        {
+          "id": "notoserifsc",
+          "name": "Noto Serif SC",
+          "license": "notoserifsc-OFL.txt",
+          "files": [
+            {
+              "file": "notoserifsc-variable.ttf",
+              "weight": "200 900",
+              "size": 25125512,
+              "sha256": "050080d9255a86808f2945bffac582b31ef32bc36411ce29563b4961670c66f9",
+              "source": "https://github.com/google/fonts/blob/main/ofl/notoserifsc/NotoSerifSC%5Bwght%5D.ttf"
+            }
+          ]
+        },
+        {
+          "id": "zcoolxiaowei",
+          "name": "ZCOOL XiaoWei",
+          "license": "zcoolxiaowei-OFL.txt",
+          "files": [
+            {
+              "file": "zcoolxiaowei-400.ttf",
+              "weight": "400",
+              "size": 6313808,
+              "sha256": "a42b620140f493db42f741351dfbf343c0936d58588ee8004b8b2a218d997ff1",
+              "source": "https://github.com/google/fonts/blob/main/ofl/zcoolxiaowei/ZCOOLXiaoWei-Regular.ttf"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

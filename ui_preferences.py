@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+from font_assets import validate_fonts
 
 
 def preferences_path():
@@ -29,8 +30,15 @@ def validate_preferences(values):
     language = values.get('language', 'th')
     if language not in ('en', 'th', 'ja', 'zh-CN'):
         raise ValueError('ภาษาไม่ถูกต้อง')
+    theme = values.get('theme', 'dark')
+    if theme not in ('dark', 'light', 'system'):
+        raise ValueError('Invalid theme preference.')
+    visual_style = values.get('visualStyle', 'obsidian')
+    if visual_style not in ('obsidian', 'glass'):
+        raise ValueError('Invalid interface style preference.')
     return dict(folder=str(folder.resolve()), sidebar=values['sidebar'],
-                density=values['density'], reducedMotion=values['reducedMotion'], language=language)
+                density=values['density'], reducedMotion=values['reducedMotion'], language=language, theme=theme, visualStyle=visual_style,
+                fonts=validate_fonts(values.get('fonts')))
 
 
 def load_preferences():

@@ -17,8 +17,10 @@ def main():
     from download_engine import PLATFORMS
     for _, _, slug, _ in PLATFORMS:
         assert resource_path('assets', 'platforms', slug + '.png').is_file()
-    for filename in ('index.html', 'studio.css', 'i18n.js', 'studio.js'):
+    for filename in ('index.html', 'studio.css', 'i18n.js', 'studio.js', 'theme.js', 'appearance.js', 'fonts.js', 'fonts.css', 'font-catalog.js'):
         assert resource_path('ui', filename).is_file()
+    from font_assets import check_font_assets
+    check_font_assets()
     executable = ffmpeg_path()
     architecture = subprocess.check_output(['/usr/bin/file', executable], text=True)
     if 'arm64' not in architecture:

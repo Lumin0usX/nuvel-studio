@@ -47,6 +47,55 @@ class PreferencesTests(unittest.TestCase):
                 save_preferences(dict(**values, language='unsupported'))
             self.assertEqual(load_preferences()['language'], 'th')
 
+    def test_old_settings_default_to_dark_and_theme_choices_persist(self):
+        with tempfile.TemporaryDirectory() as folder, patch('ui_preferences.preferences_path', return_value=Path(folder, 'prefs.json')):
+            values = dict(folder=folder, sidebar='auto', density='comfortable', reducedMotion=False)
+            Path(folder, 'prefs.json').write_text(json.dumps(values))
+            self.assertEqual(load_preferences()['theme'], 'dark')
+            for theme in ('light', 'system', 'dark'):
+                save_preferences(dict(**values, theme=theme))
+                self.assertEqual(load_preferences()['theme'], theme)
+            with self.assertRaises(ValueError):
+                save_preferences(dict(**values, theme='invalid'))
+            self.assertEqual(load_preferences()['theme'], 'dark')
+
+    def test_styles_and_animation_preferences_persist_without_changing_theme_or_fonts(self):
+        with tempfile.TemporaryDirectory() as folder, patch('ui_preferences.preferences_path', return_value=Path(folder, 'prefs.json')):
+            values = dict(folder=folder, sidebar='auto', density='comfortable', reducedMotion=False)
+            legacy = save_preferences(values)
+            self.assertEqual(legacy['visualStyle'], 'obsidian')
+            for style in ('glass', 'obsidian'):
+                for reduced_motion in (True, False):
+                    expected = dict(legacy, visualStyle=style, reducedMotion=reduced_motion)
+                    self.assertEqual(save_preferences(expected), expected)
+                    self.assertEqual(load_preferences(), expected)
+            before = Path(folder, 'prefs.json').read_bytes()
+            with self.assertRaises(ValueError):
+                save_preferences(dict(values, visualStyle='unknown'))
+            self.assertEqual(Path(folder, 'prefs.json').read_bytes(), before)
+
+    def test_font_choices_remain_separate_across_language_changes(self):
+        with tempfile.TemporaryDirectory() as folder, patch('ui_preferences.preferences_path', return_value=Path(folder, 'prefs.json')):
+            values = dict(folder=folder, sidebar='auto', density='comfortable', reducedMotion=False)
+            fonts = {'en': 'lato', 'th': 'prompt', 'ja': 'mplus1p', 'zh-CN': 'zcoolxiaowei'}
+            for language in fonts:
+                clean = save_preferences(dict(**values, language=language, fonts=fonts))
+                self.assertEqual(load_preferences()['fonts'], fonts)
+                self.assertEqual(clean['theme'], 'dark')
+
+    def test_legacy_preferences_receive_font_defaults_and_bad_fonts_do_not_overwrite(self):
+        with tempfile.TemporaryDirectory() as folder, patch('ui_preferences.preferences_path', return_value=Path(folder, 'prefs.json')):
+            values = dict(folder=folder, sidebar='auto', density='comfortable', reducedMotion=False)
+            path = Path(folder, 'prefs.json')
+            path.write_text(json.dumps(values))
+            expected = dict(en='inter', th='notosansthai', ja='notosansjp', **{'zh-CN': 'notosanssc'})
+            self.assertEqual(load_preferences()['fonts'], expected)
+            for fonts in ({'en': 'kanit'}, {'th': 'missing-font'}, {'en': []}, 'invalid'):
+                before = path.read_bytes()
+                with self.assertRaises(ValueError):
+                    save_preferences(dict(**values, fonts=fonts))
+                self.assertEqual(path.read_bytes(), before)
+
 
 if __name__ == '__main__':
     unittest.main()

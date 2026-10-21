@@ -298,6 +298,9 @@ def _serve(api):
     """Fallback has no external listening port and requires a random session token."""
     token = secrets.token_urlsafe(32)
     ui_root = resource_path('ui')
+    from font_assets import font_catalog
+    font_files = {face['file'] for group in font_catalog()['languages'].values()
+                  for font in group['fonts'] for face in font['files']}
     allowed = {'snapshot', 'start_download', 'cancel_download', 'open_folder', 'choose_folder', 'choose_cookies', 'analyze_url', 'remove_history', 'save_preferences',
                'check_app_update', 'connect_updates', 'download_app_update', 'cancel_app_update', 'install_app_update', 'open_update_access'}
     class Handler(BaseHTTPRequestHandler):
@@ -316,8 +319,15 @@ def _serve(api):
         def do_GET(self):
             if self.headers.get('Host') != f'127.0.0.1:{self.server.server_port}':
                 return self._reply(403, {})
-            files = {'/': ('index.html', 'text/html; charset=utf-8'), '/studio.css': ('studio.css', 'text/css'), '/studio.js': ('studio.js', 'text/javascript'), '/i18n.js': ('i18n.js', 'text/javascript; charset=utf-8')}
-            entry = files.get(urlsplit(self.path).path)
+            files = {'/': ('index.html', 'text/html; charset=utf-8'), '/studio.css': ('studio.css', 'text/css'), '/studio.js': ('studio.js', 'text/javascript'), '/i18n.js': ('i18n.js', 'text/javascript; charset=utf-8'), '/theme.js': ('theme.js', 'text/javascript; charset=utf-8')}
+            files.update({'/fonts.js': ('fonts.js', 'text/javascript; charset=utf-8'),
+                          '/appearance.js': ('appearance.js', 'text/javascript; charset=utf-8'),
+                          '/font-catalog.js': ('font-catalog.js', 'text/javascript; charset=utf-8'),
+                          '/fonts.css': ('fonts.css', 'text/css; charset=utf-8')})
+            path = urlsplit(self.path).path
+            if path.startswith('/fonts/') and path.removeprefix('/fonts/') in font_files:
+                return self._reply(200, (ui_root / path.lstrip('/')).read_bytes(), 'font/ttf')
+            entry = files.get(path)
             if not entry:
                 return self._reply(404, {})
             return self._reply(200, (ui_root / entry[0]).read_bytes(), entry[1])
@@ -378,7 +388,7 @@ def main(native_only=False):
     api = StudioAPI()
     window = webview.create_window('YTDL Studio', str(resource_path('ui', 'index.html')),
                                    js_api=api, width=1240, height=860, min_size=(780, 640),
-                                   background_color='#090B10', vibrancy=False)
+                                   background_color='#f1f3f7' if api._preferences.get('theme') == 'light' else '#090B10', vibrancy=False)
     api._window = window
     def closing():
         if api.snapshot()['phase'] in ('connecting', 'downloading', 'processing', 'cancelling'):
@@ -396,6 +406,8 @@ def main(native_only=False):
     if '--self-test' in sys.argv:
         subprocess.run([ffmpeg_path(), '-version'], check=True, capture_output=True, timeout=10)
         if getattr(sys, 'frozen', False):
+            from font_assets import check_font_assets
+            check_font_assets()
             gallery = resource_path('bin', 'gallery-dl.exe' if sys.platform == 'win32' else 'gallery-dl')
             result = subprocess.run([str(gallery), '--config-ignore', '--list-modules'], check=True,
                                     capture_output=True, timeout=45,
@@ -411,7 +423,7 @@ def main(native_only=False):
                 while time.monotonic() < deadline:
                     ready = window.evaluate_js('Boolean(window.studioReady && document.querySelector("#download") && window.pywebview?.api?.snapshot)')
                     if ready and not requested:
-                        window.evaluate_js('window.__studioSmoke = false; window.pywebview.api.snapshot().then(s => {window.__studioSmoke = Boolean(s && s.preferences && Array.isArray(s.history));}).catch(() => {});')
+                        window.evaluate_js('window.__studioSmoke = false; window.pywebview.api.snapshot().then(async s => {await document.fonts.ready; window.__studioSmoke = Boolean(s && s.preferences && Array.isArray(s.history) && Array.from(document.fonts).some(f => f.family.includes("Studio-") && f.status === "loaded"));}).catch(() => {});')
                         requested = True
                     if requested and window.evaluate_js('window.__studioSmoke === true'):
                         tested.set()

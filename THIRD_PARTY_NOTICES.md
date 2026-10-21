@@ -35,6 +35,21 @@ repository and this project's proprietary license do not remove those
 obligations. Generated applications and binaries are excluded from this
 source repository by default.
 
+## Bundled fonts
+
+UI font families are original, unmodified files from the Google Fonts repository:
+Inter, Roboto, Open Sans, Montserrat, Lato, Noto Sans Thai, Sarabun, Kanit, Prompt,
+IBM Plex Sans Thai, Noto Sans JP, Noto Serif JP, M PLUS 1p, Noto Sans SC,
+Noto Serif SC, and ZCOOL XiaoWei.
+
+Each font retains its SIL Open Font License and copyright notices under
+`ui/fonts/*-OFL.txt`. Source links, file sizes, actual weight ranges and SHA-256
+hashes are in `ui/fonts/catalog.json`. Font files are not covered by the app's
+proprietary license. Their internal font names, outlines and glyph sets are
+unchanged; CSS aliases scope their use to this application.
+
+Upstream: https://github.com/google/fonts
+
 ## Platform marks
 
 YouTube, TikTok, Facebook, Instagram, X/Twitter, Reddit, Vimeo, Dailymotion,
