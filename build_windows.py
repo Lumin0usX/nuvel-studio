@@ -48,6 +48,8 @@ def build():
             raise RuntimeError('A required UI resource is missing: ' + filename)
     from font_assets import check_font_assets
     check_font_assets()
+    from branding import check_brand_assets
+    check_brand_assets()
     output = PROJECT / 'dist' / datetime.now().strftime('windows-%Y%m%d-%H%M%S-%f')
     staging = output / 'build-input'
     staging.mkdir(parents=True)
@@ -55,18 +57,20 @@ def build():
     shutil.copy2(imageio_ffmpeg.get_ffmpeg_exe(), ffmpeg)
     subprocess.run([str(ffmpeg), '-version'], check=True, capture_output=True, timeout=10,
                    creationflags=subprocess.CREATE_NO_WINDOW)
-    from app_version import VERSION, version_tuple
+    from app_version import VERSION, DISPLAY_NAME, version_tuple
     from build_gallery_tool import build_tool
     gallery, gallery_source = build_tool(output)
     version = staging / 'version.txt'
     numeric = repr((*version_tuple(VERSION), 0))
     version.write_text("VSVersionInfo(ffi=FixedFileInfo(filevers=" + numeric + ", prodvers=" + numeric +
                        ", mask=0x3f, flags=0, OS=0x40004, fileType=1, subtype=0, date=(0,0)), "
-                       "kids=[StringFileInfo([StringTable('040904B0', [StringStruct('ProductName', 'YTDL Studio'), "
+                       "kids=[StringFileInfo([StringTable('040904B0', [StringStruct('ProductName', '" + DISPLAY_NAME + "'), "
+                       "StringStruct('FileDescription', '" + DISPLAY_NAME + "'), "
                        "StringStruct('FileVersion', '" + VERSION + "'), StringStruct('ProductVersion', '" + VERSION +
                        "')])]), VarFileInfo([VarStruct('Translation', [1033,1200])])])", encoding='utf-8')
     PyInstaller.__main__.run([
-        str(PROJECT / 'desktop_launcher.py'), '--name', 'YTDL Studio', '--windowed', '--onedir', '--noupx',
+        str(PROJECT / 'desktop_launcher.py'), '--name', DISPLAY_NAME, '--windowed', '--onedir', '--noupx',
+        '--icon', str(PROJECT / 'assets/branding/app-icon.ico'),
         '--distpath', str(output), '--workpath', str(output / 'work'), '--specpath', str(output),
         '--add-data', str(PROJECT / 'assets') + ';assets', '--add-data', str(PROJECT / 'ui') + ';ui',
         '--add-binary', str(ffmpeg) + ';bin',
@@ -80,7 +84,10 @@ def build():
         '--exclude-module', 'tkinter', '--exclude-module', 'PyQt5', '--exclude-module', 'PyQt6',
         '--exclude-module', 'PySide2', '--exclude-module', 'PySide6',
     ])
-    bundle = output / 'YTDL Studio'
+    bundle = output / DISPLAY_NAME
+    # Existing released updaters require this GUI executable path. A real copy
+    # works without Windows symlink privileges and retains the bundled runtime.
+    shutil.copy2(bundle / (DISPLAY_NAME + '.exe'), bundle / 'YTDL Studio.exe')
     for name in ('LICENSE', 'THIRD_PARTY_NOTICES.md'):
         shutil.copy2(PROJECT / name, bundle / name)
     if os.environ.get('CI'):
@@ -88,6 +95,7 @@ def build():
         from windows_distribution import verify_app, archive_bundle
         write_marker(bundle, 'windows-x64')
         verify_app(bundle)
+        verify_app(bundle, legacy=True)
         archive_bundle(bundle, output / 'YTDL-Studio-Windows-x64.zip')
         print('Verified Windows release archive:', output / 'YTDL-Studio-Windows-x64.zip')
         return
@@ -95,11 +103,11 @@ def build():
     executable = publish_build(PROJECT, bundle)
     if not os.environ.get('CI'):
         try:
-            subprocess.run(['explorer.exe', '/select,', str(PROJECT / 'YTDL Studio.lnk')], check=False)
+            subprocess.run(['explorer.exe', '/select,', str(PROJECT / (DISPLAY_NAME + '.lnk'))], check=False)
         except OSError:
             pass  # Revealing the shortcut is optional; publication already succeeded.
     print('Build complete. Verified native interface without a console:', executable)
-    print('Open the YTDL Studio shortcut in the project folder.')
+    print('Open the ' + DISPLAY_NAME + ' shortcut in the project folder.')
 
 
 def main(argv=None):

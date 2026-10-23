@@ -1,6 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0"
+set "PYTHONIOENCODING=utf-8"
 py -3 -c "import sys; assert sys.version_info >= (3,10)" >nul 2>nul
 if not errorlevel 1 goto use_py
 python -c "import sys; assert sys.version_info >= (3,10)" >nul 2>nul
@@ -19,7 +20,7 @@ goto run
 set "YTDL_PYTHON=python"
 
 :run
-title YTDL Studio - Install
+title Studio - Install
 if /i "%~1"=="--check" goto check
 %YTDL_PYTHON% -m pip install --upgrade -r "%~dp0requirements.txt"
 set "YTDL_EXIT=%errorlevel%"
@@ -28,7 +29,7 @@ if not "%YTDL_EXIT%"=="0" goto failed
 set "YTDL_EXIT=%errorlevel%"
 if not "%YTDL_EXIT%"=="0" goto failed
 echo.
-echo Installation complete. Open "YTDL Studio" shortcut (no Terminal).
+echo Installation complete. Open the new Studio shortcut (no Terminal).
 pause
 exit /b 0
 

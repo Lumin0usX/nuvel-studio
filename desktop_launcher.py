@@ -26,11 +26,11 @@ def logs_directory():
 def notify_error(message):
     if sys.platform == 'win32':
         import ctypes
-        ctypes.windll.user32.MessageBoxW(None, message, 'YTDL Studio', 0x10)
+        ctypes.windll.user32.MessageBoxW(None, message, 'NÜVEL Studio', 0x10)
     elif sys.platform == 'darwin':
         # Pass text as an argument, never interpolate it into AppleScript code.
         subprocess.run(['/usr/bin/osascript', '-e',
-                        'on run argv\ndisplay alert "YTDL Studio" message (item 1 of argv) as critical\nend run',
+                        'on run argv\ndisplay alert "NÜVEL Studio" message (item 1 of argv) as critical\nend run',
                         message], check=False, capture_output=True)
 
 
@@ -175,7 +175,7 @@ def launch(self_test=False, applet=False, check=False, smoke_result=None):
         with log_path.open('a', encoding='utf-8', buffering=1) as log, \
                 redirect_stdout(log), redirect_stderr(log):
             try:
-                print(f'YTDL Studio desktop launcher | Python {sys.version.split()[0]}', flush=True)
+                print(f'NÜVEL Studio desktop launcher | Python {sys.version.split()[0]}', flush=True)
                 if check:
                     import webview  # noqa: F401 - verify the native bridge without opening a window
                     from glass_app import main  # noqa: F401
@@ -210,7 +210,7 @@ def launch(self_test=False, applet=False, check=False, smoke_result=None):
                 raise
     except Exception:
         if not applet and not check and not self_test:
-            message = 'YTDL Studio could not start or closed unexpectedly.'
+            message = 'NÜVEL Studio could not start or closed unexpectedly.'
             if getattr(sys, 'frozen', False):
                 message += '\nReopen the app. If this continues, reinstall the application.'
             else:

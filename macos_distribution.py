@@ -7,8 +7,11 @@ import subprocess
 import tempfile
 import uuid
 
+from app_version import DISPLAY_NAME
 
-APP_NAME = 'YTDL Studio.app'
+
+APP_NAME = DISPLAY_NAME + '.app'
+OLD_APP_NAME = 'YTDL Studio.app'
 LEGACY_NAME = 'YTDL Studio Launcher.app'
 BUNDLE_ID = 'local.ytdlstudio.app'
 
@@ -17,13 +20,22 @@ def verify_app(app):
     """LaunchServices success alone is not proof that the UI or Python bridge loaded."""
     with tempfile.TemporaryDirectory(prefix='ytdl-launch-check-') as temporary:
         proof = Path(temporary) / 'result.json'
-        subprocess.run(['/usr/bin/open', '-n', '-W', str(app), '--args', '--self-test',
-                        '--smoke-result', str(proof)], check=True, timeout=120, capture_output=True)
+        try:
+            subprocess.run(['/usr/bin/open', '-n', '-W', str(app), '--args', '--self-test',
+                            '--smoke-result', str(proof)], check=True, timeout=120, capture_output=True)
+        except subprocess.CalledProcessError as exc:
+            details = (exc.stderr or exc.stdout or b'No LaunchServices output was returned.')
+            if isinstance(details, bytes):
+                details = details.decode('utf-8', errors='replace')
+            raise RuntimeError('The native startup launch failed '
+                               f'(exit code {exc.returncode}): {details.strip()} '
+                               'The previous app was kept.') from exc
         try:
             result = json.loads(proof.read_text(encoding='utf-8'))
         except (OSError, ValueError) as exc:
             raise RuntimeError('The built app did not complete its native startup test. The previous app was kept.') from exc
-        expected = (app / 'Contents/MacOS/YTDL Studio').resolve()
+        from update_installer import executable_in
+        expected = executable_in(app, 'macos-arm64').resolve()
         if result.get('ok') is not True or Path(result.get('executable', '')).resolve() != expected:
             raise RuntimeError('The built app returned an invalid startup result. The previous app was kept.')
 
@@ -34,8 +46,16 @@ def copy_bundle(source, destination):
 
 
 def archive_bundle(app, destination):
-    subprocess.run(['/usr/bin/ditto', '-c', '-k', '--sequesterRsrc', '--keepParent',
-                    str(app), str(destination)], check=True, capture_output=True)
+    # Existing released updaters require the original ZIP root. The app inside
+    # has the new display/process name and a compatibility executable alias.
+    app, destination = Path(app), Path(destination)
+    with tempfile.TemporaryDirectory(prefix='nuvel-archive-') as temporary:
+        archived_app = app
+        if app.name != OLD_APP_NAME:
+            archived_app = Path(temporary) / OLD_APP_NAME
+            copy_bundle(app, archived_app)
+        subprocess.run(['/usr/bin/ditto', '-c', '-k', '--sequesterRsrc', '--keepParent',
+                        str(archived_app), str(destination)], check=True, capture_output=True)
 
 
 def _exists(path):
@@ -47,7 +67,7 @@ def _check_existing(path, project, legacy=False):
         return
     if path.is_symlink():
         target = path.resolve()
-        if target != project / APP_NAME and not target.is_relative_to(project / 'dist'):
+        if target not in (project / APP_NAME, project / OLD_APP_NAME) and not target.is_relative_to(project / 'dist'):
             raise RuntimeError('Refusing to replace an unrelated app link: ' + str(path))
         return
     try:
@@ -65,11 +85,12 @@ def _check_existing(path, project, legacy=False):
 def publish_build(project, built_app):
     project, built_app = Path(project).resolve(), Path(built_app).resolve()
     if built_app.name != APP_NAME or not built_app.is_relative_to(project / 'dist'):
-        raise ValueError('The build must be a YTDL Studio.app inside this project\'s dist folder.')
-    current, legacy = project / APP_NAME, project / LEGACY_NAME
-    _check_existing(current, project)
-    _check_existing(legacy, project, legacy=True)
-    had_legacy = _exists(legacy)
+        raise ValueError('The build must be a ' + APP_NAME + ' inside this project\'s dist folder.')
+    current = project / APP_NAME
+    old_app, legacy = project / OLD_APP_NAME, project / LEGACY_NAME
+    for path in (current, old_app, legacy):
+        _check_existing(path, project, legacy=path == legacy)
+    old_paths = [path for path in (old_app, legacy) if _exists(path)]
     identifier = uuid.uuid4().hex[:12]
     backups = []
     installed = []
@@ -81,11 +102,10 @@ def publish_build(project, built_app):
         verify_app(candidate)
         archive = staging / 'YTDL-Studio-macOS-arm64.zip'
         archive_bundle(candidate, archive)
-        legacy_link = staging / LEGACY_NAME
-        if had_legacy:
-            legacy_link.symlink_to(APP_NAME, target_is_directory=True)
+        for old in old_paths:
+            (staging / old.name).symlink_to(APP_NAME, target_is_directory=True)
         try:
-            for old in (current, legacy) if had_legacy else (current,):
+            for old in (current, *old_paths):
                 if _exists(old):
                     # Both source and destination are verified inside this workspace.
                     backup = built_app.parent / f'previous-{identifier}-{old.name}'
@@ -93,9 +113,10 @@ def publish_build(project, built_app):
                     backups.append((old, backup))
             candidate.rename(current)
             installed.append((current, candidate))
-            if had_legacy:
-                legacy_link.rename(legacy)
-                installed.append((legacy, legacy_link))
+            for old in old_paths:
+                link = staging / old.name
+                link.rename(old)
+                installed.append((old, link))
             os.replace(archive, built_app.parent / archive.name)
         except BaseException:
             for destination, original in reversed(installed):

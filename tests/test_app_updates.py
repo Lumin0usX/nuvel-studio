@@ -121,6 +121,15 @@ def fixture_bundle(path, version=VERSION):
 
 
 class InstallTransactions(unittest.TestCase):
+    def test_windows_legacy_fallback_cannot_hide_an_invalid_new_executable(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            bundle = fixture_bundle(Path(temporary) / 'app')
+            primary = installer.executable_in(bundle, 'windows-x64')
+            primary.rename(bundle / 'YTDL Studio.exe')
+            primary.mkdir()
+            with self.assertRaisesRegex(releases.UpdateError, 'invalid_package'):
+                installer.check_bundle(bundle, 'windows-x64')
+
     def test_mac_symlinks_cannot_escape_or_receive_files_through_case_aliases(self):
         for target, child in (('../../../../outside', None), ('Versions', 'alias/file'), ('Versions', 'Alias/file')):
             with tempfile.TemporaryDirectory() as temporary:

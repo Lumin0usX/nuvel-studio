@@ -21,6 +21,8 @@ def main():
         assert resource_path('ui', filename).is_file()
     from font_assets import check_font_assets
     check_font_assets()
+    from branding import check_brand_assets
+    check_brand_assets()
     executable = ffmpeg_path()
     architecture = subprocess.check_output(['/usr/bin/file', executable], text=True)
     if 'arm64' not in architecture:

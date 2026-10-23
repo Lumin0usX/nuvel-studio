@@ -19,6 +19,7 @@ from image_download import download_images, image_support
 from media_quality import validate_quality, quality_label, media_options, add_video_postprocessor
 from ui_preferences import load_preferences, save_preferences
 from app_updates import AppUpdates
+from app_version import DISPLAY_NAME
 
 
 class StudioAPI:
@@ -299,6 +300,7 @@ def _serve(api):
     token = secrets.token_urlsafe(32)
     ui_root = resource_path('ui')
     from font_assets import font_catalog
+    from branding import UI_BRAND_ASSETS
     font_files = {face['file'] for group in font_catalog()['languages'].values()
                   for font in group['fonts'] for face in font['files']}
     allowed = {'snapshot', 'start_download', 'cancel_download', 'open_folder', 'choose_folder', 'choose_cookies', 'analyze_url', 'remove_history', 'save_preferences',
@@ -324,6 +326,8 @@ def _serve(api):
                           '/appearance.js': ('appearance.js', 'text/javascript; charset=utf-8'),
                           '/font-catalog.js': ('font-catalog.js', 'text/javascript; charset=utf-8'),
                           '/fonts.css': ('fonts.css', 'text/css; charset=utf-8')})
+            files.update({'/brand/' + name: ('brand/' + name, mime)
+                          for name, mime in UI_BRAND_ASSETS.items()})
             path = urlsplit(self.path).path
             if path.startswith('/fonts/') and path.removeprefix('/fonts/') in font_files:
                 return self._reply(200, (ui_root / path.lstrip('/')).read_bytes(), 'font/ttf')
@@ -358,7 +362,7 @@ def main(native_only=False):
         import webview
     except ImportError:
         if getattr(sys, 'frozen', False):
-            raise RuntimeError('The application bundle is incomplete. Reinstall YTDL Studio.')
+            raise RuntimeError('The application bundle is incomplete. Reinstall ' + DISPLAY_NAME + '.')
         if native_only:
             raise RuntimeError('The windowless launcher requires pywebview. Run ' +
                                ('install_macos.command' if sys.platform == 'darwin' else 'install.bat'))
@@ -366,7 +370,7 @@ def main(native_only=False):
             raise SystemExit('pywebview is required to test the packaged app')
         api = StudioAPI()
         server, url = _serve(api)
-        print('YTDL Studio is running locally. Close this terminal to stop it.')
+        print(DISPLAY_NAME + ' is running locally. Close this terminal to stop it.')
         candidates = []
         if sys.platform == 'win32':
             for base in (os.environ.get('PROGRAMFILES', ''), os.environ.get('PROGRAMFILES(X86)', '')):
@@ -386,7 +390,7 @@ def main(native_only=False):
             server.shutdown()
         return
     api = StudioAPI()
-    window = webview.create_window('YTDL Studio', str(resource_path('ui', 'index.html')),
+    window = webview.create_window(DISPLAY_NAME, str(resource_path('ui', 'index.html')),
                                    js_api=api, width=1240, height=860, min_size=(780, 640),
                                    background_color='#f2f3f6' if api._preferences.get('theme') == 'light' else '#0d1016', vibrancy=False)
     api._window = window
@@ -421,7 +425,7 @@ def main(native_only=False):
                 deadline = time.monotonic() + 15
                 requested = False
                 while time.monotonic() < deadline:
-                    ready = window.evaluate_js('Boolean(window.studioReady && document.querySelector("#download") && window.pywebview?.api?.snapshot)')
+                    ready = window.evaluate_js('Boolean(window.studioReady && document.querySelector("#download") && window.pywebview?.api?.snapshot && document.querySelector(".brand img") && Array.from(document.querySelectorAll(".brand img")).every(img => img.complete && img.naturalWidth > 0))')
                     if ready and not requested:
                         window.evaluate_js('window.__studioSmoke = false; window.pywebview.api.snapshot().then(async s => {await document.fonts.ready; window.__studioSmoke = Boolean(s && s.preferences && Array.isArray(s.history) && Array.from(document.fonts).some(f => f.family.includes("Studio-") && f.status === "loaded"));}).catch(() => {});')
                         requested = True
@@ -437,7 +441,10 @@ def main(native_only=False):
         window.events.loaded += smoke_test
         threading.Thread(target=timeout, daemon=True).start()
     try:
-        webview.start(gui='edgechromium' if sys.platform == 'win32' else None)
+        icon_name = ('app-icon.ico' if sys.platform == 'win32' else
+                     'app-icon.icns' if sys.platform == 'darwin' else 'app-icon-1024.png')
+        webview.start(gui='edgechromium' if sys.platform == 'win32' else None,
+                      icon=str(resource_path('assets', 'branding', icon_name)))
     finally:
         api._cancel.set()
         api._updates.cancel.set()

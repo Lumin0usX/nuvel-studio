@@ -663,7 +663,7 @@ const updateMessages = {
   invalid_package: 'The update did not pass verification. Your current app was kept. Check for updates and try again.',
   update_failed: 'The update could not be prepared. Check free disk space and your connection, then try again.',
   install_readonly: 'This app is in a read-only location. Move the full app to a folder you can write to and try again.',
-  install_locked: 'Close other copies of YTDL Studio before installing the update.',
+  install_locked: 'Close other copies of NÜVEL Studio before installing the update.',
   source_build: 'This is a source launch. Build this version once to enable in-app installation. The existing folder updater still works.',
   unsupported_system: 'Ready-to-use updates support Windows x64 and macOS Apple Silicon.',
   update_busy: 'An app update is already in progress.',
@@ -675,7 +675,7 @@ const updateMessages = {
 function renderAppUpdate() {
   const phase = appUpdate.phase;
   const working = ['checking','downloading','verifying','installing'].includes(phase);
-  $('app-version').textContent = 'YTDL Studio ' + (appUpdate.current || '—');
+  $('app-version').textContent = 'NÜVEL Studio ' + (appUpdate.current || '—');
   const messages = {
     idle: 'Download verified releases without rebuilding.', checking: 'Checking GitHub releases…',
     up_to_date: 'You are using the latest version.', available: 'A new version is available.',

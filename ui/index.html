@@ -3,7 +3,11 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark"><meta name="theme-color" content="#0d1016">
-  <title>YTDL Studio</title>
+  <title>NÜVEL Studio</title>
+  <meta name="application-name" content="NÜVEL Studio">
+  <link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="brand/favicon.ico" sizes="16x16 32x32 48x48">
+  <link rel="apple-touch-icon" href="brand/apple-touch-icon.png" sizes="180x180">
   <script src="theme.js"></script>
   <script src="appearance.js"></script>
   <script src="font-catalog.js"></script>
@@ -36,7 +40,7 @@
 <a href="#main" class="skip-link">ข้ามไปยังเนื้อหา</a>
 <div class="app-shell">
   <aside class="sidebar" aria-label="เมนูหลัก">
-    <a class="brand" href="#overview" aria-label="YTDL Studio — Overview"><span class="brand-mark"><svg><use href="#download-icon"/></svg></span><span class="brand-copy">YTDL <strong>Studio</strong></span></a>
+    <a class="brand" href="#overview" aria-label="NÜVEL Studio — Overview"><img class="brand-mark" src="brand/favicon.svg" width="36" height="36" alt="" aria-hidden="true"><span class="brand-copy" aria-hidden="true"><img class="brand-logo-dark" src="brand/nuvel-small-white.svg" width="160" height="72" alt=""><img class="brand-logo-light" src="brand/nuvel-small-black.svg" width="160" height="72" alt=""></span></a>
     <div class="sidebar-section">WORKSPACE</div>
     <nav>
       <button class="nav-item selected" data-page="overview" title="Overview"><svg><use href="#overview-icon"/></svg><span>Overview</span></button>
@@ -82,7 +86,7 @@
       <section id="history-page" class="page" aria-labelledby="history-title" hidden><div class="page-heading"><div><h1 id="history-title">History<span class="accent-period">.</span></h1><p>ไฟล์ที่ดาวน์โหลดสำเร็จในรอบการเปิดแอปนี้</p></div></div><div class="history-toolbar"><div class="search-field"><svg><use href="#search-icon"/></svg><input id="history-search" type="search" placeholder="ค้นหาชื่อไฟล์หรือแหล่งที่มา" aria-label="ค้นหาประวัติ"></div><label class="sr-only" for="history-filter">กรองประเภทสื่อ</label><select id="history-filter"><option value="all">ทุกประเภท</option><option value="video">วิดีโอ</option><option value="audio">เสียง</option><option value="image">ภาพ</option></select></div><div class="list-heading"><span>ไฟล์ / แหล่งที่มา</span><span>บันทึกสำเร็จ</span></div><div id="history-list" class="transfer-list"></div><p class="page-note">แสดง 8 รายการสำเร็จล่าสุด · ลบประวัติเพื่อลบเฉพาะรายการ ไม่ลบไฟล์จริง</p></section>
       <section id="settings-page" class="page settings-page" aria-labelledby="settings-title" hidden><div class="page-heading"><div><h1 id="settings-title">Settings<span class="accent-period">.</span></h1><p>จัดพื้นที่ทำงานให้เหมาะกับคุณ</p></div></div>
         <section class="settings-group app-updates" aria-labelledby="updates-title">
-          <div class="setting-row update-heading"><div><h2 id="updates-title">App updates</h2><p id="app-version">YTDL Studio</p></div><button type="button" id="check-update" class="secondary-button">Check for updates</button></div>
+          <div class="setting-row update-heading"><div><h2 id="updates-title">App updates</h2><p id="app-version">NÜVEL Studio</p></div><button type="button" id="check-update" class="secondary-button">Check for updates</button></div>
           <p id="update-status" role="status" aria-live="polite">Download verified releases without rebuilding.</p>
           <p id="update-source-note" hidden>This is a source launch. Build this version once to enable in-app installation. The existing folder updater still works.</p>
           <p id="update-session-note" hidden>Secure storage is unavailable. Access is kept only until you close the app.</p>

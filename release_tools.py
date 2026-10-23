@@ -6,7 +6,7 @@ from pathlib import Path
 import shutil
 import subprocess
 
-from app_version import VERSION, version_tuple
+from app_version import VERSION, DISPLAY_NAME, version_tuple
 from release_client import ASSETS, MANIFEST
 from update_installer import marker_path
 
@@ -50,7 +50,7 @@ def publish(folder, tag):
         if not json.loads(result.stdout)['isDraft']:
             raise RuntimeError('Refusing to overwrite a published release. Bump the version.')
     else:
-        subprocess.run(['gh', 'release', 'create', tag, '--verify-tag', '--draft', '--title', 'YTDL Studio ' + VERSION,
+        subprocess.run(['gh', 'release', 'create', tag, '--verify-tag', '--draft', '--title', DISPLAY_NAME + ' ' + VERSION,
                         '--generate-notes'], check=True)
     files = [str(Path(folder) / name) for name in (*ASSETS.values(), MANIFEST)]
     subprocess.run(['gh', 'release', 'upload', tag, *files, '--clobber'], check=True)

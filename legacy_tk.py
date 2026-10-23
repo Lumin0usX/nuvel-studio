@@ -9,6 +9,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from platform_runtime import resource_path, install_instructions, open_directory, scroll_units, ffmpeg_path
 from media_quality import media_options, add_video_postprocessor
+from app_version import DISPLAY_NAME
 
 
 BG = "#101113"
@@ -71,7 +72,9 @@ def download_error(exc):
 class YTDLStudio:
     def __init__(self, root):
         self.root = root
-        self.root.title("YTDL Studio")
+        self.root.title(DISPLAY_NAME)
+        self._window_icon = tk.PhotoImage(file=str(resource_path('ui', 'brand', 'icon-192.png')))
+        self.root.iconphoto(True, self._window_icon)
         self.root.geometry("1160x820")
         self.root.minsize(980, 700)
         self.root.configure(bg=BG)
@@ -128,10 +131,10 @@ class YTDLStudio:
 
         header = tk.Frame(outer, bg=BG)
         header.pack(fill="x", pady=(0, 24))
-        tk.Label(header, text="↓", bg=ACCENT, fg=BG, font=(FONT_FAMILY, 24, "bold"), width=2).pack(side="left", padx=(0, 14))
+        self._brand_logo = tk.PhotoImage(file=str(resource_path('ui', 'brand', 'nuvel-small-white.png')))
+        tk.Label(header, image=self._brand_logo, bg=BG).pack(side="left", padx=(0, 14))
         brand = tk.Frame(header, bg=BG)
         brand.pack(side="left")
-        tk.Label(brand, text="YTDL  /  STUDIO", bg=BG, fg=TEXT, font=(FONT_FAMILY, 20, "bold")).pack(anchor="w")
         tk.Label(brand, text="เก็บคลิปโปรด ให้เป็นเรื่องง่าย", bg=BG, fg=MUTED).pack(anchor="w")
         tk.Label(header, text="YOUR MEDIA, SIMPLIFIED", bg=BG, fg=ACCENT, padx=14, pady=8, font=(FONT_FAMILY, 9, "bold")).pack(side="right")
 

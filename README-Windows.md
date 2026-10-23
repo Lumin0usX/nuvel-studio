@@ -1,9 +1,9 @@
-# YTDL Studio — Windows x64
+# NÜVEL Studio — Windows x64
 
 ## แอปพร้อมใช้และอัปเดตในแอป
 
 ดาวน์โหลด **YTDL-Studio-Windows-x64.zip** จาก Releases ของ repo ส่วนตัว
-แตก ZIP ทั้งโฟลเดอร์ แล้วเปิด **YTDL Studio.exe** โดยไม่ต้องติดตั้ง Python หรือ Git
+แตก ZIP ทั้งโฟลเดอร์ แล้วเปิด **NÜVEL Studio.exe** โดยไม่ต้องติดตั้ง Python หรือ Git
 เก็บโฟลเดอร์ `_internal` ไว้ข้างไฟล์ exe เสมอ ต้องมี Microsoft Edge WebView2 Runtime
 ซึ่งโดยปกติติดตั้งมาแล้วบน Windows 10/11
 
@@ -18,11 +18,15 @@
 
 1. ติดตั้ง Python 3.10+ แบบ x64 และเลือก Add Python to PATH
 2. ดับเบิลคลิก **build_windows.bat** ระบบเตรียม environment และส่วนประกอบให้เอง
-3. เมื่อ build สำเร็จ เปิด shortcut **YTDL Studio** ในโฟลเดอร์โปรเจกต์
+3. เมื่อ build สำเร็จ เปิด shortcut **NÜVEL Studio** ในโฟลเดอร์โปรเจกต์
 
 แอปที่แพ็กเปิดโดยไม่มี Console และรวม Python, UI, yt-dlp และ FFmpeg ไว้แล้ว
 ไฟล์โปรแกรมอยู่ใน `app-windows` อย่าแยก `.exe` ออกจากโฟลเดอร์ `_internal`
 Windows ต้องมี Microsoft Edge WebView2 Runtime
+
+ชื่อหลักคือ `app-windows/NÜVEL Studio.exe` และ `NÜVEL Studio.lnk`
+ชื่อเดิม `YTDL Studio.exe` ยังมีเป็นสำเนาเพื่อรองรับ updater รุ่นเก่า
+shortcut ชื่อเดิมที่มีอยู่จะสำรองแล้วชี้ไปยัง executable ใหม่ โดยไม่ใช้ symlink
 
 ZIP สำหรับส่งต่ออยู่ใน `dist/windows-<เวลาที่ build>` แตก ZIP แล้วเปิด `.exe` ได้
 เครื่องปลายทางไม่ต้องติดตั้ง Python แต่ยังต้องมี WebView2 Runtime
@@ -33,11 +37,16 @@ ZIP สำหรับส่งต่ออยู่ใน `dist/windows-<เว
 
 ปิดแอปและรอให้งานดาวน์โหลดจบ แล้วดับเบิลคลิก **update.bat**
 ระบบดึงโค้ด เตรียมส่วนประกอบ build และตรวจการเปิดแอปก่อนเปลี่ยนรุ่น
-เปิด shortcut **YTDL Studio** ในตำแหน่งเดิมหลังอัปเดตสำเร็จ
+เปิด shortcut **NÜVEL Studio** ในตำแหน่งเดิมหลังอัปเดตสำเร็จ
 ต้องใช้ Git clone และบัญชี Git ที่เข้าถึง repo ได้
 
 ถ้าตัวใหม่ไม่ผ่านการตรวจหรือแอปเก่ายังล็อกไฟล์อยู่ จะไม่แทนที่รุ่นเดิม
 ระบบเก็บรุ่นก่อนใน `dist` และไม่ลบไฟล์ดาวน์โหลดหรือการตั้งค่า
+ตัว build ต้องตรวจ native startup, UI/bridge, ฟอนต์และ engines ทั้ง executable
+ชื่อใหม่และสำเนาชื่อเดิมให้ผ่านก่อนสร้าง ZIP หรือเปลี่ยนแอป/shortcut
+
+ดูผลตรวจล่าสุดและข้อจำกัดที่ยังต้องยืนยันบน Windows จริงใน
+[Windows compatibility audit](WINDOWS-COMPATIBILITY.md)
 
 `install.bat` และ `start.bat` เก็บไว้สำหรับรันซอร์สระหว่างพัฒนา
 การใช้งานทั่วไปใช้ build แล้วเปิด shortcut หรือ `.exe` ตามขั้นตอนด้านบน

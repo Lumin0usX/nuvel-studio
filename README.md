@@ -1,7 +1,19 @@
-# YTDL Studio
+# NÜVEL Studio
 
 A desktop video, audio and image downloader with the Obsidian Futuristic interface,
 powered by yt-dlp. Original project materials are proprietary.
+
+The app uses the **NÜVEL Studio — 03 Fluid** identity, with the supplied outlined
+black/white logos and extracted Ü app icon. The sidebar follows the app theme
+and shows the Ü icon when collapsed. See [brand assets](assets/branding/README.md).
+Existing repository, preferences, credentials, updater identifiers, release archive
+names retain their YTDL identifiers for compatibility. Windows builds produce
+**NÜVEL Studio.exe** and **NÜVEL Studio.lnk**, with the original executable kept as
+a compatibility copy for old updaters.
+Local macOS builds produce **NÜVEL Studio.app** with a **NÜVEL Studio** executable;
+old project app paths become links after native acceptance. Both platforms use the
+new ICO/ICNS icons. Existing installed apps receive the
+branding after a rebuilt app passes the normal acceptance checks.
 
 ## Download the ready-to-use app
 
@@ -10,7 +22,7 @@ to a GitHub account with access to this private repository. Download the ZIP
 asset, not GitHub's automatically generated source-code archive.
 
 - Windows x64: extract **YTDL-Studio-Windows-x64.zip**, keep the entire
-  **YTDL Studio** folder, and open **YTDL Studio.exe**. Windows 10/11 needs
+  **YTDL Studio** folder, and open **NÜVEL Studio.exe**. Windows 10/11 needs
   [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
   (normally already installed). Python, Git and a terminal are not needed.
 - Mac Apple Silicon: extract **YTDL-Studio-macOS-arm64.zip**, move
@@ -51,7 +63,7 @@ Until a release is published, the app reports that no packaged release is availa
 ### Publish a version (maintainer)
 
 Set `VERSION` in `app_version.py`, commit, and push a matching tag, for example
-`v1.1.1`. `.github/workflows/release.yml` builds Windows x64 and macOS ARM64 on
+`v1.1.2`. `.github/workflows/release.yml` builds Windows x64 and macOS ARM64 on
 their native GitHub runners, runs tests and native startup checks, and uploads
 both ZIPs plus `studio-update.json` to a draft release. Only the complete release
 is published. Re-running is supported for drafts; published versions must not
@@ -59,10 +71,10 @@ be overwritten. This is separate from the Git-based source updater below.
 
 ```powershell
 git add .
-git commit -m "Add themes, fonts and Liquid Glass appearance"
+git commit -m "Rebrand as NUVEL Studio with compatible native updates"
 git push origin main
-git tag v1.1.1
-git push origin v1.1.1
+git tag v1.1.2
+git push origin v1.1.2
 ```
 
 The workflow must be enabled in this private repository. No personal token or
@@ -256,9 +268,9 @@ Install 64-bit x64 Python 3.10+ and enable **Add Python to PATH**, then run:
 build_windows.bat
 ```
 
-Then double-click **YTDL Studio** (`YTDL Studio.lnk`) in the project folder.
+Then double-click **NÜVEL Studio** (`NÜVEL Studio.lnk`) in the project folder.
 The builder prepares an isolated environment, bundles the application and
-creates a shortcut to **app-windows/YTDL Studio.exe**. The application includes
+creates a shortcut to **app-windows/NÜVEL Studio.exe**. The application includes
 Python, the UI, video/audio engines and FFmpeg. Keep the complete app-windows
 folder together; the exe depends on its bundled `_internal` directory.
 The portable ZIP is kept in `dist/windows-<build timestamp>`.
@@ -285,10 +297,10 @@ update.bat --check
 
 To update, close Studio and double-click **update.bat** in the project folder.
 It updates code, prepares dependencies and rebuilds the packaged application.
-The relocated executable must complete a native UI/bridge/FFmpeg test and
-confirm that it has no console before it replaces the app and shortcut.
+The relocated primary executable and its old-name compatibility copy must
+complete native UI/bridge/font/engine tests and confirm they have no console before it replaces the app and shortcut.
 Startup failure, a locked running app or publication failure preserves the
-previous app. Open the **YTDL Studio** shortcut after success.
+previous app. Open the **NÜVEL Studio** shortcut after success.
 Git for Windows must be installed, and Git must have access to the private repo.
 The first update requires `git pull --ff-only origin main` to receive update.bat.
 Local changes or conflicting Git history stop the update without discarding files.
@@ -303,7 +315,7 @@ Use native ARM64 Python 3.12+ and run these commands from the project directory:
 bash build_macos.command
 ```
 
-The build prepares dependencies and produces **YTDL Studio.app** directly in
+The build prepares dependencies and produces **NÜVEL Studio.app** directly in
 the project folder. Open this app for normal use without Terminal. It contains
 the Python runtime, UI, video/audio engines and FFmpeg; you may copy it into
 Applications. The distributable ZIP is also kept in `dist/<build timestamp>`.
@@ -319,6 +331,10 @@ See [the macOS guide](README-macOS.md). The build is ad-hoc signed, not notarize
 for public distribution. A macOS binary cannot be built by this project on Windows.
 
 ## Validation status
+
+Latest local investigation: [2026-10-23 native build verification](BUILD-VERIFICATION.md).
+That macOS attempt is blocked at the packaged engine check; it did not produce
+a verified new app. The notes below describe earlier validation runs.
 
 - Windows tests exercise a real shortcut launched from a Thai path and a hidden
   session that stops a remaining subprocess when its GUI exits.

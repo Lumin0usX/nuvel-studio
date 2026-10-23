@@ -11,9 +11,13 @@ import zipfile
 
 from create_windows_launcher import create_launcher
 from desktop_launcher import WindowsJob
+from app_version import DISPLAY_NAME
+from update_installer import executable_in
 
 
-EXECUTABLE = 'YTDL Studio.exe'
+EXECUTABLE = DISPLAY_NAME + '.exe'
+SHORTCUT = DISPLAY_NAME + '.lnk'
+OLD_SHORTCUT = 'YTDL Studio.lnk'
 FOLDER = 'app-windows'
 MARKER = '.studio-build.json'
 
@@ -33,8 +37,9 @@ def check_gui_executable(executable):
         raise RuntimeError('The build is not a console-free Windows GUI executable.')
 
 
-def verify_app(folder):
-    executable = (Path(folder) / EXECUTABLE).resolve()
+def verify_app(folder, *, legacy=False):
+    executable = ((Path(folder) / 'YTDL Studio.exe') if legacy else
+                  executable_in(folder, 'windows-x64')).resolve()
     check_gui_executable(executable)
     # This outer job also reaps a self-test if the supervisor itself cannot start.
     job = WindowsJob()
@@ -87,10 +92,13 @@ def publish_build(project, built_folder):
     project, built_folder = Path(project).resolve(), Path(built_folder).resolve()
     if not built_folder.is_relative_to(project / 'dist'):
         raise ValueError('The Windows build must be inside this project\'s dist folder.')
-    current, shortcut = project / FOLDER, project / 'YTDL Studio.lnk'
+    current, shortcut = project / FOLDER, project / SHORTCUT
+    old_shortcut = project / OLD_SHORTCUT
     _check_current(current)
-    if shortcut.exists() and not shortcut.is_file() and not shortcut.is_symlink():
-        raise RuntimeError('Refusing to replace an unrelated shortcut folder: ' + str(shortcut))
+    for path in (shortcut, old_shortcut):
+        if path.exists() and not path.is_file() and not path.is_symlink():
+            raise RuntimeError('Refusing to replace an unrelated shortcut folder: ' + str(path))
+    shortcuts = [shortcut] + ([old_shortcut] if old_shortcut.exists() or old_shortcut.is_symlink() else [])
     identifier = uuid.uuid4().hex[:12]
     backups, installed = [], []
     with tempfile.TemporaryDirectory(prefix='.studio-publish-', dir=project) as temporary:
@@ -98,19 +106,22 @@ def publish_build(project, built_folder):
         candidate = staging / 'YTDL Studio'
         shutil.copytree(built_folder, candidate)
         verify_app(candidate)
+        if (candidate / 'YTDL Studio.exe').is_file():
+            verify_app(candidate, legacy=True)
         from update_installer import write_marker
         write_marker(candidate, 'windows-x64')
         archive = staging / 'YTDL-Studio-Windows-x64.zip'
         archive_bundle(candidate, archive)
-        new_shortcut = staging / 'YTDL Studio.lnk'
-        create_launcher(project, target=current / EXECUTABLE, shortcut=new_shortcut)
+        for path in shortcuts:
+            create_launcher(project, target=current / EXECUTABLE, shortcut=staging / path.name)
         try:
-            for old in (current, shortcut):
+            for old in (current, *shortcuts):
                 if old.exists() or old.is_symlink():
                     backup = built_folder.parent / f'previous-{identifier}-{old.name}'
                     old.rename(backup)
                     backups.append((old, backup))
-            for source, destination in ((candidate, current), (new_shortcut, shortcut)):
+            replacements = [(candidate, current)] + [(staging / path.name, path) for path in shortcuts]
+            for source, destination in replacements:
                 source.rename(destination)
                 installed.append((destination, source))
             os.replace(archive, built_folder.parent / archive.name)

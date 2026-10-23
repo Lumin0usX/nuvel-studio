@@ -21,13 +21,14 @@ def main():
     bundled_ffmpeg = staging / 'ffmpeg'
     shutil.copy2(imageio_ffmpeg.get_ffmpeg_exe(), bundled_ffmpeg)
     bundled_ffmpeg.chmod(0o755)
-    from app_version import VERSION
+    from app_version import VERSION, DISPLAY_NAME
     from build_gallery_tool import build_tool
     gallery, gallery_source = build_tool(output)
     PyInstaller.__main__.run([
-        str(project / 'ytdl_studio.py'), '--name', 'YTDL Studio',
+        str(project / 'ytdl_studio.py'), '--name', DISPLAY_NAME,
         '--windowed', '--onedir', '--target-arch', 'arm64',
         '--osx-bundle-identifier', 'local.ytdlstudio.app',
+        '--icon', str(project / 'assets/branding/app-icon.icns'),
         '--distpath', str(output), '--workpath', str(output / 'work'),
         '--specpath', str(output),
         '--add-data', str(project / 'assets') + ':assets',
@@ -42,11 +43,15 @@ def main():
         '--collect-all', 'PIL',
         '--copy-metadata', 'yt-dlp',
     ])
-    app = output / 'YTDL Studio.app'
+    app = output / (DISPLAY_NAME + '.app')
+    # Old updaters locate this fixed executable path. Keep an alias while the
+    # real Mach-O executable and process name use the new brand.
+    (app / 'Contents/MacOS/YTDL Studio').symlink_to(DISPLAY_NAME)
     info_path = app / 'Contents/Info.plist'
     with info_path.open('rb') as stream:
         info = plistlib.load(stream)
-    info.update(CFBundleVersion=VERSION, CFBundleShortVersionString=VERSION)
+    info.update(CFBundleVersion=VERSION, CFBundleShortVersionString=VERSION,
+                CFBundleName=DISPLAY_NAME, CFBundleDisplayName=DISPLAY_NAME)
     with info_path.open('wb') as stream:
         plistlib.dump(info, stream)
     from update_installer import write_marker
@@ -63,7 +68,7 @@ def main():
     from macos_distribution import publish_build
     installed = publish_build(project, app)
     print('Build complete. Verified through macOS LaunchServices:', installed)
-    print('Open YTDL Studio.app in the project folder. No Terminal is needed.')
+    print('Open ' + installed.name + ' in the project folder. No Terminal is needed.')
     if not os.environ.get('CI'):
         subprocess.run(['/usr/bin/open', '-R', str(installed)], check=False)
     print('This local build is ad-hoc signed, not notarized for public distribution.')

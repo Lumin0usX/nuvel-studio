@@ -12,7 +12,7 @@ import sys
 import time
 import zipfile
 
-from app_version import VERSION, version_tuple
+from app_version import VERSION, DISPLAY_NAME, version_tuple
 from release_client import UpdateError
 
 MARKER = '.studio-build.json'
@@ -44,7 +44,16 @@ def installed_bundle():
 
 
 def executable_in(bundle, key):
-    return Path(bundle) / ('YTDL Studio.exe' if key == 'windows-x64' else 'Contents/MacOS/YTDL Studio')
+    bundle = Path(bundle)
+    if key == 'windows-x64':
+        primary = bundle / (DISPLAY_NAME + '.exe')
+        legacy = bundle / 'YTDL Studio.exe'
+        return legacy if not (primary.exists() or primary.is_symlink()) and legacy.is_file() else primary
+    with (bundle / 'Contents/Info.plist').open('rb') as stream:
+        name = plistlib.load(stream).get('CFBundleExecutable')
+    if name not in ('YTDL Studio', DISPLAY_NAME):
+        raise UpdateError('invalid_package')
+    return bundle / 'Contents/MacOS' / name
 
 
 def check_bundle(bundle, key, version=None):
@@ -309,5 +318,5 @@ def helper_main(plan_path, pid):
     except Exception:
         from desktop_launcher import notify_error
         notify_error('The update could not be installed. Your previous app and downloaded files were kept. '
-                     'Close other copies of YTDL Studio and reopen the app to try again.')
+                     'Close other copies of NÜVEL Studio and reopen the app to try again.')
         return 1

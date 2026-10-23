@@ -1,6 +1,7 @@
 @echo off
 setlocal DisableDelayedExpansion
 cd /d "%~dp0"
+set "PYTHONIOENCODING=utf-8"
 py -3 -c "import sys; assert sys.version_info >= (3,10)" >nul 2>nul
 if not errorlevel 1 goto use_py
 python -c "import sys; assert sys.version_info >= (3,10)" >nul 2>nul
@@ -21,10 +22,10 @@ set "YTDL_PYTHON=python"
 if /i "%~1"=="--check" goto check
 rem Keep execution in one parsed block: Git may replace this batch file.
 (
-    title YTDL Studio - Update
+    title Studio - Update
     echo.
-    echo YTDL Studio - Update
-    echo Close YTDL Studio and finish any downloads before continuing.
+    echo Studio - Update
+    echo Close Studio and finish any downloads before continuing.
     echo This uses your existing GitHub access to the private repository.
     echo.
     pause

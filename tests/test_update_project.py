@@ -175,7 +175,7 @@ class UpdateWorkflowTests(unittest.TestCase):
         self.assertEqual(run.call_count, 1)
         self.assertTrue(run.call_args.args[0][-1].endswith('build_macos.command'))
         self.assertIn('Update complete', output)
-        self.assertIn('Open YTDL Studio.app in the project folder', output)
+        self.assertIn('Open NÜVEL Studio.app in the project folder', output)
 
     def test_old_build_flag_keeps_the_same_single_mac_update_flow(self):
         result, _, run, output = self.run_main(['--build'])
@@ -206,7 +206,7 @@ class UpdateWorkflowTests(unittest.TestCase):
         self.assertEqual(run.call_count, 1)
         self.assertEqual(run.call_args.args[0][0], 'chosen-python')
         self.assertTrue(run.call_args.args[0][1].endswith('build_windows.py'))
-        self.assertIn('Open YTDL Studio shortcut', output)
+        self.assertIn('Open NÜVEL Studio shortcut', output)
 
     def test_windows_build_failure_does_not_claim_success(self):
         result, _, run, output = self.run_main([], platform='win32',

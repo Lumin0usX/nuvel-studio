@@ -4,32 +4,46 @@ from pathlib import Path
 import plistlib
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
+import zipfile
 from unittest.mock import patch
 
 import macos_distribution as distribution
+from app_version import DISPLAY_NAME
+from update_installer import check_bundle, executable_in, unpack, write_marker
 
 
 class MacDistributionTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory(prefix="YTDL ไทย & ' build ")
         self.addCleanup(temporary.cleanup)
-        self.project = Path(temporary.name)
+        # macOS exposes its temporary directory through the /var -> /private/var symlink.
+        self.project = Path(temporary.name).resolve()
         self.built = self.project / 'dist/new-build' / distribution.APP_NAME
         self.current = self.project / distribution.APP_NAME
         self.make_app(self.built, 'new')
         self.make_app(self.current, 'old')
 
-    def make_app(self, path, version):
+    def make_app(self, path, version, executable=DISPLAY_NAME):
         (path / 'Contents/MacOS').mkdir(parents=True)
         with (path / 'Contents/Info.plist').open('wb') as stream:
             plistlib.dump({'CFBundleIdentifier': distribution.BUNDLE_ID,
-                          'CFBundleExecutable': 'YTDL Studio'}, stream)
-        (path / 'Contents/MacOS/YTDL Studio').write_text(version, encoding='utf-8')
+                          'CFBundleExecutable': executable}, stream)
+        (path / 'Contents/MacOS' / executable).write_text(version, encoding='utf-8')
 
     def version(self, path):
-        return (path / 'Contents/MacOS/YTDL Studio').read_text(encoding='utf-8')
+        folder = path / 'Contents/MacOS'
+        return (folder / (DISPLAY_NAME if (folder / DISPLAY_NAME).exists() else 'YTDL Studio')).read_text(encoding='utf-8')
+
+    def require_symlinks(self):
+        probe = self.project / 'symlink-probe'
+        try:
+            probe.symlink_to(self.current, target_is_directory=True)
+        except OSError:
+            self.skipTest('Creating symlinks is not permitted on this account')
+        probe.unlink()
 
     def publish(self, verifier=None, archiver=None):
         def archive(app, destination):
@@ -106,10 +120,85 @@ class MacDistributionTests(unittest.TestCase):
         backups = list(self.built.parent.glob('previous-*-' + distribution.LEGACY_NAME))
         self.assertEqual((backups[0] / 'Contents/Resources/Scripts/main.scpt').read_bytes(), b'original source launcher')
 
+    def test_ytdl_app_migrates_to_nuvel_only_after_native_acceptance(self):
+        self.require_symlinks()
+        shutil.rmtree(self.current)
+        old = self.project / distribution.OLD_APP_NAME
+        self.make_app(old, 'old', executable='YTDL Studio')
+        def verify(candidate):
+            self.assertFalse(self.current.exists())
+            self.assertEqual(self.version(old), 'old')
+            self.assertEqual(executable_in(candidate, 'macos-arm64').name, DISPLAY_NAME)
+        result, _ = self.publish(verifier=verify)
+        self.assertEqual(result.name, 'NÜVEL Studio.app')
+        self.assertEqual(self.version(result), 'new')
+        self.assertTrue(old.is_symlink())
+        self.assertEqual(old.resolve(), result)
+        backup, = self.built.parent.glob('previous-*-' + distribution.OLD_APP_NAME)
+        self.assertEqual(self.version(backup), 'old')
+
+    def test_failed_native_migration_leaves_the_old_name_and_bundle_intact(self):
+        shutil.rmtree(self.current)
+        old = self.project / distribution.OLD_APP_NAME
+        self.make_app(old, 'old', executable='YTDL Studio')
+        with self.assertRaisesRegex(RuntimeError, 'native startup failed'):
+            self.publish(verifier=lambda _: (_ for _ in ()).throw(RuntimeError('native startup failed')))
+        self.assertFalse(self.current.exists())
+        self.assertFalse(old.is_symlink())
+        self.assertEqual(self.version(old), 'old')
+
+    def test_late_migration_failure_restores_both_old_aliases(self):
+        self.require_symlinks()
+        shutil.rmtree(self.current)
+        old = self.project / distribution.OLD_APP_NAME
+        self.make_app(old, 'old', executable='YTDL Studio')
+        legacy = self.project / distribution.LEGACY_NAME
+        legacy.symlink_to(distribution.OLD_APP_NAME)
+        with patch.object(distribution.os, 'replace', side_effect=OSError('archive publication failed')):
+            with self.assertRaisesRegex(OSError, 'archive publication failed'):
+                self.publish()
+        self.assertFalse(self.current.exists())
+        self.assertFalse(old.is_symlink())
+        self.assertEqual(self.version(old), 'old')
+        self.assertEqual(legacy.readlink(), Path(distribution.OLD_APP_NAME))
+        self.assertEqual(legacy.resolve(), old)
+
+    def test_another_build_can_replace_nuvel_and_retain_the_old_launch_alias(self):
+        self.require_symlinks()
+        old = self.project / distribution.OLD_APP_NAME
+        old.symlink_to(distribution.APP_NAME)
+        self.publish()
+        self.assertEqual(self.version(self.current), 'new')
+        self.assertTrue(old.is_symlink())
+        self.assertEqual(old.resolve(), self.current)
+
+    @unittest.skipUnless(sys.platform == 'darwin', 'macOS ditto archive tools required')
+    def test_renamed_app_archive_still_works_with_the_existing_updater_layout(self):
+        (self.built / 'Contents/Resources').mkdir()
+        write_marker(self.built, 'macos-arm64')
+        alias = self.built / 'Contents/MacOS/YTDL Studio'
+        alias.symlink_to(DISPLAY_NAME)
+        archive = self.project / 'update.zip'
+        distribution.archive_bundle(self.built, archive)
+        with zipfile.ZipFile(archive) as package:
+            self.assertIn('YTDL Studio.app/Contents/Info.plist', package.namelist())
+        candidate = unpack(archive, self.project / 'unpacked', 'macos-arm64')
+        check_bundle(candidate, 'macos-arm64')
+        self.assertEqual(executable_in(candidate, 'macos-arm64').name, DISPLAY_NAME)
+        self.assertEqual((candidate / 'Contents/MacOS/YTDL Studio').resolve(),
+                         executable_in(candidate, 'macos-arm64'))
+
     def test_os_launch_success_without_native_proof_is_rejected(self):
         with patch.object(distribution.subprocess, 'run'):
             with self.assertRaisesRegex(RuntimeError, 'did not complete'):
                 distribution.verify_app(self.built)
+
+    def test_launch_failure_reports_the_os_diagnostic_and_preserves_the_app(self):
+        failure = subprocess.CalledProcessError(1, ['open'], stderr=b'kLSNoExecutableErr')
+        with patch.object(distribution.subprocess, 'run', side_effect=failure):
+            with self.assertRaisesRegex(RuntimeError, 'exit code 1.*kLSNoExecutableErr.*previous app was kept'):
+                distribution.verify_app(self.built)
+        self.assertEqual(self.version(self.current), 'old')
 
     def test_native_proof_must_come_from_the_app_being_built(self):
         def launch(command, **kwargs):
@@ -122,9 +211,18 @@ class MacDistributionTests(unittest.TestCase):
     def test_native_proof_is_accepted_after_launchservices_exits(self):
         def launch(command, **kwargs):
             Path(command[-1]).write_text(json.dumps({'ok': True,
-                'executable': str(self.built / 'Contents/MacOS/YTDL Studio')}), encoding='utf-8')
+                'executable': str(self.built / 'Contents/MacOS' / DISPLAY_NAME)}), encoding='utf-8')
         with patch.object(distribution.subprocess, 'run', side_effect=launch):
             distribution.verify_app(self.built)
+
+    def test_native_verification_also_accepts_the_previous_executable_name(self):
+        old = self.project / 'dist/legacy' / distribution.OLD_APP_NAME
+        self.make_app(old, 'old', executable='YTDL Studio')
+        def launch(command, **kwargs):
+            Path(command[-1]).write_text(json.dumps({'ok': True,
+                'executable': str(old / 'Contents/MacOS/YTDL Studio')}), encoding='utf-8')
+        with patch.object(distribution.subprocess, 'run', side_effect=launch):
+            distribution.verify_app(old)
 
 
 if __name__ == '__main__':

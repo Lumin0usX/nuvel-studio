@@ -6,6 +6,17 @@ import subprocess
 import sys
 
 
+def verify_tool(executable):
+    """Keep native loader diagnostics visible when the isolated engine cannot start."""
+    result = subprocess.run([str(executable), '--config-ignore', '--list-modules'], capture_output=True,
+                            text=True, encoding='utf-8', errors='replace', timeout=60,
+                            creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+    if result.returncode or not result.stdout.strip():
+        details = result.stderr.strip() or result.stdout.strip() or 'No extractor output was returned.'
+        raise RuntimeError('The packaged image-post engine failed its CLI test '
+                           f'(exit code {result.returncode}):\n{details}')
+
+
 def build_tool(output):
     import gallery_dl
     import PyInstaller.__main__
@@ -22,10 +33,7 @@ def build_tool(output):
         args.extend(['--target-arch', 'arm64'])
     PyInstaller.__main__.run(args)
     executable = work / 'dist' / ('gallery-dl.exe' if sys.platform == 'win32' else 'gallery-dl')
-    result = subprocess.run([str(executable), '--config-ignore', '--list-modules'], capture_output=True,
-                            timeout=60, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-    if result.returncode or not result.stdout.strip():
-        raise RuntimeError('The packaged image-post engine failed its CLI test.')
+    verify_tool(executable)
     notices = work / 'gallery-dl-source'
     shutil.copytree(source, notices / 'gallery_dl', ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
     metadata = distribution('gallery-dl')

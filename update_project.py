@@ -102,7 +102,8 @@ def main(argv=None):
         else:
             print('Building the updated macOS app...', flush=True)
             subprocess.run(['/bin/bash', str(project / 'build_macos.command')], cwd=project, check=True)
-        launcher = 'YTDL Studio shortcut' if sys.platform == 'win32' else 'YTDL Studio.app'
+        from app_version import DISPLAY_NAME
+        launcher = DISPLAY_NAME + (' shortcut' if sys.platform == 'win32' else '.app')
         print('Update complete. Open ' + launcher + ' in the project folder.', flush=True)
         return 0
     except UpdateError as exc:

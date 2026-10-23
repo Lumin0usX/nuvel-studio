@@ -2,13 +2,15 @@
 from pathlib import Path
 import sys
 import uuid
+from app_version import DISPLAY_NAME
 
 
 def create_launcher(project=None, target=None, shortcut=None):
     if sys.platform != 'win32':
         raise RuntimeError('Create this shortcut on Windows using install.bat.')
     project = Path(project or Path(__file__).resolve().parent).resolve()
-    packaged = project / 'app-windows/YTDL Studio.exe'
+    from update_installer import executable_in
+    packaged = executable_in(project / 'app-windows', 'windows-x64')
     target = Path(target).resolve() if target is not None else (packaged if packaged.is_file() else None)
     if target is None:
         target = Path(sys.executable).with_name('pythonw.exe')
@@ -19,7 +21,7 @@ def create_launcher(project=None, target=None, shortcut=None):
     else:
         arguments = ''
         directory = target.parent
-    shortcut = Path(shortcut) if shortcut is not None else project / 'YTDL Studio.lnk'
+    shortcut = Path(shortcut) if shortcut is not None else project / (DISPLAY_NAME + '.lnk')
     # IShellLinkW + IPersistFile preserve Thai paths. WScript.Shell's Save can
     # reduce paths to ANSI on some systems. No PowerShell/WSH process is needed.
     # https://learn.microsoft.com/windows/win32/api/shobjidl_core/nn-shobjidl_core-ishelllinkw
@@ -53,9 +55,11 @@ def create_launcher(project=None, target=None, shortcut=None):
         checked(ole.CoCreateInstance(guid('00021401-0000-0000-C000-000000000046'), None, 1,
                                     guid('000214F9-0000-0000-C000-000000000046'), ctypes.byref(link)))
         for index, value in ((20, str(target)), (11, arguments),
-                             (9, str(directory)), (7, 'Open YTDL Studio without a terminal')):
+                             (9, str(directory)), (7, 'Open NÜVEL Studio without a terminal')):
             checked(method(link, index, wintypes.LPCWSTR)(link, value))
-        checked(method(link, 17, wintypes.LPCWSTR, ctypes.c_int)(link, str(target), 0))
+        source_icon = project / 'assets/branding/app-icon.ico'
+        icon = source_icon if arguments and source_icon.is_file() else target
+        checked(method(link, 17, wintypes.LPCWSTR, ctypes.c_int)(link, str(icon), 0))
         checked(method(link, 0, ctypes.c_void_p, ctypes.POINTER(ctypes.c_void_p))(
             link, guid('0000010b-0000-0000-C000-000000000046'), ctypes.byref(persist)))
         checked(method(persist, 6, wintypes.LPCWSTR, wintypes.BOOL)(persist, str(shortcut), True))
