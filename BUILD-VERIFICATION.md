@@ -198,3 +198,32 @@ At preparation time, Git and GitHub CLI remote checks failed to reach GitHub
 The remote branch, tags and latest release could not yet be verified. Any push
 must be non-forced; a release must not be represented as published until the
 native workflow and GitHub publication actually complete.
+
+## First remote CI and 1.1.3 correction
+
+Commit `31a7b24` and tag `v1.1.2` were pushed successfully through GitHub Desktop.
+The repository was confirmed private in GitHub's UI. Native run
+`39922050689` failed before publication and no release assets were published.
+
+- Windows failed the real shortcut test because TEMP used `RUNNER~1` while the
+  launched process returned the equivalent long profile path. The fixture now
+  resolves both paths, publishes its result atomically, and waits for its actual
+  process to exit before the temporary folder is cleaned up. Console and path
+  assertions remain mandatory.
+- macOS passed Python and all JavaScript tests, then `codesign --deep --force`
+  crashed during final signing. A local diagnostic copy reproduced an invalid
+  resource seal: the composed-Ü main executable was recorded as nested code,
+  so signing the main executable invalidated its own recorded hash. Renaming the
+  real file through an intermediate filename into macOS's decomposed Unicode
+  form, matching its plist and compatibility symlink, passed deep strict
+  verification. The visible name remains NÜVEL Studio.
+- Final signing now refreshes the outer bundle after PyInstaller's nested
+  signatures and requires `codesign --verify --deep --strict`, following
+  [Apple TN2206](https://developer.apple.com/library/archive/technotes/tn2206/).
+  Native startup acceptance is still required afterwards. Startup proof uses
+  filesystem identity to accept canonically equivalent macOS path spellings.
+
+The failed 1.1.2 tag is retained. The corrected release version is **1.1.3**.
+Local macOS distribution tests pass all 19 checks, including normalization and
+rejection of an invalid signature. Native Windows behavior still requires the
+next remote CI run; no failed check was bypassed.

@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 import zipfile
+import unicodedata
 from unittest.mock import patch
 
 import macos_distribution as distribution
@@ -223,6 +224,34 @@ class MacDistributionTests(unittest.TestCase):
                 'executable': str(old / 'Contents/MacOS/YTDL Studio')}), encoding='utf-8')
         with patch.object(distribution.subprocess, 'run', side_effect=launch):
             distribution.verify_app(old)
+
+    @unittest.skipUnless(sys.platform == 'darwin', 'macOS filename normalization required')
+    def test_decomposed_executable_accepts_equivalent_native_proof_and_legacy_alias(self):
+        folder = self.built / 'Contents/MacOS'
+        name = unicodedata.normalize('NFD', DISPLAY_NAME)
+        temporary = folder / 'rename-temporary'
+        (folder / DISPLAY_NAME).rename(temporary)
+        temporary.rename(folder / name)
+        alias = folder / 'YTDL Studio'
+        alias.symlink_to(name)
+        info_path = self.built / 'Contents/Info.plist'
+        info = plistlib.loads(info_path.read_bytes())
+        info['CFBundleExecutable'] = name
+        info_path.write_bytes(plistlib.dumps(info))
+        self.assertEqual(executable_in(self.built, 'macos-arm64').name, name)
+        self.assertEqual(alias.resolve(), executable_in(self.built, 'macos-arm64').resolve())
+        def launch(command, **kwargs):
+            Path(command[-1]).write_text(json.dumps({'ok': True,
+                'executable': str(folder / DISPLAY_NAME)}), encoding='utf-8')
+        with patch.object(distribution.subprocess, 'run', side_effect=launch):
+            distribution.verify_app(self.built)
+
+    def test_failed_deep_signature_verification_is_not_accepted(self):
+        failure = subprocess.CalledProcessError(1, ['codesign'], stderr=b'invalid sealed resource')
+        with patch.object(distribution.subprocess, 'run', side_effect=[None, failure]) as run:
+            with self.assertRaisesRegex(RuntimeError, 'invalid sealed resource'):
+                distribution.sign_bundle(self.built)
+        self.assertEqual(run.call_args.args[0][1:4], ['--verify', '--deep', '--strict'])
 
 
 if __name__ == '__main__':

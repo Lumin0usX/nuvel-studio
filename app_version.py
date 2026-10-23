@@ -1,5 +1,5 @@
 """Application version, independent of the download-engine version."""
-VERSION = '1.1.2'
+VERSION = '1.1.3'
 DISPLAY_NAME = 'NÜVEL Studio'
 REPOSITORY = 'Lumin0usX/ytdl-studio'
 

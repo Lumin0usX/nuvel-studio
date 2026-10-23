@@ -16,6 +16,24 @@ LEGACY_NAME = 'YTDL Studio Launcher.app'
 BUNDLE_ID = 'local.ytdlstudio.app'
 
 
+def sign_bundle(app):
+    # PyInstaller signs nested code inside-out. Only the outer bundle's plist
+    # and resources changed afterwards. Do not recursively re-sign shared
+    # executable targets; keep recursive strict verification mandatory.
+    # https://developer.apple.com/library/archive/technotes/tn2206/
+    for command in (
+        ['/usr/bin/codesign', '--force', '--sign', '-', str(app)],
+        ['/usr/bin/codesign', '--verify', '--deep', '--strict', str(app)],
+    ):
+        try:
+            subprocess.run(command, check=True, capture_output=True, timeout=120)
+        except subprocess.CalledProcessError as exc:
+            details = (exc.stderr or exc.stdout or b'No codesign diagnostic was returned.')
+            if isinstance(details, bytes):
+                details = details.decode('utf-8', errors='replace')
+            raise RuntimeError(f'Bundle signing/verification failed (exit {exc.returncode}): {details.strip()}') from exc
+
+
 def verify_app(app):
     """LaunchServices success alone is not proof that the UI or Python bridge loaded."""
     with tempfile.TemporaryDirectory(prefix='ytdl-launch-check-') as temporary:
@@ -36,7 +54,11 @@ def verify_app(app):
             raise RuntimeError('The built app did not complete its native startup test. The previous app was kept.') from exc
         from update_installer import executable_in
         expected = executable_in(app, 'macos-arm64').resolve()
-        if result.get('ok') is not True or Path(result.get('executable', '')).resolve() != expected:
+        try:
+            matching_executable = Path(result.get('executable', '')).samefile(expected)
+        except (OSError, TypeError, ValueError):
+            matching_executable = False
+        if result.get('ok') is not True or not matching_executable:
             raise RuntimeError('The built app returned an invalid startup result. The previous app was kept.')
 
 

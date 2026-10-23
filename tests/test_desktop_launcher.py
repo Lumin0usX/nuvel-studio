@@ -141,13 +141,16 @@ class HiddenWindowsSessionTests(unittest.TestCase):
     def test_generated_shortcut_opens_pythonw_without_a_console(self):
         from create_windows_launcher import create_launcher
         with tempfile.TemporaryDirectory(prefix="YTDL ไทย & launcher '") as temporary:
-            project = Path(temporary)
+            project = Path(temporary).resolve()
             result = project / 'shortcut-result.json'
             (project / 'desktop_launcher.py').write_text('''
-import ctypes, json
+import ctypes, json, os
 from pathlib import Path
-Path(__file__).with_name('shortcut-result.json').write_text(json.dumps({
-    'console': int(ctypes.windll.kernel32.GetConsoleWindow()), 'folder': str(Path.cwd())}))
+result = Path(__file__).with_name('shortcut-result.json')
+temporary = result.with_suffix('.tmp')
+temporary.write_text(json.dumps({
+    'console': int(ctypes.windll.kernel32.GetConsoleWindow()), 'folder': str(Path.cwd()), 'pid': os.getpid()}))
+os.replace(temporary, result)
 ''', encoding='utf-8')
             shortcut = create_launcher(project)
             self.assertTrue(shortcut.is_file())
@@ -157,8 +160,27 @@ Path(__file__).with_name('shortcut-result.json').write_text(json.dumps({
                 time.sleep(.05)
             self.assertTrue(result.is_file(), 'The generated shortcut did not run')
             state = json.loads(result.read_text())
+            import ctypes
+            from ctypes import wintypes
+            kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+            kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+            kernel.OpenProcess.restype = wintypes.HANDLE
+            kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+            kernel.WaitForSingleObject.restype = wintypes.DWORD
+            kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+            process = kernel.OpenProcess(0x00100000, False, state['pid'])
+            if process:
+                try:
+                    self.assertEqual(kernel.WaitForSingleObject(process, 5000), 0,
+                                     'The shortcut fixture did not finish before cleanup')
+                finally:
+                    kernel.CloseHandle(process)
+            elif ctypes.get_last_error() != 87:  # ERROR_INVALID_PARAMETER: process already exited.
+                raise ctypes.WinError(ctypes.get_last_error())
             self.assertEqual(state['console'], 0)
-            self.assertEqual(Path(state['folder']), project)
+            # The runner's TEMP may use RUNNER~1 while the launched process sees
+            # the long profile name. Both must identify the same actual folder.
+            self.assertEqual(Path(state['folder']).resolve(), project)
 
     def test_pythonw_session_has_no_console_and_reaps_a_remaining_worker(self):
         import ctypes

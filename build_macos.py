@@ -5,6 +5,7 @@ import plistlib
 import subprocess
 import sys
 import shutil
+import unicodedata
 from datetime import datetime
 
 
@@ -44,21 +45,31 @@ def main():
         '--copy-metadata', 'yt-dlp',
     ])
     app = output / (DISPLAY_NAME + '.app')
-    # Old updaters locate this fixed executable path. Keep an alias while the
-    # real Mach-O executable and process name use the new brand.
-    (app / 'Contents/MacOS/YTDL Studio').symlink_to(DISPLAY_NAME)
+    # codesign identifies the main executable using macOS's decomposed filename
+    # form. A composed Ü on disk can be sealed as nested code and then change
+    # during signing. Rename through a distinct path so APFS stores the NFD form.
+    executable_name = unicodedata.normalize('NFD', DISPLAY_NAME)
+    executable = app / 'Contents/MacOS' / DISPLAY_NAME
+    temporary_executable = executable.with_name('.studio-main-renaming')
+    executable.rename(temporary_executable)
+    temporary_executable.rename(executable.with_name(executable_name))
+    # Old updaters locate this fixed path; its resolved spelling must match the
+    # actual executable name reported in the native startup proof.
+    (app / 'Contents/MacOS/YTDL Studio').symlink_to(executable_name)
     info_path = app / 'Contents/Info.plist'
     with info_path.open('rb') as stream:
         info = plistlib.load(stream)
     info.update(CFBundleVersion=VERSION, CFBundleShortVersionString=VERSION,
-                CFBundleName=DISPLAY_NAME, CFBundleDisplayName=DISPLAY_NAME)
+                CFBundleName=DISPLAY_NAME, CFBundleDisplayName=DISPLAY_NAME,
+                CFBundleExecutable=executable_name)
     with info_path.open('wb') as stream:
         plistlib.dump(info, stream)
     from update_installer import write_marker
     write_marker(app, 'macos-arm64')
     for name in ('LICENSE', 'THIRD_PARTY_NOTICES.md'):
         shutil.copy2(project / name, app / 'Contents/Resources' / name)
-    subprocess.run(['/usr/bin/codesign', '--force', '--deep', '--sign', '-', str(app)], check=True, capture_output=True)
+    from macos_distribution import sign_bundle
+    sign_bundle(app)
     if os.environ.get('CI'):
         from macos_distribution import verify_app, archive_bundle
         verify_app(app)

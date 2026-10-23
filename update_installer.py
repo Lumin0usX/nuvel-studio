@@ -11,6 +11,7 @@ import subprocess
 import sys
 import time
 import zipfile
+import unicodedata
 
 from app_version import VERSION, DISPLAY_NAME, version_tuple
 from release_client import UpdateError
@@ -51,7 +52,7 @@ def executable_in(bundle, key):
         return legacy if not (primary.exists() or primary.is_symlink()) and legacy.is_file() else primary
     with (bundle / 'Contents/Info.plist').open('rb') as stream:
         name = plistlib.load(stream).get('CFBundleExecutable')
-    if name not in ('YTDL Studio', DISPLAY_NAME):
+    if not isinstance(name, str) or unicodedata.normalize('NFC', name) not in ('YTDL Studio', DISPLAY_NAME):
         raise UpdateError('invalid_package')
     return bundle / 'Contents/MacOS' / name
 
