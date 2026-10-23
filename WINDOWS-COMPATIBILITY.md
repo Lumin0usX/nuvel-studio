@@ -84,3 +84,12 @@ failures reported from the previous Windows machine.
 At the time of this audit, no native Windows build, commit, push or release had
 been made. Subsequent release preparation is recorded in BUILD-VERIFICATION.md.
 Existing installed apps were not modified by the audit.
+
+## Native CI follow-up
+
+The Windows x64 job for tag **v1.1.3**, commit **5547f83**, subsequently passed on
+GitHub's real Windows runner, including Python tests, all six JavaScript suites,
+the real executable build, both native startup checks and ZIP artifact upload.
+Evidence: [Windows job](https://github.com/Lumin0usX/ytdl-studio/actions/runs/39923546904/job/120314295254).
+The release was withheld because the macOS framework-signature check failed;
+the next version, 1.1.4, must pass both native jobs before publication.

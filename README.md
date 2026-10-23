@@ -63,7 +63,7 @@ Until a release is published, the app reports that no packaged release is availa
 ### Publish a version (maintainer)
 
 Set `VERSION` in `app_version.py`, commit, and push a matching tag, for example
-`v1.1.3`. `.github/workflows/release.yml` builds Windows x64 and macOS ARM64 on
+`v1.1.4`. `.github/workflows/release.yml` builds Windows x64 and macOS ARM64 on
 their native GitHub runners, runs tests and native startup checks, and uploads
 both ZIPs plus `studio-update.json` to a draft release. Only the complete release
 is published. Re-running is supported for drafts; published versions must not
@@ -73,8 +73,8 @@ be overwritten. This is separate from the Git-based source updater below.
 git add .
 git commit -m "Rebrand as NUVEL Studio with compatible native updates"
 git push origin main
-git tag v1.1.3
-git push origin v1.1.3
+git tag v1.1.4
+git push origin v1.1.4
 ```
 
 The workflow must be enabled in this private repository. No personal token or

@@ -227,3 +227,21 @@ The failed 1.1.2 tag is retained. The corrected release version is **1.1.3**.
 Local macOS distribution tests pass all 19 checks, including normalization and
 rejection of an invalid signature. Native Windows behavior still requires the
 next remote CI run; no failed check was bypassed.
+
+## Native 1.1.3 result and 1.1.4 framework signing fix
+
+Run `39923546904`, commit `5547f83`, passed the real Windows x64 job:
+Python tests, all six JavaScript suites, both executable startup tests, archive
+collection and artifact upload succeeded. The Windows short-path fixture fix
+is verified on the native runner.
+
+macOS passed tests and reached strict signature verification. That mandatory
+gate correctly rejected Python.org's copied `Python.framework`: its retained
+signature referenced resources absent from the frozen framework. Signing now
+refreshes each framework container inside-out, then the outer app, then requires
+recursive strict verification and the existing native startup check. A local
+diagnostic copy reproduced a missing framework seal; the corrected signing flow
+recreated it and passed recursive strict verification.
+
+The next release version is **1.1.4**; failed tags remain unchanged. Publication
+still requires successful native builds for both platforms at this same version.

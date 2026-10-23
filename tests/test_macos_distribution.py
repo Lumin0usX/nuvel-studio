@@ -253,6 +253,16 @@ class MacDistributionTests(unittest.TestCase):
                 distribution.sign_bundle(self.built)
         self.assertEqual(run.call_args.args[0][1:4], ['--verify', '--deep', '--strict'])
 
+    def test_invalid_framework_seal_prevents_signing_the_outer_app(self):
+        framework = self.built / 'Contents/Frameworks/Python.framework'
+        framework.mkdir(parents=True)
+        failure = subprocess.CalledProcessError(1, ['codesign'], stderr=b'invalid framework seal')
+        with patch.object(distribution.subprocess, 'run', side_effect=failure) as run:
+            with self.assertRaisesRegex(RuntimeError, 'invalid framework seal'):
+                distribution.sign_bundle(self.built)
+        run.assert_called_once()
+        self.assertEqual(run.call_args.args[0][-1], str(framework))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -17,14 +17,20 @@ BUNDLE_ID = 'local.ytdlstudio.app'
 
 
 def sign_bundle(app):
-    # PyInstaller signs nested code inside-out. Only the outer bundle's plist
-    # and resources changed afterwards. Do not recursively re-sign shared
-    # executable targets; keep recursive strict verification mandatory.
+    # PyInstaller signs individual binaries, but a copied Python.org framework
+    # can retain a resource seal for files not included in the frozen app.
+    # Refresh framework containers inside-out, then the app, and verify all code.
     # https://developer.apple.com/library/archive/technotes/tn2206/
-    for command in (
+    app = Path(app)
+    frameworks = sorted((app / 'Contents/Frameworks').rglob('*.framework'),
+                        key=lambda path: len(path.parts), reverse=True)
+    commands = [['/usr/bin/codesign', '--force', '--sign', '-', str(path)]
+                for path in frameworks if not path.is_symlink()]
+    commands.extend([
         ['/usr/bin/codesign', '--force', '--sign', '-', str(app)],
         ['/usr/bin/codesign', '--verify', '--deep', '--strict', str(app)],
-    ):
+    ])
+    for command in commands:
         try:
             subprocess.run(command, check=True, capture_output=True, timeout=120)
         except subprocess.CalledProcessError as exc:
