@@ -332,9 +332,10 @@ for public distribution. A macOS binary cannot be built by this project on Windo
 
 ## Validation status
 
-Latest local investigation: [2026-10-23 native build verification](BUILD-VERIFICATION.md).
-That macOS attempt is blocked at the packaged engine check; it did not produce
-a verified new app. The notes below describe earlier validation runs.
+Release **1.1.4** passed native Windows x64 and macOS ARM64 builds, the test suites
+and packaged startup checks in [GitHub Actions](https://github.com/Lumin0usX/ytdl-studio/actions/runs/39924319272).
+Both ZIPs and their verified update manifest are published in the private release.
+See [the verification record](BUILD-VERIFICATION.md). The notes below describe earlier runs.
 
 - Windows tests exercise a real shortcut launched from a Thai path and a hidden
   session that stops a remaining subprocess when its GUI exits.

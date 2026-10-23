@@ -1,7 +1,8 @@
 # Native build investigation — 2026-10-23
 
-Status: **blocked; no new verified macOS app or release archive produced**.
-The existing `YTDL Studio.app` and launcher link have been preserved.
+Latest status: **Release 1.1.4 is published**, with verified native Windows x64
+and macOS ARM64 packages plus the update manifest. See the final release result
+below. The earlier investigation entries describe failures before this release.
 
 ## Source and environment
 
@@ -245,3 +246,30 @@ recreated it and passed recursive strict verification.
 
 The next release version is **1.1.4**; failed tags remain unchanged. Publication
 still requires successful native builds for both platforms at this same version.
+
+## Final verified release — 1.1.4
+
+- Repository remains **private**: `Lumin0usX/ytdl-studio`; license remains proprietary.
+- Release commit: **6de289c**, tag **v1.1.4**.
+- [Native CI run 39924319272](https://github.com/Lumin0usX/ytdl-studio/actions/runs/39924319272)
+  completed successfully: both platform jobs and publication passed. Both jobs
+  ran the Python and JavaScript suites and their real packaged startup checks.
+- [NÜVEL Studio 1.1.4](https://github.com/Lumin0usX/ytdl-studio/releases/tag/v1.1.4)
+  is published as **Latest**, with both ZIPs and `studio-update.json` present.
+- The published manifest was downloaded from the private release and checked:
+  schema 1, version 1.1.4, both platform entries, and SHA-256 values matching
+  GitHub's displayed digests of the actual uploaded ZIP assets.
+
+| Asset | Size in bytes | SHA-256 |
+| --- | ---: | --- |
+| YTDL-Studio-Windows-x64.zip | 147958093 | f284fa0b8234ea2032b7ec42db94ebc4022bee81debb56f3f16ea66639e8572e |
+| YTDL-Studio-macOS-arm64.zip | 145440609 | f3a8e7fa27f7e884fbbb8ad92cd3501b8a54632ff30b37cb2be73c2b1eda7034 |
+| studio-update.json | 422 | 36b8315a25bdfa125e128af713eccb4c646e4a3888fb95eb9e33df99158ff3a3 |
+
+Commit and tag were pushed through the user's GitHub Desktop installation after
+the terminal's Git/GitHub CLI network attempts failed. No force push or tag
+rewrite was used. Source devices can use the existing folder updater; packaged
+devices with the in-app updater can check for 1.1.4 using their private-repository
+read access. Browser/Git sign-in is separate from the app's saved update token.
+Live downloads across every external media service remain outside this release
+verification; native startup, bridge, bundled font rendering and engines passed.

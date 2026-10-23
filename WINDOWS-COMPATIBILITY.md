@@ -1,8 +1,8 @@
 # Windows compatibility audit — 2026-10-23
 
-**Status: source changes and platform-independent checks passed; a real Windows
-x64 build/startup has not been run for this revision.** This audit ran on an
-Apple Silicon Mac. No Windows executable or release was produced.
+**Latest status: native Windows x64 build and startup passed, and Release 1.1.4
+is published.** The initial source audit below ran on an Apple Silicon Mac;
+the later native CI results are recorded at the end.
 
 ## Corrections made
 
@@ -93,3 +93,9 @@ the real executable build, both native startup checks and ZIP artifact upload.
 Evidence: [Windows job](https://github.com/Lumin0usX/ytdl-studio/actions/runs/39923546904/job/120314295254).
 The release was withheld because the macOS framework-signature check failed;
 the next version, 1.1.4, must pass both native jobs before publication.
+
+Release **1.1.4** subsequently passed both native platform jobs and publication in
+[run 39924319272](https://github.com/Lumin0usX/ytdl-studio/actions/runs/39924319272).
+The Windows ZIP is published in the private repository's latest release together
+with the macOS ZIP and a verified SHA-256 update manifest. See the final release
+section of BUILD-VERIFICATION.md for artifact sizes and checksums.
