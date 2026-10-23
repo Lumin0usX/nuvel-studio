@@ -4,6 +4,34 @@ Latest status: **Release 1.1.4 is published**, with verified native Windows x64
 and macOS ARM64 packages plus the update manifest. See the final release result
 below. The earlier investigation entries describe failures before this release.
 
+## Follow-up: duplicate macOS launch icons
+
+The project-root `YTDL Studio.app` and `YTDL Studio Launcher.app` were both
+symlinks to the installed `NÜVEL Studio.app` 1.1.4, rather than separate installed
+copies. The source-build publisher had deliberately recreated these links after
+migration, leaving old app names visible in Finder.
+
+The publisher now moves old apps and links into its existing `dist` rollback
+backups without recreating old-name launch links. Native acceptance still runs
+before replacement; a late publication failure restores all original apps/links.
+The release ZIP root and the compatibility executable inside the bundle are
+unchanged so existing online-update clients remain compatible.
+
+- `test_macos_distribution.py`: all 21 tests passed, including removal of both
+  obsolete links, real old-app migration, rollback and the legacy archive layout.
+- `test_app_updates.py`: 25 passed, one Windows Credential Manager test skipped
+  on this Mac. No updater runtime code or Windows packaging was changed.
+- Installed 1.1.4 bundle: `codesign --verify --deep --strict` passed. Desktop
+  launch displayed NÜVEL Studio 1.1.4 and backend-reported yt-dlp 2026.10.21 /
+  gallery-dl Ready. A shell-launched native self-test still failed at
+  LaunchServices with `kLSNoExecutableErr`; this follow-up does not claim a new
+  successful native self-test or replace the signed release bundle.
+- Moved the two verified project-root symlinks to
+  `dist/obsolete-launch-links-20261023-154145/`. The project root now contains
+  only `NÜVEL Studio.app`; the app itself and existing rollback bundles were
+  preserved. No new build, version tag or release is required for this
+  source-publication fix; the published native release remains 1.1.4.
+
 ## Source and environment
 
 - Read `README.md` and `README-macOS.md`; no applicable `AGENTS.md` was found.

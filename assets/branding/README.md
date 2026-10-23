@@ -46,8 +46,9 @@ is required on Windows. The app folder remains `app-windows` and release ZIP
 layout retains its `YTDL Studio` root.
 
 macOS builds now produce **NÜVEL Studio.app** with a **NÜVEL Studio** executable.
-After native acceptance, the previous project app is backed up and the old
-`YTDL Studio.app` path becomes a link to the new app. Old released updaters still
+After native acceptance, previous project apps and old-name launcher links move
+to rollback backups in `dist`; only `NÜVEL Studio.app` remains in the project root.
+Failed publication restores the previous apps and links. Old released updaters still
 receive a ZIP rooted at `YTDL Studio.app` and a compatibility executable symlink
 inside `Contents/MacOS`; the primary executable and process name use NÜVEL.
 macOS `CFBundleName`/`CFBundleDisplayName`,

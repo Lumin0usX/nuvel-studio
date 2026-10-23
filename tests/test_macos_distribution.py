@@ -102,13 +102,6 @@ class MacDistributionTests(unittest.TestCase):
         self.assertEqual(self.version(self.current), 'old')
 
     def test_previous_source_launcher_is_automatically_migrated(self):
-        # Only this OS primitive may be unavailable on Windows without Developer Mode.
-        probe = self.project / 'symlink-probe'
-        try:
-            probe.symlink_to(self.current, target_is_directory=True)
-        except OSError:
-            self.skipTest('Creating symlinks is not permitted on this Windows account')
-        probe.unlink()
         legacy = self.project / distribution.LEGACY_NAME
         scripts = legacy / 'Contents/Resources/Scripts'
         scripts.mkdir(parents=True)
@@ -116,13 +109,11 @@ class MacDistributionTests(unittest.TestCase):
         with (legacy / 'Contents/Info.plist').open('wb') as stream:
             plistlib.dump({'CFBundleExecutable': 'applet'}, stream)
         self.publish()
-        self.assertTrue(legacy.is_symlink())
-        self.assertEqual(legacy.resolve(), self.current.resolve())
+        self.assertFalse(legacy.exists() or legacy.is_symlink())
         backups = list(self.built.parent.glob('previous-*-' + distribution.LEGACY_NAME))
         self.assertEqual((backups[0] / 'Contents/Resources/Scripts/main.scpt').read_bytes(), b'original source launcher')
 
     def test_ytdl_app_migrates_to_nuvel_only_after_native_acceptance(self):
-        self.require_symlinks()
         shutil.rmtree(self.current)
         old = self.project / distribution.OLD_APP_NAME
         self.make_app(old, 'old', executable='YTDL Studio')
@@ -133,8 +124,7 @@ class MacDistributionTests(unittest.TestCase):
         result, _ = self.publish(verifier=verify)
         self.assertEqual(result.name, 'NÜVEL Studio.app')
         self.assertEqual(self.version(result), 'new')
-        self.assertTrue(old.is_symlink())
-        self.assertEqual(old.resolve(), result)
+        self.assertFalse(old.exists() or old.is_symlink())
         backup, = self.built.parent.glob('previous-*-' + distribution.OLD_APP_NAME)
         self.assertEqual(self.version(backup), 'old')
 
@@ -164,14 +154,31 @@ class MacDistributionTests(unittest.TestCase):
         self.assertEqual(legacy.readlink(), Path(distribution.OLD_APP_NAME))
         self.assertEqual(legacy.resolve(), old)
 
-    def test_another_build_can_replace_nuvel_and_retain_the_old_launch_alias(self):
+    def test_another_build_removes_both_obsolete_launch_aliases(self):
         self.require_symlinks()
         old = self.project / distribution.OLD_APP_NAME
+        legacy = self.project / distribution.LEGACY_NAME
         old.symlink_to(distribution.APP_NAME)
+        legacy.symlink_to(distribution.APP_NAME)
         self.publish()
         self.assertEqual(self.version(self.current), 'new')
-        self.assertTrue(old.is_symlink())
-        self.assertEqual(old.resolve(), self.current)
+        for alias in (old, legacy):
+            self.assertFalse(alias.exists() or alias.is_symlink())
+            backup, = self.built.parent.glob('previous-*-' + alias.name)
+            self.assertEqual(backup.readlink(), Path(distribution.APP_NAME))
+
+    def test_late_publication_failure_restores_both_obsolete_launch_aliases(self):
+        self.require_symlinks()
+        aliases = [self.project / name for name in (distribution.OLD_APP_NAME, distribution.LEGACY_NAME)]
+        for alias in aliases:
+            alias.symlink_to(distribution.APP_NAME)
+        with patch.object(distribution.os, 'replace', side_effect=OSError('archive publication failed')):
+            with self.assertRaises(OSError):
+                self.publish()
+        self.assertEqual(self.version(self.current), 'old')
+        for alias in aliases:
+            self.assertEqual(alias.readlink(), Path(distribution.APP_NAME))
+            self.assertEqual(alias.resolve(), self.current)
 
     @unittest.skipUnless(sys.platform == 'darwin', 'macOS ditto archive tools required')
     def test_renamed_app_archive_still_works_with_the_existing_updater_layout(self):

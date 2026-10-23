@@ -130,8 +130,6 @@ def publish_build(project, built_app):
         verify_app(candidate)
         archive = staging / 'YTDL-Studio-macOS-arm64.zip'
         archive_bundle(candidate, archive)
-        for old in old_paths:
-            (staging / old.name).symlink_to(APP_NAME, target_is_directory=True)
         try:
             for old in (current, *old_paths):
                 if _exists(old):
@@ -141,10 +139,8 @@ def publish_build(project, built_app):
                     backups.append((old, backup))
             candidate.rename(current)
             installed.append((current, candidate))
-            for old in old_paths:
-                link = staging / old.name
-                link.rename(old)
-                installed.append((old, link))
+            # Keep old app names only in the rollback backups. Finder treats
+            # compatibility .app links as additional apps, leaving duplicate icons.
             os.replace(archive, built_app.parent / archive.name)
         except BaseException:
             for destination, original in reversed(installed):
