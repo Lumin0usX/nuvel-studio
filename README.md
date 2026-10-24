@@ -226,6 +226,20 @@ The source updater also accepts this project's original GitHub repository URL
 as a migration alias for existing clones, without changing their remote or
 accepting repositories owned by other accounts.
 
+The double-click launchers use a small, independent `update_bootstrap.py`.
+It fetches and fast-forwards the source before starting `update_project.py` in
+a fresh Python process, so a broken older build orchestrator can be replaced
+before it runs. If fetching origin fails, it tries the other known project URL
+once using the same HTTPS/SSH transport and existing credentials. It does not
+rewrite origin, reset local work, or run a standalone script from a remote URL.
+Both fetches failing stops the update; a stale `FETCH_HEAD` is never installed.
+Build failures are reported without automatic retries.
+
+This recovery path requires these new launcher/bootstrap files to have reached
+the machine first. It cannot repair a broken bootstrap, missing Git/Python,
+offline access, or missing private-repository permissions. Existing packaged
+apps continue to use the separate release-based in-app updater.
+
 ## Quality preferences
 
 All three modes default to the highest quality the source exposes.

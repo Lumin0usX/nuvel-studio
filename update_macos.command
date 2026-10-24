@@ -9,6 +9,6 @@ main() {
     printf 'This updater uses your existing GitHub access to the private repository.\n\n'
     printf 'The updater builds and verifies the app before replacing the previous version.\n\n'
     choose_python
-    "$BASE_PYTHON" -u "$PROJECT_DIR/update_project.py"
+    "$BASE_PYTHON" -u "$PROJECT_DIR/update_bootstrap.py"
 }
 main "$@"

@@ -29,7 +29,7 @@ rem Keep execution in one parsed block: Git may replace this batch file.
     echo This uses your existing GitHub access to the private repository.
     echo.
     pause
-    %NUVEL_PYTHON% -u "%~dp0update_project.py"
+    %NUVEL_PYTHON% -u "%~dp0update_bootstrap.py"
     if errorlevel 1 (
         echo.
         echo Update failed. See the error above, then retry.
@@ -43,5 +43,5 @@ rem Keep execution in one parsed block: Git may replace this batch file.
 )
 
 :check
-%NUVEL_PYTHON% -u "%~dp0update_project.py" --check
+%NUVEL_PYTHON% -u "%~dp0update_bootstrap.py" --check
 exit /b %errorlevel%

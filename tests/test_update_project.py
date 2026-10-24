@@ -11,6 +11,7 @@ import unittest
 from unittest.mock import patch
 
 from update_project import UpdateError, main, update_source
+from update_bootstrap import main as bootstrap_main
 
 
 @unittest.skipUnless(shutil.which('git'), 'Git is required for updater integration tests')
@@ -107,6 +108,77 @@ class SourceUpdateTests(unittest.TestCase):
                     update_source(self.clone)
                 self.assertFalse((self.clone / '.git/FETCH_HEAD').exists())
                 self.unchanged()
+
+    def test_failed_origin_recovers_using_only_the_other_project_name(self):
+        self.publish()
+        for name in ('nuvel-studio', 'ytdl-studio'):
+            for prefix in ('https://github.com/lumin0usx/', 'git@github.com:lumin0usx/',
+                           'ssh://git@github.com/lumin0usx/'):
+                url = prefix + name + '.git'
+                other = prefix + ('nuvel-studio' if name == 'ytdl-studio' else 'ytdl-studio') + '.git'
+                with self.subTest(url=url):
+                    self.git(self.clone, 'config', '--add',
+                             f'url.{(self.origin.parent / "missing.git").as_posix()}.insteadOf', url)
+                    self.git(self.clone, 'config', '--add', f'url.{self.origin.as_posix()}.insteadOf', other)
+                    self.git(self.clone, 'remote', 'set-url', 'origin', url)
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        update_source(self.clone)
+                    self.assertIn('Trying the alternate project URL', output.getvalue())
+                    self.assertEqual(self.git(self.clone, 'rev-parse', 'HEAD'),
+                                     self.git(self.author, 'rev-parse', 'HEAD'))
+                    self.assertEqual(self.git(self.clone, 'config', '--get', 'remote.origin.url'), url)
+                    self.git(self.clone, 'config', '--remove-section',
+                             f'url.{(self.origin.parent / "missing.git").as_posix()}')
+                    self.git(self.clone, 'config', '--remove-section', f'url.{self.origin.as_posix()}')
+
+    def test_failure_of_both_urls_cannot_install_a_stale_fetch_head(self):
+        self.publish()
+        self.git(self.clone, 'fetch', 'origin', 'main')
+        self.assertNotEqual(self.git(self.clone, 'rev-parse', 'FETCH_HEAD'), self.before)
+        missing = (self.origin.parent / 'missing.git').as_posix()
+        for name in ('nuvel-studio', 'ytdl-studio'):
+            self.git(self.clone, 'config', '--add', f'url.{missing}.insteadOf',
+                     f'https://github.com/lumin0usx/{name}.git')
+        self.git(self.clone, 'remote', 'set-url', 'origin', 'https://github.com/lumin0usx/nuvel-studio.git')
+        with redirect_stdout(io.StringIO()), self.assertRaisesRegex(UpdateError, 'either project URL'):
+            update_source(self.clone)
+        self.unchanged()
+
+    def test_fallback_cannot_replace_checkout_with_unrelated_history(self):
+        unrelated = self.origin.parent / 'unrelated'
+        self.git(self.origin.parent, 'init', '--initial-branch=main', str(unrelated))
+        self.identity(unrelated)
+        (unrelated / 'other.txt').write_text('another history', encoding='utf-8')
+        self.git(unrelated, 'add', '.')
+        self.git(unrelated, 'commit', '-m', 'Unrelated root')
+        primary = 'https://github.com/lumin0usx/nuvel-studio.git'
+        alternate = 'https://github.com/lumin0usx/ytdl-studio.git'
+        self.git(self.clone, 'remote', 'set-url', 'origin', primary)
+        self.git(self.clone, 'config', '--add',
+                 f'url.{(self.origin.parent / "missing.git").as_posix()}.insteadOf', primary)
+        self.git(self.clone, 'config', '--add', f'url.{unrelated.as_posix()}.insteadOf', alternate)
+        with redirect_stdout(io.StringIO()), self.assertRaisesRegex(UpdateError, 'history has diverged'):
+            update_source(self.clone)
+        self.unchanged()
+        self.assertFalse((self.clone / 'other.txt').exists())
+
+    def test_bootstrap_replaces_a_broken_orchestrator_before_running_it(self):
+        updater = self.author / 'update_project.py'
+        updater.write_text('raise SyntaxError("old updater is broken")\n', encoding='utf-8')
+        self.git(self.author, 'add', '.')
+        self.git(self.author, 'commit', '-m', 'Old updater')
+        self.git(self.author, 'push', 'origin', 'main')
+        self.update()
+        updater.write_text('import sys\nfrom pathlib import Path\n'
+                           'assert sys.argv[1:] == ["--build-current"]\n'
+                           'Path("recovery-result").write_text("updated updater ran")\n', encoding='utf-8')
+        self.publish()
+        with patch('update_bootstrap.__file__', str(self.clone / 'update_bootstrap.py')), \
+             patch('update_bootstrap.update_source', side_effect=lambda project: update_source(project, self.allowed)), \
+             redirect_stdout(io.StringIO()):
+            self.assertEqual(bootstrap_main([]), 0)
+        self.assertEqual((self.clone / 'recovery-result').read_text(), 'updated updater ran')
 
     def test_ignored_download_cannot_be_overwritten_by_a_new_tracked_file(self):
         for directory in (self.author, self.clone):
@@ -210,6 +282,13 @@ class UpdateWorkflowTests(unittest.TestCase):
         self.assertIn('Update complete', output)
         self.assertIn('Open NÜVEL Studio.app in the project folder', output)
 
+    def test_bootstrapped_build_does_not_fetch_a_second_time(self):
+        result, update, run, output = self.run_main(['--build-current'])
+        self.assertEqual(result, 0)
+        update.assert_not_called()
+        self.assertEqual(run.call_count, 1)
+        self.assertIn('Update complete', output)
+
     def test_old_build_flag_keeps_the_same_single_mac_update_flow(self):
         result, _, run, output = self.run_main(['--build'])
         self.assertEqual(result, 0)
@@ -279,7 +358,7 @@ class WindowsBatchUpdateTests(unittest.TestCase):
             folder = Path(temporary, 'NÜVEL Studio ไทย')
             folder.mkdir()
             shutil.copyfile(Path(__file__).resolve().parents[1] / 'update.bat', folder / 'update.bat')
-            (folder / 'update_project.py').write_text(updater, encoding='utf-8')
+            (folder / 'update_bootstrap.py').write_text(updater, encoding='utf-8')
             # Only the copied stub runs: these tests never fetch or install.
             return subprocess.run(['cmd.exe', '/d', '/c', 'update.bat', *args], cwd=folder,
                                   input='\n\n', text=True, encoding='utf-8', errors='replace',
