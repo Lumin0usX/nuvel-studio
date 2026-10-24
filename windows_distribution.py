@@ -17,8 +17,7 @@ from update_installer import executable_in
 
 EXECUTABLE = DISPLAY_NAME + '.exe'
 SHORTCUT = DISPLAY_NAME + '.lnk'
-OLD_SHORTCUT = 'YTDL Studio.lnk'
-FOLDER = 'app-windows'
+FOLDER = 'nuvel-windows'
 MARKER = '.studio-build.json'
 
 
@@ -37,15 +36,25 @@ def check_gui_executable(executable):
         raise RuntimeError('The build is not a console-free Windows GUI executable.')
 
 
-def verify_app(folder, *, legacy=False):
-    executable = ((Path(folder) / 'YTDL Studio.exe') if legacy else
-                  executable_in(folder, 'windows-x64')).resolve()
+def validate_startup_proof(executable, proof):
+    """Validate the same native receipt for shell builds and desktop acceptance."""
+    try:
+        data = json.loads(Path(proof).read_text(encoding='utf-8'))
+    except (OSError, ValueError) as exc:
+        raise RuntimeError('The packaged interface did not confirm startup. The previous app was kept.') from exc
+    if not isinstance(data, dict) or data.get('ok') is not True or data.get('console_attached') is not False or \
+            Path(data.get('executable', '')).resolve() != Path(executable).resolve():
+        raise RuntimeError('The packaged interface returned an invalid startup result.')
+
+
+def verify_app(folder):
+    executable = executable_in(folder, 'windows-x64').resolve()
     check_gui_executable(executable)
     # This outer job also reaps a self-test if the supervisor itself cannot start.
     job = WindowsJob()
     process = None
     try:
-        with tempfile.TemporaryDirectory(prefix='ytdl-exe-check-') as temporary:
+        with tempfile.TemporaryDirectory(prefix='nuvel-exe-check-') as temporary:
             proof = Path(temporary) / 'result.json'
             process = subprocess.Popen([str(executable), '--self-test', '--smoke-result', str(proof)],
                                        cwd=folder, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
@@ -54,13 +63,7 @@ def verify_app(folder, *, legacy=False):
             result = process.wait(timeout=120)
             if result:
                 raise RuntimeError('The packaged interface failed its startup test. The previous app was kept.')
-            try:
-                data = json.loads(proof.read_text(encoding='utf-8'))
-            except (OSError, ValueError) as exc:
-                raise RuntimeError('The packaged interface did not confirm startup. The previous app was kept.') from exc
-            if not isinstance(data, dict) or data.get('ok') is not True or data.get('console_attached') is not False or \
-                    Path(data.get('executable', '')).resolve() != executable:
-                raise RuntimeError('The packaged interface returned an invalid startup result.')
+            validate_startup_proof(executable, proof)
     finally:
         job.close()
         if process and process.poll() is None:
@@ -72,7 +75,7 @@ def archive_bundle(folder, destination):
     with zipfile.ZipFile(destination, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
         for item in sorted(folder.rglob('*')):
             if item.is_file():
-                archive.write(item, Path('YTDL Studio') / item.relative_to(folder))
+                archive.write(item, Path('NÜVEL Studio') / item.relative_to(folder))
 
 
 def _check_current(folder):
@@ -84,7 +87,7 @@ def _check_current(folder):
         data = json.loads((folder / MARKER).read_text(encoding='utf-8'))
     except (OSError, ValueError) as exc:
         raise RuntimeError('Refusing to replace an unrecognized folder: ' + str(folder)) from exc
-    if not isinstance(data, dict) or data.get('product') != 'YTDL Studio' or data.get('platform') not in ('windows', 'windows-x64'):
+    if not isinstance(data, dict) or data.get('product') != 'NÜVEL Studio' or data.get('platform') not in ('windows', 'windows-x64'):
         raise RuntimeError('Refusing to replace an unrelated application: ' + str(folder))
 
 
@@ -93,24 +96,21 @@ def publish_build(project, built_folder):
     if not built_folder.is_relative_to(project / 'dist'):
         raise ValueError('The Windows build must be inside this project\'s dist folder.')
     current, shortcut = project / FOLDER, project / SHORTCUT
-    old_shortcut = project / OLD_SHORTCUT
     _check_current(current)
-    for path in (shortcut, old_shortcut):
+    for path in (shortcut,):
         if path.exists() and not path.is_file() and not path.is_symlink():
             raise RuntimeError('Refusing to replace an unrelated shortcut folder: ' + str(path))
-    shortcuts = [shortcut] + ([old_shortcut] if old_shortcut.exists() or old_shortcut.is_symlink() else [])
+    shortcuts = [shortcut]
     identifier = uuid.uuid4().hex[:12]
     backups, installed = [], []
     with tempfile.TemporaryDirectory(prefix='.studio-publish-', dir=project) as temporary:
         staging = Path(temporary)
-        candidate = staging / 'YTDL Studio'
+        candidate = staging / 'NÜVEL Studio'
         shutil.copytree(built_folder, candidate)
         verify_app(candidate)
-        if (candidate / 'YTDL Studio.exe').is_file():
-            verify_app(candidate, legacy=True)
         from update_installer import write_marker
         write_marker(candidate, 'windows-x64')
-        archive = staging / 'YTDL-Studio-Windows-x64.zip'
+        archive = staging / 'NUVEL-Studio-Windows-x64.zip'
         archive_bundle(candidate, archive)
         for path in shortcuts:
             create_launcher(project, target=current / EXECUTABLE, shortcut=staging / path.name)

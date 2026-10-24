@@ -6,27 +6,30 @@ powered by yt-dlp. Original project materials are proprietary.
 The app uses the **NÜVEL Studio — 03 Fluid** identity, with the supplied outlined
 black/white logos and extracted Ü app icon. The sidebar follows the app theme
 and shows the Ü icon when collapsed. See [brand assets](assets/branding/README.md).
-Existing repository, preferences, credentials, updater identifiers, release archive
-names retain their YTDL identifiers for compatibility. Windows builds produce
-**NÜVEL Studio.exe** and **NÜVEL Studio.lnk**, with the original executable kept as
-a compatibility copy for old updaters.
-Local macOS builds produce **NÜVEL Studio.app** with a **NÜVEL Studio** executable;
-old project app paths become links after native acceptance. Both platforms use the
-new ICO/ICNS icons. Existing installed apps receive the
-branding after a rebuilt app passes the normal acceptance checks.
+The 2.0 identity uses NÜVEL throughout: `nuvel_studio.py`, `NuvelStudio` user data
+and credentials, `local.nuvelstudio.app`, `nuvel-obsidian-preferences-v1`, and
+`NUVEL-Studio-*.zip` releases. Windows builds produce **NÜVEL Studio.exe** and
+**NÜVEL Studio.lnk**; macOS builds produce **NÜVEL Studio.app** with a
+**NÜVEL Studio** executable. Both platforms use the supplied ICO/ICNS icons.
+
+**2.0 is an unreleased packaging boundary.** Older packaged versions require a
+one-time installation of the new package; their updater cannot consume the new
+archive names, roots or product IDs. Configure private-repository access again
+for the new credential namespace. Existing downloads are unaffected. The new
+repository address below requires the GitHub repository rename to be completed.
 
 ## Download the ready-to-use app
 
-Open [Releases](https://github.com/Lumin0usX/ytdl-studio/releases) while signed in
+Open [Releases](https://github.com/Lumin0usX/nuvel-studio/releases) while signed in
 to a GitHub account with access to this private repository. Download the ZIP
 asset, not GitHub's automatically generated source-code archive.
 
-- Windows x64: extract **YTDL-Studio-Windows-x64.zip**, keep the entire
-  **YTDL Studio** folder, and open **NÜVEL Studio.exe**. Windows 10/11 needs
+- Windows x64: extract **NUVEL-Studio-Windows-x64.zip**, keep the entire
+  **NÜVEL Studio** folder, and open **NÜVEL Studio.exe**. Windows 10/11 needs
   [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
   (normally already installed). Python, Git and a terminal are not needed.
-- Mac Apple Silicon: extract **YTDL-Studio-macOS-arm64.zip**, move
-  **YTDL Studio.app** to a writable location such as your user's Applications
+- Mac Apple Silicon: extract **NUVEL-Studio-macOS-arm64.zip**, move
+  **NÜVEL Studio.app** to a writable location such as your user's Applications
   folder, and open it. Python, Homebrew and a terminal are not needed.
 
 Both packages include FFmpeg and an isolated gallery-dl CLI for image posts.
@@ -38,7 +41,7 @@ after both native build jobs and their startup checks succeed.
 
 Use **Settings → App updates → Check for updates**. For this private repository,
 expand **Private repository access** and save a fine-grained GitHub token scoped
-to **Lumin0usX/ytdl-studio**, with **Contents: read-only**. Windows Credential
+to **Lumin0usX/nuvel-studio**, with **Contents: read-only**. Windows Credential
 Manager or macOS Keychain stores it; it is not written to preferences, release
 files, localStorage or the source repository. Use **Remove saved access** to
 delete the saved credential. Browser GitHub sign-in alone does not authenticate
@@ -51,19 +54,19 @@ release version, SHA-256 and package layout, then tests the staged native app.
 Installation is disabled during media downloads. Once requested, it replaces the
 app at its existing path, tests it again, and restarts it. A failed startup restores the previous app.
 Downloaded media and per-user preferences are not replaced. The previous bundle
-is kept in the adjacent `.ytdl-update-*` directory. Updates require a writable
+is kept in the adjacent `.nuvel-update-*` directory. Updates require a writable
 installation folder and sufficient space for the download, staged app and backup.
 Network or access failures leave the existing app usable.
 
-Existing source users must update and build **this version once** using their
-normal folder updater; older apps do not contain an in-app updater. Source launches
-can check releases but cannot replace the running Python environment in-app.
+Source users must build **this version once** to enable packaged installation.
+Source launches can check releases but cannot replace the running Python
+environment in-app. Earlier package identities need the new one-time installation.
 Until a release is published, the app reports that no packaged release is available.
 
 ### Publish a version (maintainer)
 
 Set `VERSION` in `app_version.py`, commit, and push a matching tag, for example
-`v1.1.4`. `.github/workflows/release.yml` builds Windows x64 and macOS ARM64 on
+`v2.0.0`. `.github/workflows/release.yml` builds Windows x64 and macOS ARM64 on
 their native GitHub runners, runs tests and native startup checks, and uploads
 both ZIPs plus `studio-update.json` to a draft release. Only the complete release
 is published. Re-running is supported for drafts; published versions must not
@@ -71,10 +74,10 @@ be overwritten. This is separate from the Git-based source updater below.
 
 ```powershell
 git add .
-git commit -m "Rebrand as NUVEL Studio with compatible native updates"
+git commit -m "Complete NUVEL Studio identity and packaging"
 git push origin main
-git tag v1.1.4
-git push origin v1.1.4
+git tag v2.0.0
+git push origin v2.0.0
 ```
 
 The workflow must be enabled in this private repository. No personal token or
@@ -120,6 +123,10 @@ across the 50 entries; counts change with engine availability/version.
 
 The HTML/CSS/JavaScript interface runs in the existing pywebview shell (or its
 authenticated localhost fallback). Native window controls remain unchanged.
+Status polling acknowledges an engine-catalog revision, so unchanged platform
+logos and extractor details are not resent with each progress update. A fresh
+connection or completed engine scan sends the complete catalog again; clients
+requesting `snapshot()` without an argument still receive the full response.
 The overview keeps a bounded composer close to the sidebar, with compact media
 choices and quality, output format, destination and download action grouped
 together. Empty recent activity is a single line below the composer. A dedicated
@@ -131,7 +138,7 @@ directory, and search always covers the entire list, including hidden entries.
 Metadata reads use yt-dlp without starting a download; unavailable previews do
 not block downloading. Image-post metadata is read only during the actual job.
 
-Settings use an atomic, per-user JSON file under `YTDLStudio/preferences.json`:
+Settings use an atomic, per-user JSON file under `NuvelStudio/preferences.json`:
 Local AppData on Windows, Application Support on macOS, or XDG config on Linux.
 Destination, appearance, language and per-language font preferences persist;
 cookies and cookie-file paths remain in memory. The UI fonts and their licenses
@@ -270,14 +277,14 @@ build_windows.bat
 
 Then double-click **NÜVEL Studio** (`NÜVEL Studio.lnk`) in the project folder.
 The builder prepares an isolated environment, bundles the application and
-creates a shortcut to **app-windows/NÜVEL Studio.exe**. The application includes
-Python, the UI, video/audio engines and FFmpeg. Keep the complete app-windows
+creates a shortcut to **nuvel-windows/NÜVEL Studio.exe**. The application includes
+Python, the UI, video/audio engines and FFmpeg. Keep the complete nuvel-windows
 folder together; the exe depends on its bundled `_internal` directory.
 The portable ZIP is kept in `dist/windows-<build timestamp>`.
 
 Microsoft Edge WebView2 Runtime must be available on Windows.
 The windowless launcher reports startup failures with a dialog and a log in
-`%LOCALAPPDATA%\YTDLStudio\logs`. It requires the native bridge; it never leaves
+`%LOCALAPPDATA%\NuvelStudio\logs`. It requires the native bridge; it never leaves
 an invisible browser server running. Closing the window ends its session and
 stops owned download/conversion processes. Closing during a download asks for
 confirmation and can leave partial files.
@@ -297,8 +304,8 @@ update.bat --check
 
 To update, close Studio and double-click **update.bat** in the project folder.
 It updates code, prepares dependencies and rebuilds the packaged application.
-The relocated primary executable and its old-name compatibility copy must
-complete native UI/bridge/font/engine tests and confirm they have no console before it replaces the app and shortcut.
+The relocated executable must complete native UI/bridge/font/engine tests and
+confirm it has no console before replacing the app and shortcut.
 Startup failure, a locked running app or publication failure preserves the
 previous app. Open the **NÜVEL Studio** shortcut after success.
 Git for Windows must be installed, and Git must have access to the private repo.
@@ -324,39 +331,25 @@ Double-click **update_macos.command** to update and rebuild in one flow, with
 no source/packaged mode choice. The app in the project folder is replaced only
 after the new bundle passes a native startup test. Previous apps are preserved
 in `dist`. If you made a separate copy in Applications, replace that copy with
-the newly built app. The old AppleScript launcher is migrated automatically to
-a link to the main app. No runtime repair commands are part of normal setup.
+the newly built app. No runtime repair commands are part of normal setup.
 
 See [the macOS guide](README-macOS.md). The build is ad-hoc signed, not notarized
 for public distribution. A macOS binary cannot be built by this project on Windows.
 
 ## Validation status
 
-Release **1.1.4** passed native Windows x64 and macOS ARM64 builds, the test suites
-and packaged startup checks in [GitHub Actions](https://github.com/Lumin0usX/ytdl-studio/actions/runs/39924319272).
-Both ZIPs and their verified update manifest are published in the private release.
-See [the verification record](BUILD-VERIFICATION.md). The notes below describe earlier runs.
+The **2.0.0** identity changes are unreleased. Both native build jobs and startup
+checks must pass before the new ZIPs and manifest can be published.
+See [the verification record](BUILD-VERIFICATION.md) for current results.
+The Windows build passed real desktop native acceptance and is installed locally
+under `nuvel-windows`; macOS acceptance and GitHub publication remain pending.
 
-- Windows tests exercise a real shortcut launched from a Thai path and a hidden
-  session that stops a remaining subprocess when its GUI exits.
-- Windows packaging tests cover GUI subsystem validation, missing/wrong startup
-  proof, console detection, locked apps and rollback of both app and shortcut.
-  PyInstaller was unavailable from the package index in this development
-  environment, so a real Windows executable has not been built or validated here.
-- macOS publication tests cover startup failure, missing startup proof, rollback,
-  preservation of previous apps and refusal to replace unrelated applications.
-  Each actual Mac build tests the relocated app through LaunchServices and
-  requires success proof from its native UI before publishing the app or ZIP.
-  That native acceptance test cannot be run on this Windows development machine;
-  the new packaging flow still requires verification on Apple Silicon.
-- Python unit tests cover platform adapters, download transitions, validation,
-  cancellation, and successful/failed jobs using mocks.
-- Windows launcher checks and the authenticated local HTTP bridge were tested.
-- JavaScript syntax and HTML element bindings were checked.
-- Browser workflow was tested with real local image transfers, cancellation,
-  retry, history, settings and responsive layouts. The targeted UI refinement was
-  reviewed with actual browser screenshots; native Apple Silicon validation remains open.
-  Live downloads were not verified across all platforms. No macOS binary is included.
+Windows tests cover Unicode shortcuts, process ownership, GUI subsystem and
+startup proof, locked installations and rollback. Shared tests cover download
+transitions, settings, metadata, catalog polling, safe archive extraction and
+release transport. macOS-specific signing, filename normalization and LaunchServices
+checks require native macOS execution. Live downloads across every service have
+not been verified. A successful source test run is not native build acceptance.
 
 Run the test suite:
 
@@ -368,7 +361,7 @@ python -m unittest discover -s tests -v
 
 | Path | Purpose |
 | --- | --- |
-| `ytdl_studio.py` | Main launcher |
+| `nuvel_studio.py` | Main launcher |
 | `glass_app.py` | WebView shell, local API, download jobs |
 | `ui/` | HTML, CSS, and JavaScript interface |
 | `ui/i18n.js` | Offline translations and live language switching |

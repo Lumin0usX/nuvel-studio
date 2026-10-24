@@ -1,4 +1,4 @@
-"""YTDL Studio launcher. Use --classic for the previous Tk interface."""
+"""NÜVEL Studio launcher. Use --classic for the previous Tk interface."""
 import sys
 
 if __name__ == '__main__':
@@ -7,9 +7,9 @@ if __name__ == '__main__':
         raise SystemExit(helper_main(sys.argv[2], sys.argv[3]))
     elif '--classic' in sys.argv:
         import tkinter as tk
-        from legacy_tk import YTDLStudio
+        from legacy_tk import NuvelStudio
         root = tk.Tk()
-        YTDLStudio(root)
+        NuvelStudio(root)
         root.mainloop()
     else:
         from glass_app import main

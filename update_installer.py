@@ -17,7 +17,7 @@ from app_version import VERSION, DISPLAY_NAME, version_tuple
 from release_client import UpdateError
 
 MARKER = '.studio-build.json'
-APP_ID = 'local.ytdlstudio.app'
+APP_ID = 'local.nuvelstudio.app'
 
 
 def marker_path(bundle, key):
@@ -47,12 +47,10 @@ def installed_bundle():
 def executable_in(bundle, key):
     bundle = Path(bundle)
     if key == 'windows-x64':
-        primary = bundle / (DISPLAY_NAME + '.exe')
-        legacy = bundle / 'YTDL Studio.exe'
-        return legacy if not (primary.exists() or primary.is_symlink()) and legacy.is_file() else primary
+        return bundle / (DISPLAY_NAME + '.exe')
     with (bundle / 'Contents/Info.plist').open('rb') as stream:
         name = plistlib.load(stream).get('CFBundleExecutable')
-    if not isinstance(name, str) or unicodedata.normalize('NFC', name) not in ('YTDL Studio', DISPLAY_NAME):
+    if not isinstance(name, str) or unicodedata.normalize('NFC', name) != DISPLAY_NAME:
         raise UpdateError('invalid_package')
     return bundle / 'Contents/MacOS' / name
 
@@ -63,7 +61,7 @@ def check_bundle(bundle, key, version=None):
         raise UpdateError('invalid_package')
     try:
         marker = json.loads(marker_path(bundle, key).read_text(encoding='utf-8'))
-        if marker['product'] != 'YTDL Studio' or marker['platform'] != key:
+        if marker['product'] != 'NÜVEL Studio' or marker['platform'] != key:
             raise ValueError()
         version_tuple(marker['version'])
         if version is not None and marker['version'] != version:
@@ -80,7 +78,7 @@ def check_bundle(bundle, key, version=None):
 
 def unpack(archive, destination, key):
     """Validate every path/link before extraction, including native framework symlinks."""
-    root_name = 'YTDL Studio' if key == 'windows-x64' else 'YTDL Studio.app'
+    root_name = 'NÜVEL Studio' if key == 'windows-x64' else 'NÜVEL Studio.app'
     destination = Path(destination).resolve()
     with zipfile.ZipFile(archive) as package:
         items = package.infolist()
@@ -97,9 +95,10 @@ def unpack(archive, destination, key):
                 if stat.S_IFMT(item.external_attr >> 16) not in (0, stat.S_IFREG, stat.S_IFDIR):
                     raise UpdateError('invalid_package')
                 continue
-            if parts[0] != root_name or item.flag_bits & 1 or name.casefold().rstrip('/') in names:
+            canonical_name = unicodedata.normalize('NFC', name).casefold().rstrip('/')
+            if unicodedata.normalize('NFC', parts[0]) != root_name or item.flag_bits & 1 or canonical_name in names:
                 raise UpdateError('invalid_package')
-            names.add(name.casefold().rstrip('/'))
+            names.add(canonical_name)
             if key == 'windows-x64' and any(re.fullmatch(r'(?i)(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?', part) or
                                              any(c in '<>"|?*' for c in part) for part in parts):
                 raise UpdateError('invalid_package')
@@ -111,17 +110,17 @@ def unpack(archive, destination, key):
                 if not target or target.startswith('/') or '\\' in target:
                     raise UpdateError('invalid_package')
                 normalized = PurePosixPath(posixpath.normpath(str(PurePosixPath(name).parent / target)))
-                if not normalized.parts or normalized.parts[0] != root_name or '..' in normalized.parts:
+                if not normalized.parts or unicodedata.normalize('NFC', normalized.parts[0]) != root_name or '..' in normalized.parts:
                     raise UpdateError('invalid_package')
                 links[PurePosixPath(name)] = target
             elif stat.S_IFMT(mode) not in (0, stat.S_IFREG, stat.S_IFDIR):
                 raise UpdateError('invalid_package')
-        folded_links = {str(path).casefold() for path in links}
+        folded_links = {unicodedata.normalize('NFC', str(path)).casefold() for path in links}
         for item in items:
             path = PurePosixPath(item.filename)
             if path.parts[0] == '__MACOSX':
                 continue
-            if any(str(parent).casefold() in folded_links for parent in path.parents):
+            if any(unicodedata.normalize('NFC', str(parent)).casefold() in folded_links for parent in path.parents):
                 raise UpdateError('invalid_package')
         # Resolve symlink chains on the actual staged tree before trusting the bundle.
         if key == 'macos-arm64' and sys.platform == 'darwin':
@@ -132,7 +131,7 @@ def unpack(archive, destination, key):
                 path = PurePosixPath(item.filename)
                 if path.parts[0] == '__MACOSX':
                     continue
-                output = destination.joinpath(*path.parts)
+                output = destination.joinpath(root_name, *path.parts[1:])
                 output.parent.mkdir(parents=True, exist_ok=True)
                 if path in links:
                     output.symlink_to(links[path])
@@ -156,7 +155,7 @@ def unpack(archive, destination, key):
 
 
 def write_marker(bundle, key):
-    marker_path(bundle, key).write_text(json.dumps(dict(product='YTDL Studio', platform=key, version=VERSION)),
+    marker_path(bundle, key).write_text(json.dumps(dict(product='NÜVEL Studio', platform=key, version=VERSION)),
                                      encoding='utf-8')
 
 
@@ -194,9 +193,9 @@ def read_plan(plan_path):
         plan = json.loads(plan_path.read_text(encoding='utf-8'))
         target, candidate = Path(plan['target']), Path(plan['candidate'])
         key = plan['platform']
-        expected_name = 'YTDL Studio' if key == 'windows-x64' else 'YTDL Studio.app'
+        expected_name = 'NÜVEL Studio' if key == 'windows-x64' else 'NÜVEL Studio.app'
         if plan['schema'] != 1 or key not in ('windows-x64', 'macos-arm64') or \
-                not stage.name.startswith('.ytdl-update-') or not target.is_absolute() or \
+                not stage.name.startswith('.nuvel-update-') or not target.is_absolute() or \
                 target.parent.resolve() != stage.parent or target.resolve() == stage or \
                 candidate != stage / 'new' / expected_name or target.is_symlink():
             raise ValueError()
@@ -257,7 +256,7 @@ def cleanup_completed(target, active_stage, key):
         current_version = version_tuple(json.loads(marker_path(target, key).read_text(encoding='utf-8'))['version'])
     except (OSError, ValueError, TypeError, KeyError):
         return
-    for old in parent.glob('.ytdl-update-*'):
+    for old in parent.glob('.nuvel-update-*'):
         try:
             # Resolve and constrain every recursive delete to our adjacent staging folders.
             if old.is_symlink() or old.resolve().parent != parent or old.resolve() == active_stage.resolve():

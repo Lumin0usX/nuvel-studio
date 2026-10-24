@@ -10,7 +10,7 @@ if [[ "$(uname -s)" != Darwin ]]; then
 fi
 choose_python() {
     local candidate
-    for candidate in "${YTDL_PYTHON:-}" \
+    for candidate in "${NUVEL_PYTHON:-}" \
         /Library/Frameworks/Python.framework/Versions/3.13/bin/python3 \
         /Library/Frameworks/Python.framework/Versions/3.12/bin/python3 \
         /Library/Frameworks/Python.framework/Versions/3.14/bin/python3 \

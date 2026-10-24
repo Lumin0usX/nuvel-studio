@@ -13,21 +13,21 @@ if /i not "%~1"=="--check" pause
 exit /b 1
 
 :use_py
-set "YTDL_PYTHON=py -3"
+set "NUVEL_PYTHON=py -3"
 goto run
 
 :use_python
-set "YTDL_PYTHON=python"
+set "NUVEL_PYTHON=python"
 
 :run
 title Studio - Install
 if /i "%~1"=="--check" goto check
-%YTDL_PYTHON% -m pip install --upgrade -r "%~dp0requirements.txt"
-set "YTDL_EXIT=%errorlevel%"
-if not "%YTDL_EXIT%"=="0" goto failed
-%YTDL_PYTHON% "%~dp0create_windows_launcher.py"
-set "YTDL_EXIT=%errorlevel%"
-if not "%YTDL_EXIT%"=="0" goto failed
+%NUVEL_PYTHON% -m pip install --upgrade -r "%~dp0requirements.txt"
+set "NUVEL_EXIT=%errorlevel%"
+if not "%NUVEL_EXIT%"=="0" goto failed
+%NUVEL_PYTHON% "%~dp0create_windows_launcher.py"
+set "NUVEL_EXIT=%errorlevel%"
+if not "%NUVEL_EXIT%"=="0" goto failed
 echo.
 echo Installation complete. Open the new Studio shortcut (no Terminal).
 pause
@@ -37,8 +37,8 @@ exit /b 0
 echo.
 echo Installation failed. See the error above.
 pause
-exit /b %YTDL_EXIT%
+exit /b %NUVEL_EXIT%
 
 :check
-%YTDL_PYTHON% -m pip --version
+%NUVEL_PYTHON% -m pip --version
 exit /b %errorlevel%

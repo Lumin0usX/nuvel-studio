@@ -2,24 +2,29 @@
 from pathlib import Path
 import sys
 import uuid
+import subprocess
 from app_version import DISPLAY_NAME
 
 
-def create_launcher(project=None, target=None, shortcut=None):
+def create_launcher(project=None, target=None, shortcut=None, launch_args=()):
     if sys.platform != 'win32':
         raise RuntimeError('Create this shortcut on Windows using install.bat.')
+    if not isinstance(launch_args, (list, tuple)) or any(not isinstance(arg, str) or '\x00' in arg for arg in launch_args):
+        raise ValueError('Shortcut arguments must be a list of strings.')
     project = Path(project or Path(__file__).resolve().parent).resolve()
     from update_installer import executable_in
-    packaged = executable_in(project / 'app-windows', 'windows-x64')
+    packaged = executable_in(project / 'nuvel-windows', 'windows-x64')
     target = Path(target).resolve() if target is not None else (packaged if packaged.is_file() else None)
     if target is None:
+        if launch_args:
+            raise ValueError('Explicit arguments require a packaged executable target.')
         target = Path(sys.executable).with_name('pythonw.exe')
         if not target.is_file():
             raise RuntimeError('pythonw.exe is missing. Repair the Python installation first.')
         arguments = '"' + str(project / 'desktop_launcher.py') + '"'
         directory = project
     else:
-        arguments = ''
+        arguments = subprocess.list2cmdline(launch_args)
         directory = target.parent
     shortcut = Path(shortcut) if shortcut is not None else project / (DISPLAY_NAME + '.lnk')
     # IShellLinkW + IPersistFile preserve Thai paths. WScript.Shell's Save can

@@ -14,7 +14,7 @@ from app_version import DISPLAY_NAME
 
 
 class WindowsBuildWorkflowTests(unittest.TestCase):
-    def test_packaged_branding_and_update_compatibility_flow_through_the_real_publication_code(self):
+    def test_packaged_branding_flows_through_the_real_publication_code(self):
         """Mock native tools, then exercise actual file copying, shortcuts and ZIP layout."""
         import windows_distribution
         from download_engine import PLATFORMS
@@ -39,7 +39,7 @@ class WindowsBuildWorkflowTests(unittest.TestCase):
             gallery.write_bytes(b'gallery fixture')
             gallery_source = project / 'gallery-source'
             gallery_source.mkdir()
-            old_shortcut = project / windows_distribution.OLD_SHORTCUT
+            old_shortcut = project / windows_distribution.SHORTCUT
             old_shortcut.write_bytes(b'old shortcut')
             recorded = {}
             def package(args):
@@ -77,17 +77,17 @@ class WindowsBuildWorkflowTests(unittest.TestCase):
             self.assertIn("StringStruct('FileDescription', 'NÜVEL Studio')", recorded['version'])
             import ast
             ast.parse(recorded['version'], mode='eval')
-            self.assertEqual(verify.call_count, 2)
-            self.assertTrue(verify.call_args.kwargs['legacy'])
-            installed = project / 'app-windows'
-            self.assertEqual((installed / 'NÜVEL Studio.exe').read_bytes(), (installed / 'YTDL Studio.exe').read_bytes())
+            self.assertEqual(verify.call_count, 1)
+            installed = project / 'nuvel-windows'
+            self.assertEqual((installed / 'NÜVEL Studio.exe').read_bytes(), b'native GUI fixture')
             self.assertTrue((project / 'NÜVEL Studio.lnk').is_file())
             self.assertEqual(old_shortcut.read_text(encoding='utf-8'), str(installed / 'NÜVEL Studio.exe'))
             import zipfile
-            archive, = project.glob('dist/*/YTDL-Studio-Windows-x64.zip')
+            archive, = project.glob('dist/*/NUVEL-Studio-Windows-x64.zip')
             with zipfile.ZipFile(archive) as package:
-                self.assertIn('YTDL Studio/NÜVEL Studio.exe', package.namelist())
-                self.assertIn('YTDL Studio/YTDL Studio.exe', package.namelist())
+                self.assertEqual([name for name in package.namelist() if name.endswith('.exe')],
+                                 ['NÜVEL Studio/NÜVEL Studio.exe'])
+                self.assertIn('NÜVEL Studio/NÜVEL Studio.exe', package.namelist())
 
     def test_prepare_uses_only_the_generated_environment_for_dependencies_and_build(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -156,9 +156,9 @@ class WindowsBuildEntryTests(unittest.TestCase):
 
     def test_packaged_shortcut_can_be_prepared_before_the_application_is_installed(self):
         from create_windows_launcher import create_launcher
-        with tempfile.TemporaryDirectory(prefix="YTDL shortcut ไทย & '") as temporary:
+        with tempfile.TemporaryDirectory(prefix="NUVEL shortcut ไทย & '") as temporary:
             project = Path(temporary)
-            planned = project / 'app-windows/NÜVEL Studio.exe'
+            planned = project / 'nuvel-windows/NÜVEL Studio.exe'
             shortcut = create_launcher(project, target=planned)
             self.assertFalse(planned.exists())
             self.assertTrue(shortcut.is_file())

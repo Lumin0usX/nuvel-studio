@@ -69,7 +69,7 @@ def download_error(exc):
     return hint.replace("install.bat", install_instructions()) + "\n\nรายละเอียด: " + detail
 
 
-class YTDLStudio:
+class NuvelStudio:
     def __init__(self, root):
         self.root = root
         self.root.title(DISPLAY_NAME)
@@ -482,7 +482,7 @@ if __name__ == "__main__":
         check_macos()
         window = tk.Tk()
         window.withdraw()
-        app = YTDLStudio(window)
+        app = NuvelStudio(window)
         window.update_idletasks()
         assert len(app.platform_icons) == len(PLATFORMS), "Missing bundled icons"
         app._set_mode("audio")
@@ -490,5 +490,5 @@ if __name__ == "__main__":
         window.destroy()
         raise SystemExit(0)
     window = tk.Tk()
-    YTDLStudio(window)
+    NuvelStudio(window)
     window.mainloop()

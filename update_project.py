@@ -7,9 +7,9 @@ import sys
 
 
 ORIGINS = frozenset({
-    'https://github.com/lumin0usx/ytdl-studio',
-    'git@github.com:lumin0usx/ytdl-studio',
-    'ssh://git@github.com/lumin0usx/ytdl-studio',
+    'https://github.com/lumin0usx/nuvel-studio',
+    'git@github.com:lumin0usx/nuvel-studio',
+    'ssh://git@github.com/lumin0usx/nuvel-studio',
 })
 
 
@@ -38,13 +38,13 @@ def update_source(project, allowed_origins=ORIGINS):
     except UpdateError as exc:
         raise UpdateError('This folder is not an accessible Git clone. Clone the private repository first.\n' + str(exc)) from exc
     if root != project:
-        raise UpdateError('Run the updater from the root of the YTDL Studio Git clone.')
+        raise UpdateError('Run the updater from the root of the NÜVEL Studio Git clone.')
     branch = git('branch', '--show-current')
     if branch != 'main':
         raise UpdateError('Updates require the main branch. Switch branches manually before retrying.')
     origin = git('config', '--get', 'remote.origin.url').rstrip('/').removesuffix('.git').lower()
     if origin not in allowed_origins:
-        raise UpdateError('Origin is not the YTDL Studio repository. Check your Git remote configuration.')
+        raise UpdateError('Origin is not the NÜVEL Studio repository. Check your Git remote configuration.')
     changes = git('status', '--porcelain', '--untracked-files=normal')
     if changes:
         raise UpdateError('Local changes or untracked files were found. Save/commit or move them before updating.\n'
@@ -79,7 +79,7 @@ def update_source(project, allowed_origins=ORIGINS):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='Update the YTDL Studio source folder on Windows or macOS.')
+    parser = argparse.ArgumentParser(description='Update the NÜVEL Studio source folder on Windows or macOS.')
     parser.add_argument('--build', action='store_true', help='Compatibility option: updates always build the app.')
     parser.add_argument('--check', action='store_true', help='Check Python, pip and Git without updating or installing.')
     args = parser.parse_args(argv)
@@ -92,7 +92,7 @@ def main(argv=None):
                 raise UpdateError('Git was not found. Install Git and reopen this updater.')
             subprocess.run(['git', '--version'], check=True)
             subprocess.run([sys.executable, '-m', 'pip', '--version'], check=True)
-            print('YTDL Studio updater: OK. No updates were applied.', flush=True)
+            print('NÜVEL Studio updater: OK. No updates were applied.', flush=True)
             return 0
         update_source(project)
         print('Updating dependencies and checking the environment...', flush=True)

@@ -109,7 +109,7 @@ class AppUpdates:
         current = installed_bundle()
         self.plan = None
         try:
-            stage = Path(tempfile.mkdtemp(prefix='.ytdl-update-', dir=current.parent))
+            stage = Path(tempfile.mkdtemp(prefix='.nuvel-update-', dir=current.parent))
         except OSError:
             raise UpdateError('install_readonly') from None
         self.stage = stage

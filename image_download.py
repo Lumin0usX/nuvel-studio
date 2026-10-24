@@ -36,7 +36,7 @@ def gallery_command():
     # Portable distributions still use an independently installed gallery-dl CLI.
     if getattr(sys, 'frozen', False) and sys.platform == 'win32':
         app_folder = Path(sys.executable).resolve().parent
-        if app_folder.name == 'app-windows':
+        if app_folder.name == 'nuvel-windows':
             managed = app_folder.parent / '.venv-windows-build/Scripts/gallery-dl.exe'
             if managed.is_file():
                 return [str(managed)]
@@ -116,7 +116,7 @@ def _safe_stem(url):
 def download_direct(url, folder, cancel, update, cookies='none', cookie_path=''):
     """Return None for HTML/non-images; never save an HTML page as an image."""
     check_cancel(cancel)
-    request = Request(url, headers={'User-Agent': 'Mozilla/5.0 YTDL-Studio', 'Accept': 'image/*,*/*;q=0.5'})
+    request = Request(url, headers={'User-Agent': 'Mozilla/5.0 NUVEL-Studio', 'Accept': 'image/*,*/*;q=0.5'})
     # Cookie handling is explicitly opt-in. yt-dlp's jar is read in memory only.
     if cookies != 'none':
         from yt_dlp.cookies import YoutubeDLCookieJar, extract_cookies_from_browser

@@ -23,20 +23,19 @@ def gui_executable(path, subsystem=2):
 
 class WindowsPublicationTests(unittest.TestCase):
     def setUp(self):
-        temporary = tempfile.TemporaryDirectory(prefix="YTDL ไทย & ' Windows ")
+        temporary = tempfile.TemporaryDirectory(prefix="NUVEL ไทย & ' Windows ")
         self.addCleanup(temporary.cleanup)
         self.project = Path(temporary.name).resolve()
         self.built = self.project / 'dist/build-one/NÜVEL Studio'
         self.built.mkdir(parents=True)
         gui_executable(self.built / distribution.EXECUTABLE)
-        shutil.copy2(self.built / distribution.EXECUTABLE, self.built / 'YTDL Studio.exe')
         (self.built / 'version.txt').write_text('new', encoding='utf-8')
         resources = self.built / '_internal/ui'
         resources.mkdir(parents=True)
         (resources / 'index.html').write_text('native UI', encoding='utf-8')
         self.current = self.project / distribution.FOLDER
         self.current.mkdir()
-        (self.current / distribution.MARKER).write_text(json.dumps({'product': 'YTDL Studio', 'platform': 'windows'}))
+        (self.current / distribution.MARKER).write_text(json.dumps({'product': 'NÜVEL Studio', 'platform': 'windows'}))
         (self.current / 'version.txt').write_text('old', encoding='utf-8')
         self.shortcut = self.project / distribution.SHORTCUT
         self.shortcut.write_bytes(b'old shortcut')
@@ -67,56 +66,14 @@ class WindowsPublicationTests(unittest.TestCase):
         self.assertEqual(result, self.current / distribution.EXECUTABLE)
         self.assertEqual((self.current / 'version.txt').read_text(), 'new')
         self.assertEqual(self.shortcut.read_bytes(), b'new shortcut')
-        backups = list(self.built.parent.glob('previous-*-app-windows'))
+        backups = list(self.built.parent.glob('previous-*-nuvel-windows'))
         self.assertEqual((backups[0] / 'version.txt').read_text(), 'old')
-        with zipfile.ZipFile(self.built.parent / 'YTDL-Studio-Windows-x64.zip') as archive:
-            self.assertIn('YTDL Studio/_internal/ui/index.html', archive.namelist())
-            self.assertIn('YTDL Studio/' + distribution.EXECUTABLE, archive.namelist())
-            self.assertEqual(archive.read('YTDL Studio/' + distribution.EXECUTABLE),
-                             archive.read('YTDL Studio/YTDL Studio.exe'))
+        with zipfile.ZipFile(self.built.parent / 'NUVEL-Studio-Windows-x64.zip') as archive:
+            self.assertIn('NÜVEL Studio/_internal/ui/index.html', archive.namelist())
+            self.assertIn('NÜVEL Studio/' + distribution.EXECUTABLE, archive.namelist())
+            self.assertEqual([name for name in archive.namelist() if name.endswith('.exe')],
+                             ['NÜVEL Studio/' + distribution.EXECUTABLE])
 
-    def test_previous_shortcut_is_redirected_and_backed_up_without_symlinks(self):
-        old = self.project / distribution.OLD_SHORTCUT
-        old.write_bytes(b'previous YTDL shortcut')
-        self.publish()
-        self.assertEqual(old.read_bytes(), b'new shortcut')
-        self.assertEqual(self.shortcut.read_bytes(), b'new shortcut')
-        self.assertFalse(old.is_symlink())
-        backup, = self.built.parent.glob('previous-*-' + distribution.OLD_SHORTCUT)
-        self.assertEqual(backup.read_bytes(), b'previous YTDL shortcut')
-
-    def test_late_failure_restores_both_branded_and_legacy_shortcuts(self):
-        old = self.project / distribution.OLD_SHORTCUT
-        old.write_bytes(b'previous YTDL shortcut')
-        with patch.object(distribution.os, 'replace', side_effect=OSError('archive publication failed')):
-            with self.assertRaises(OSError):
-                self.publish()
-        self.old_app_is_intact()
-        self.assertEqual(old.read_bytes(), b'previous YTDL shortcut')
-
-    def test_failed_legacy_executable_acceptance_also_preserves_the_installed_app(self):
-        calls = []
-        def verify(candidate):
-            calls.append(candidate)
-            if len(calls) == 2:
-                raise RuntimeError('legacy startup failed')
-        with self.assertRaisesRegex(RuntimeError, 'legacy startup failed'):
-            self.publish(verify=verify)
-        self.assertEqual(len(calls), 2)
-        self.old_app_is_intact()
-
-    def test_locked_old_shortcut_rolls_back_the_app_and_new_shortcut(self):
-        old = self.project / distribution.OLD_SHORTCUT
-        old.write_bytes(b'previous YTDL shortcut')
-        rename = Path.rename
-        def locked(path, target):
-            if path == old:
-                raise PermissionError('shortcut is locked')
-            return rename(path, target)
-        with patch.object(Path, 'rename', new=locked), self.assertRaises(PermissionError):
-            self.publish()
-        self.old_app_is_intact()
-        self.assertEqual(old.read_bytes(), b'previous YTDL shortcut')
 
     def test_startup_failure_does_not_change_the_previous_app_or_shortcut(self):
         def fail(_):
@@ -160,11 +117,11 @@ class WindowsPublicationTests(unittest.TestCase):
 
 
 class WindowsAcceptanceTests(unittest.TestCase):
-    def run_acceptance(self, proof=None, exit_code=0, filename=None, legacy=False):
-        temporary = tempfile.TemporaryDirectory(prefix='YTDL exe proof ')
+    def run_acceptance(self, proof=None, exit_code=0):
+        temporary = tempfile.TemporaryDirectory(prefix='NUVEL exe proof ')
         self.addCleanup(temporary.cleanup)
         folder = Path(temporary.name)
-        executable = folder / (filename or distribution.EXECUTABLE)
+        executable = folder / distribution.EXECUTABLE
         gui_executable(executable)
         process = Mock(pid=1234)
         process.poll.return_value = exit_code
@@ -180,7 +137,7 @@ class WindowsAcceptanceTests(unittest.TestCase):
         with patch.object(distribution, 'WindowsJob') as job, \
                 patch.object(distribution.subprocess, 'Popen', side_effect=spawn):
             try:
-                distribution.verify_app(folder, legacy=legacy)
+                distribution.verify_app(folder)
             finally:
                 job.return_value.close.assert_called_once()
 
@@ -199,11 +156,6 @@ class WindowsAcceptanceTests(unittest.TestCase):
     def test_native_gui_proof_passes(self):
         self.run_acceptance({})
 
-    def test_older_installed_executable_still_passes_acceptance(self):
-        self.run_acceptance({}, filename='YTDL Studio.exe')
-
-    def test_legacy_copy_requires_its_own_native_proof(self):
-        self.run_acceptance({}, filename='YTDL Studio.exe', legacy=True)
 
     def test_local_build_uses_its_separate_managed_image_cli(self):
         import image_download
@@ -214,7 +166,7 @@ class WindowsAcceptanceTests(unittest.TestCase):
             engine.write_bytes(b'external CLI fixture')
             with patch.object(image_download.sys, 'frozen', True, create=True), \
                     patch.object(image_download.sys, 'platform', 'win32'), \
-                    patch.object(image_download.sys, 'executable', str(project / 'app-windows/YTDL Studio.exe')):
+                    patch.object(image_download.sys, 'executable', str(project / 'nuvel-windows/NÜVEL Studio.exe')):
                 self.assertEqual(image_download.gallery_command(), [str(engine)])
 
 

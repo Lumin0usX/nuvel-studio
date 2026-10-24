@@ -138,9 +138,28 @@ class DesktopLauncherTests(unittest.TestCase):
 
 @unittest.skipUnless(sys.platform == 'win32', 'Windows process and console APIs required')
 class HiddenWindowsSessionTests(unittest.TestCase):
+    def test_shortcut_arguments_preserve_spaces_unicode_and_quotes(self):
+        from create_windows_launcher import create_launcher
+        pythonw = Path(sys.executable).with_name('pythonw.exe')
+        with tempfile.TemporaryDirectory(prefix='nuvel shortcut args ') as temporary:
+            project = Path(temporary)
+            result = project / 'receipt with spaces.json'
+            script = project / 'write receipt.py'
+            script.write_text('import json, sys\nfrom pathlib import Path\n'
+                              'Path(sys.argv[1]).write_text(json.dumps(sys.argv[2:]))\n', encoding='utf-8')
+            values = ['NÜVEL ไทย', 'a value with spaces', 'a"quoted"value']
+            shortcut = create_launcher(project, target=pythonw,
+                                       launch_args=[str(script), str(result), *values])
+            os.startfile(shortcut)
+            deadline = time.monotonic() + 10
+            while not result.exists() and time.monotonic() < deadline:
+                time.sleep(.05)
+            self.assertTrue(result.is_file())
+            self.assertEqual(json.loads(result.read_text()), values)
+
     def test_generated_shortcut_opens_pythonw_without_a_console(self):
         from create_windows_launcher import create_launcher
-        with tempfile.TemporaryDirectory(prefix="YTDL ไทย & launcher '") as temporary:
+        with tempfile.TemporaryDirectory(prefix="NUVEL ไทย & launcher '") as temporary:
             project = Path(temporary).resolve()
             result = project / 'shortcut-result.json'
             (project / 'desktop_launcher.py').write_text('''
@@ -195,7 +214,7 @@ os.replace(temporary, result)
         kernel.WaitForSingleObject.restype = wintypes.DWORD
         kernel.CloseHandle.argtypes = [wintypes.HANDLE]
         kernel.CloseHandle.restype = wintypes.BOOL
-        with tempfile.TemporaryDirectory(prefix='YTDL ไทย launcher ') as temporary:
+        with tempfile.TemporaryDirectory(prefix='NUVEL ไทย launcher ') as temporary:
             project = Path(temporary)
             shutil.copyfile(launcher.__file__, project / 'desktop_launcher.py')
             (project / 'glass_app.py').write_text('''
@@ -232,7 +251,7 @@ def main(native_only=False):
                 self.assertEqual(parent.wait(timeout=10), 0)
                 self.assertEqual(kernel.WaitForSingleObject(worker_handle, 5000), 0,
                                  'Download subprocess survived closing the GUI')
-                logs = list((project / 'local-app-data/YTDLStudio/logs').glob('*.log'))
+                logs = list((project / 'local-app-data/NuvelStudio/logs').glob('*.log'))
                 self.assertIn('fixture native window closed', logs[0].read_text(encoding='utf-8'))
             finally:
                 if parent.poll() is None:

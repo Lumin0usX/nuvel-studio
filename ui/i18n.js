@@ -1111,7 +1111,7 @@
     "Cancel update": ["ยกเลิกอัปเดต", "更新をキャンセル", "取消更新"],
     "Update download progress": ["ความคืบหน้าการดาวน์โหลดอัปเดต", "更新のダウンロード状況", "更新下载进度"],
     "Private repository access": ["สิทธิ์เข้าถึง repo ส่วนตัว", "非公開リポジトリへのアクセス", "私有仓库访问权限"],
-    "Create a fine-grained GitHub token for Lumin0usX/ytdl-studio with Contents: read-only. It is stored in Windows Credential Manager or macOS Keychain, never in app settings.": ["สร้าง fine-grained token ของ GitHub สำหรับ Lumin0usX/ytdl-studio โดยให้สิทธิ์ Contents: read-only ข้อมูลจะเก็บใน Windows Credential Manager หรือ macOS Keychain แยกจากไฟล์ตั้งค่าแอป", "Lumin0usX/ytdl-studio 用の GitHub fine-grained token を Contents: read-only 権限で作成してください。トークンは設定ファイルではなく Windows 資格情報マネージャーまたは macOS キーチェーンに保存されます。", "为 Lumin0usX/ytdl-studio 创建具有 Contents: read-only 权限的 GitHub 细粒度令牌。令牌保存在 Windows 凭据管理器或 macOS 钥匙串中，不写入应用设置。"],
+    "Create a fine-grained GitHub token for Lumin0usX/nuvel-studio with Contents: read-only. It is stored in Windows Credential Manager or macOS Keychain, never in app settings.": ["สร้าง fine-grained token ของ GitHub สำหรับ Lumin0usX/nuvel-studio โดยให้สิทธิ์ Contents: read-only ข้อมูลจะเก็บใน Windows Credential Manager หรือ macOS Keychain แยกจากไฟล์ตั้งค่าแอป", "Lumin0usX/nuvel-studio 用の GitHub fine-grained token を Contents: read-only 権限で作成してください。トークンは設定ファイルではなく Windows 資格情報マネージャーまたは macOS キーチェーンに保存されます。", "为 Lumin0usX/nuvel-studio 创建具有 Contents: read-only 权限的 GitHub 细粒度令牌。令牌保存在 Windows 凭据管理器或 macOS 钥匙串中，不写入应用设置。"],
     "GitHub access token": ["โทเค็นเข้าถึง GitHub", "GitHub アクセストークン", "GitHub 访问令牌"],
     "Save access": ["บันทึกสิทธิ์", "アクセス情報を保存", "保存访问凭据"],
     "Create token on GitHub": ["สร้าง token บน GitHub", "GitHub でトークンを作成", "在 GitHub 创建令牌"],

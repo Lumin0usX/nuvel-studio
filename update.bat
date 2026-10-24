@@ -12,11 +12,11 @@ if /i not "%~1"=="--check" pause
 exit /b 1
 
 :use_py
-set "YTDL_PYTHON=py -3"
+set "NUVEL_PYTHON=py -3"
 goto run
 
 :use_python
-set "YTDL_PYTHON=python"
+set "NUVEL_PYTHON=python"
 
 :run
 if /i "%~1"=="--check" goto check
@@ -29,7 +29,7 @@ rem Keep execution in one parsed block: Git may replace this batch file.
     echo This uses your existing GitHub access to the private repository.
     echo.
     pause
-    %YTDL_PYTHON% -u "%~dp0update_project.py"
+    %NUVEL_PYTHON% -u "%~dp0update_project.py"
     if errorlevel 1 (
         echo.
         echo Update failed. See the error above, then retry.
@@ -43,5 +43,5 @@ rem Keep execution in one parsed block: Git may replace this batch file.
 )
 
 :check
-%YTDL_PYTHON% -u "%~dp0update_project.py" --check
+%NUVEL_PYTHON% -u "%~dp0update_project.py" --check
 exit /b %errorlevel%

@@ -42,7 +42,7 @@ class QuickTimeMP4PP(FFmpegPostProcessor):
         destination = source.with_suffix('.mp4')
         # Never encode over the input. Only replace it after successful encoding
         # and a cancellation check; failure keeps the downloaded source intact.
-        with tempfile.NamedTemporaryFile(prefix='ytdl-quicktime-', suffix='.mp4',
+        with tempfile.NamedTemporaryFile(prefix='nuvel-quicktime-', suffix='.mp4',
                                          dir=source.parent, delete=False) as handle:
             temporary = Path(handle.name)
         try:

@@ -28,9 +28,9 @@ dist/
 /*.app
 /.studio-publish-*/
 /app-windows/
+/nuvel-windows/
 *.lnk
 *.part
-*.ytdl
 *.mp4
 *.mp3
 *.webm

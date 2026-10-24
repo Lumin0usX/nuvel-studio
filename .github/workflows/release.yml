@@ -51,6 +51,7 @@ jobs:
       - run: node tests/test_theme.cjs
       - run: node tests/test_appearance.cjs
       - run: node tests/test_workspace.cjs
+      - run: node tests/test_snapshot_polling.cjs
       - run: node tests/test_fonts.cjs
       - run: node tests/test_i18n.cjs
       - run: node tests/test_platform_directory.cjs

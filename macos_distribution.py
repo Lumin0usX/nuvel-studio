@@ -6,14 +6,13 @@ import plistlib
 import subprocess
 import tempfile
 import uuid
+import unicodedata
 
 from app_version import DISPLAY_NAME
 
 
 APP_NAME = DISPLAY_NAME + '.app'
-OLD_APP_NAME = 'YTDL Studio.app'
-LEGACY_NAME = 'YTDL Studio Launcher.app'
-BUNDLE_ID = 'local.ytdlstudio.app'
+BUNDLE_ID = 'local.nuvelstudio.app'
 
 
 def sign_bundle(app):
@@ -42,7 +41,7 @@ def sign_bundle(app):
 
 def verify_app(app):
     """LaunchServices success alone is not proof that the UI or Python bridge loaded."""
-    with tempfile.TemporaryDirectory(prefix='ytdl-launch-check-') as temporary:
+    with tempfile.TemporaryDirectory(prefix='nuvel-launch-check-') as temporary:
         proof = Path(temporary) / 'result.json'
         try:
             subprocess.run(['/usr/bin/open', '-n', '-W', str(app), '--args', '--self-test',
@@ -74,28 +73,23 @@ def copy_bundle(source, destination):
 
 
 def archive_bundle(app, destination):
-    # Existing released updaters require the original ZIP root. The app inside
-    # has the new display/process name and a compatibility executable alias.
     app, destination = Path(app), Path(destination)
-    with tempfile.TemporaryDirectory(prefix='nuvel-archive-') as temporary:
-        archived_app = app
-        if app.name != OLD_APP_NAME:
-            archived_app = Path(temporary) / OLD_APP_NAME
-            copy_bundle(app, archived_app)
-        subprocess.run(['/usr/bin/ditto', '-c', '-k', '--sequesterRsrc', '--keepParent',
-                        str(archived_app), str(destination)], check=True, capture_output=True)
+    if unicodedata.normalize('NFC', app.name) != APP_NAME:
+        raise ValueError('The archive must contain ' + APP_NAME)
+    subprocess.run(['/usr/bin/ditto', '-c', '-k', '--sequesterRsrc', '--keepParent',
+                    str(app), str(destination)], check=True, capture_output=True)
 
 
 def _exists(path):
     return path.exists() or path.is_symlink()
 
 
-def _check_existing(path, project, legacy=False):
+def _check_existing(path, project):
     if not _exists(path):
         return
     if path.is_symlink():
         target = path.resolve()
-        if target not in (project / APP_NAME, project / OLD_APP_NAME) and not target.is_relative_to(project / 'dist'):
+        if target != project / APP_NAME and not target.is_relative_to(project / 'dist'):
             raise RuntimeError('Refusing to replace an unrelated app link: ' + str(path))
         return
     try:
@@ -103,22 +97,16 @@ def _check_existing(path, project, legacy=False):
             info = plistlib.load(stream)
     except (OSError, ValueError, plistlib.InvalidFileException) as exc:
         raise RuntimeError('Refusing to replace an unrecognized folder: ' + str(path)) from exc
-    is_app = info.get('CFBundleIdentifier') == BUNDLE_ID
-    is_old_launcher = legacy and info.get('CFBundleExecutable') == 'applet' and \
-        (path / 'Contents/Resources/Scripts/main.scpt').is_file()
-    if not (is_app or is_old_launcher):
+    if info.get('CFBundleIdentifier') != BUNDLE_ID:
         raise RuntimeError('Refusing to replace an unrelated application: ' + str(path))
 
 
 def publish_build(project, built_app):
     project, built_app = Path(project).resolve(), Path(built_app).resolve()
-    if built_app.name != APP_NAME or not built_app.is_relative_to(project / 'dist'):
+    if unicodedata.normalize('NFC', built_app.name) != APP_NAME or not built_app.is_relative_to(project / 'dist'):
         raise ValueError('The build must be a ' + APP_NAME + ' inside this project\'s dist folder.')
     current = project / APP_NAME
-    old_app, legacy = project / OLD_APP_NAME, project / LEGACY_NAME
-    for path in (current, old_app, legacy):
-        _check_existing(path, project, legacy=path == legacy)
-    old_paths = [path for path in (old_app, legacy) if _exists(path)]
+    _check_existing(current, project)
     identifier = uuid.uuid4().hex[:12]
     backups = []
     installed = []
@@ -128,10 +116,10 @@ def publish_build(project, built_app):
         copy_bundle(built_app, candidate)
         # Test after relocation, through the same OS route as a Finder double-click.
         verify_app(candidate)
-        archive = staging / 'YTDL-Studio-macOS-arm64.zip'
+        archive = staging / 'NUVEL-Studio-macOS-arm64.zip'
         archive_bundle(candidate, archive)
         try:
-            for old in (current, *old_paths):
+            for old in (current,):
                 if _exists(old):
                     # Both source and destination are verified inside this workspace.
                     backup = built_app.parent / f'previous-{identifier}-{old.name}'
@@ -139,8 +127,6 @@ def publish_build(project, built_app):
                     backups.append((old, backup))
             candidate.rename(current)
             installed.append((current, candidate))
-            # Keep old app names only in the rollback backups. Finder treats
-            # compatibility .app links as additional apps, leaving duplicate icons.
             os.replace(archive, built_app.parent / archive.name)
         except BaseException:
             for destination, original in reversed(installed):

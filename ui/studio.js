@@ -4,7 +4,7 @@ const {t, backend: translateBackend, translatedValues} = window.StudioI18n;
 window.StudioI18n.capture(document.body);
 const $ = id => document.getElementById(id);
 const token = location.hash.slice(1);
-const storageKey = 'ytdl-obsidian-preferences-v1';
+const storageKey = 'nuvel-obsidian-preferences-v1';
 const settings = {folder: '', cookies: 'none', cookie_path: ''};
 const appearance = {sidebar: 'auto', reducedMotion: false, density: 'comfortable', language: 'th', theme: 'dark', visualStyle: 'obsidian', glassOpacity: 72, fonts: window.StudioFonts.clean()};
 const qualities = {video: 'best', audio: 'best', image: 'best'};
@@ -25,6 +25,7 @@ let toastTimer, analyzeTimer, metadataSequence = 0;
 let lastLists = '', lastPlatforms = '', polling = false, connecting = false;
 let previewData = null, metadataState = {kind: 'empty'}, formError = '';
 let engineVersion = '', preferenceSave = Promise.resolve();
+let catalogRevision = null;
 let appUpdate = {phase: 'idle', current: '', packaged: false};
 let fontOptionLanguage = '';
 const fontLoading = new Set(), fontStatus = {}, pendingFonts = {};
@@ -626,7 +627,7 @@ function renderDock() {
 }
 function render(state) {
   const notify = ready;
-  const {platforms, image_engine, version, preferences, app_update, ...job} = state;
+  const {platforms, image_engine, version, preferences, app_update, catalog_revision, ...job} = state;
   snapshot = job;
   if (!ready) {
     if (preferences && Object.keys(preferences).length) {
@@ -641,7 +642,8 @@ function render(state) {
   }
   if (image_engine) imageEngine = image_engine;
   if (platforms) renderPlatforms(platforms);
-  engineVersion = version; renderEngineVersion();
+  if (version !== undefined) engineVersion = version;
+  renderEngineVersion();
   busy = activePhases.has(state.phase);
   if (app_update) appUpdate = app_update;
   renderAppUpdate();
@@ -650,6 +652,7 @@ function render(state) {
   if (notify && state.phase === 'done' && lastPhase !== 'done') toast(t('ดาวน์โหลดสำเร็จ · บันทึกไฟล์แล้ว'));
   if (notify && state.phase === 'error' && lastPhase !== 'error') toast(t('ดาวน์โหลดไม่สำเร็จ · ดูรายละเอียดที่ Downloads'));
   lastPhase = state.phase;
+  catalogRevision = typeof catalog_revision === 'string' ? catalog_revision : null;
 }
 function renderEngineVersion() {
   $('engine-version').textContent = engineVersion ? 'yt-dlp ' + engineVersion + ' · gallery-dl ' + (imageEngine.available ? t('พร้อมใช้งาน') : t('ยังไม่ติดตั้ง')) : t('กำลังตรวจสอบ…');
@@ -736,8 +739,9 @@ $('create-update-token').addEventListener('click', () => updateAction('open_upda
 async function poll() {
   if (polling) return;
   polling = true;
-  try { const state = await api('snapshot'); connected = true; $('connection-label').textContent = t('Local workspace'); render(state); }
+  try { const state = await api('snapshot', catalogRevision); connected = true; $('connection-label').textContent = t('Local workspace'); render(state); }
   catch {
+    catalogRevision = null;
     connected = false; updateButtons(); $('connection-label').textContent = t('ขาดการเชื่อมต่อ');
     if (ready) $('dock-status').textContent = t('การเชื่อมต่อหยุดลง · เปิดแอปใหม่เพื่อตรวจสอบ');
   } finally {polling = false;}

@@ -29,7 +29,7 @@
       throw new Error('Font unavailable.');
   }
   let cached = {};
-  try { cached = JSON.parse(localStorage.getItem('ytdl-obsidian-preferences-v1') || '{}') || {}; }
+  try { cached = JSON.parse(localStorage.getItem('nuvel-obsidian-preferences-v1') || '{}') || {}; }
   catch { /* Ordinary system fallbacks remain available when storage is blocked. */ }
   window.StudioFonts = Object.freeze({catalog, clean, stack, apply, load});
   apply(cached.language || 'th', clean(cached.fonts));

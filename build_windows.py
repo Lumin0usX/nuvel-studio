@@ -85,9 +85,6 @@ def build():
         '--exclude-module', 'PySide2', '--exclude-module', 'PySide6',
     ])
     bundle = output / DISPLAY_NAME
-    # Existing released updaters require this GUI executable path. A real copy
-    # works without Windows symlink privileges and retains the bundled runtime.
-    shutil.copy2(bundle / (DISPLAY_NAME + '.exe'), bundle / 'YTDL Studio.exe')
     for name in ('LICENSE', 'THIRD_PARTY_NOTICES.md'):
         shutil.copy2(PROJECT / name, bundle / name)
     if os.environ.get('CI'):
@@ -95,9 +92,8 @@ def build():
         from windows_distribution import verify_app, archive_bundle
         write_marker(bundle, 'windows-x64')
         verify_app(bundle)
-        verify_app(bundle, legacy=True)
-        archive_bundle(bundle, output / 'YTDL-Studio-Windows-x64.zip')
-        print('Verified Windows release archive:', output / 'YTDL-Studio-Windows-x64.zip')
+        archive_bundle(bundle, output / 'NUVEL-Studio-Windows-x64.zip')
+        print('Verified Windows release archive:', output / 'NUVEL-Studio-Windows-x64.zip')
         return
     from windows_distribution import publish_build
     executable = publish_build(PROJECT, bundle)

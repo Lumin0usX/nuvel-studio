@@ -1,7 +1,7 @@
 """Application version, independent of the download-engine version."""
-VERSION = '1.1.4'
+VERSION = '2.0.0'
 DISPLAY_NAME = 'NÜVEL Studio'
-REPOSITORY = 'Lumin0usX/ytdl-studio'
+REPOSITORY = 'Lumin0usX/nuvel-studio'
 
 
 def version_tuple(value):

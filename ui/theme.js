@@ -5,7 +5,7 @@
   const system = window.matchMedia('(prefers-color-scheme: dark)');
   let mode = 'dark';
   try {
-    const saved = JSON.parse(localStorage.getItem('ytdl-obsidian-preferences-v1') || '{}');
+    const saved = JSON.parse(localStorage.getItem('nuvel-obsidian-preferences-v1') || '{}');
     if (modes.includes(saved?.theme)) mode = saved.theme;
   } catch { /* A missing or unavailable cache must still start in Dark. */ }
   function apply() {

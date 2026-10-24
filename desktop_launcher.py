@@ -17,10 +17,10 @@ PROJECT = Path(__file__).resolve().parent
 
 def logs_directory():
     if sys.platform == 'win32':
-        return Path(os.environ.get('LOCALAPPDATA', Path.home() / 'AppData/Local')) / 'YTDLStudio/logs'
+        return Path(os.environ.get('LOCALAPPDATA', Path.home() / 'AppData/Local')) / 'NuvelStudio/logs'
     if sys.platform == 'darwin':
-        return Path.home() / 'Library/Logs/YTDLStudio'
-    return Path.home() / '.local/state/YTDLStudio/logs'
+        return Path.home() / 'Library/Logs/NuvelStudio'
+    return Path.home() / '.local/state/NuvelStudio/logs'
 
 
 def notify_error(message):
@@ -121,7 +121,7 @@ def supervise(command, log, gate):
     try:
         process = subprocess.Popen(command, cwd=PROJECT, stdin=subprocess.DEVNULL,
                                    stdout=log, stderr=log,
-                                   env=dict(os.environ, YTDL_UPDATE_HANDOFF=str(gate.parent / 'update.json')),
+                                   env=dict(os.environ, NUVEL_UPDATE_HANDOFF=str(gate.parent / 'update.json')),
                                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
                                    start_new_session=sys.platform != 'win32')
         if job:
@@ -181,7 +181,7 @@ def launch(self_test=False, applet=False, check=False, smoke_result=None):
                     from glass_app import main  # noqa: F401
                     print('Native launcher dependencies: OK', flush=True)
                     return 0
-                with tempfile.TemporaryDirectory(prefix='ytdl-session-') as temporary:
+                with tempfile.TemporaryDirectory(prefix='nuvel-session-') as temporary:
                     gate = Path(temporary) / 'ready'
                     # The supervisor uses pythonw. The GUI uses python.exe with
                     # CREATE_NO_WINDOW so gallery-dl inherits usable pipe streams.

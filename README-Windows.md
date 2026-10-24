@@ -2,7 +2,7 @@
 
 ## แอปพร้อมใช้และอัปเดตในแอป
 
-ดาวน์โหลด **YTDL-Studio-Windows-x64.zip** จาก Releases ของ repo ส่วนตัว
+ดาวน์โหลด **NUVEL-Studio-Windows-x64.zip** จาก Releases ของ repo ส่วนตัว
 แตก ZIP ทั้งโฟลเดอร์ แล้วเปิด **NÜVEL Studio.exe** โดยไม่ต้องติดตั้ง Python หรือ Git
 เก็บโฟลเดอร์ `_internal` ไว้ข้างไฟล์ exe เสมอ ต้องมี Microsoft Edge WebView2 Runtime
 ซึ่งโดยปกติติดตั้งมาแล้วบน Windows 10/11
@@ -21,12 +21,12 @@
 3. เมื่อ build สำเร็จ เปิด shortcut **NÜVEL Studio** ในโฟลเดอร์โปรเจกต์
 
 แอปที่แพ็กเปิดโดยไม่มี Console และรวม Python, UI, yt-dlp และ FFmpeg ไว้แล้ว
-ไฟล์โปรแกรมอยู่ใน `app-windows` อย่าแยก `.exe` ออกจากโฟลเดอร์ `_internal`
+ไฟล์โปรแกรมอยู่ใน `nuvel-windows` อย่าแยก `.exe` ออกจากโฟลเดอร์ `_internal`
 Windows ต้องมี Microsoft Edge WebView2 Runtime
 
-ชื่อหลักคือ `app-windows/NÜVEL Studio.exe` และ `NÜVEL Studio.lnk`
-ชื่อเดิม `YTDL Studio.exe` ยังมีเป็นสำเนาเพื่อรองรับ updater รุ่นเก่า
-shortcut ชื่อเดิมที่มีอยู่จะสำรองแล้วชี้ไปยัง executable ใหม่ โดยไม่ใช้ symlink
+ชื่อหลักคือ `nuvel-windows/NÜVEL Studio.exe` และ `NÜVEL Studio.lnk`
+รุ่น 2.0 ใช้ชื่อและ product ID ใหม่ทั้งหมด ต้องติดตั้งแพ็กเกจใหม่นี้หนึ่งครั้ง
+แล้วตั้งค่าการเข้าถึง GitHub อีกครั้งก่อนใช้อัปเดตในแอป
 
 ZIP สำหรับส่งต่ออยู่ใน `dist/windows-<เวลาที่ build>` แตก ZIP แล้วเปิด `.exe` ได้
 เครื่องปลายทางไม่ต้องติดตั้ง Python แต่ยังต้องมี WebView2 Runtime
@@ -42,8 +42,8 @@ ZIP สำหรับส่งต่ออยู่ใน `dist/windows-<เว
 
 ถ้าตัวใหม่ไม่ผ่านการตรวจหรือแอปเก่ายังล็อกไฟล์อยู่ จะไม่แทนที่รุ่นเดิม
 ระบบเก็บรุ่นก่อนใน `dist` และไม่ลบไฟล์ดาวน์โหลดหรือการตั้งค่า
-ตัว build ต้องตรวจ native startup, UI/bridge, ฟอนต์และ engines ทั้ง executable
-ชื่อใหม่และสำเนาชื่อเดิมให้ผ่านก่อนสร้าง ZIP หรือเปลี่ยนแอป/shortcut
+ตัว build ต้องตรวจ native startup, UI/bridge, ฟอนต์และ engines ให้ผ่าน
+ก่อนสร้าง ZIP หรือเปลี่ยนแอป/shortcut
 
 ดูผลตรวจล่าสุดและข้อจำกัดที่ยังต้องยืนยันบน Windows จริงใน
 [Windows compatibility audit](WINDOWS-COMPATIBILITY.md)

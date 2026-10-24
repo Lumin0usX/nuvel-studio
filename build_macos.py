@@ -26,9 +26,9 @@ def main():
     from build_gallery_tool import build_tool
     gallery, gallery_source = build_tool(output)
     PyInstaller.__main__.run([
-        str(project / 'ytdl_studio.py'), '--name', DISPLAY_NAME,
+        str(project / 'nuvel_studio.py'), '--name', DISPLAY_NAME,
         '--windowed', '--onedir', '--target-arch', 'arm64',
-        '--osx-bundle-identifier', 'local.ytdlstudio.app',
+        '--osx-bundle-identifier', 'local.nuvelstudio.app',
         '--icon', str(project / 'assets/branding/app-icon.icns'),
         '--distpath', str(output), '--workpath', str(output / 'work'),
         '--specpath', str(output),
@@ -53,9 +53,6 @@ def main():
     temporary_executable = executable.with_name('.studio-main-renaming')
     executable.rename(temporary_executable)
     temporary_executable.rename(executable.with_name(executable_name))
-    # Old updaters locate this fixed path; its resolved spelling must match the
-    # actual executable name reported in the native startup proof.
-    (app / 'Contents/MacOS/YTDL Studio').symlink_to(executable_name)
     info_path = app / 'Contents/Info.plist'
     with info_path.open('rb') as stream:
         info = plistlib.load(stream)
@@ -73,8 +70,8 @@ def main():
     if os.environ.get('CI'):
         from macos_distribution import verify_app, archive_bundle
         verify_app(app)
-        archive_bundle(app, output / 'YTDL-Studio-macOS-arm64.zip')
-        print('Verified macOS release archive:', output / 'YTDL-Studio-macOS-arm64.zip')
+        archive_bundle(app, output / 'NUVEL-Studio-macOS-arm64.zip')
+        print('Verified macOS release archive:', output / 'NUVEL-Studio-macOS-arm64.zip')
         return
     from macos_distribution import publish_build
     installed = publish_build(project, app)

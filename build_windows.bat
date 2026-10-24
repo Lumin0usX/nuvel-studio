@@ -12,18 +12,18 @@ if /i not "%~1"=="--check" pause
 exit /b 1
 
 :use_py
-set "YTDL_PYTHON=py -3"
+set "NUVEL_PYTHON=py -3"
 goto run
 
 :use_python
-set "YTDL_PYTHON=python"
+set "NUVEL_PYTHON=python"
 
 :run
 if /i "%~1"=="--check" goto check
 (
     title Studio - Build
     echo Building the Windows app. Close the app and finish downloads first.
-    %YTDL_PYTHON% -u "%~dp0build_windows.py"
+    %NUVEL_PYTHON% -u "%~dp0build_windows.py"
     if errorlevel 1 (
         echo.
         echo Build failed. See the error above. The previous app was kept.
@@ -38,5 +38,5 @@ if /i "%~1"=="--check" goto check
 )
 
 :check
-%YTDL_PYTHON% -u "%~dp0build_windows.py" --check
+%NUVEL_PYTHON% -u "%~dp0build_windows.py" --check
 exit /b %errorlevel%

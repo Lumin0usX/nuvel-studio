@@ -121,11 +121,11 @@ def fixture_bundle(path, version=VERSION):
 
 
 class InstallTransactions(unittest.TestCase):
-    def test_windows_legacy_fallback_cannot_hide_an_invalid_new_executable(self):
+    def test_windows_executable_must_be_a_file_with_the_product_name(self):
         with tempfile.TemporaryDirectory() as temporary:
             bundle = fixture_bundle(Path(temporary) / 'app')
             primary = installer.executable_in(bundle, 'windows-x64')
-            primary.rename(bundle / 'YTDL Studio.exe')
+            primary.rename(bundle / 'another-product.exe')
             primary.mkdir()
             with self.assertRaisesRegex(releases.UpdateError, 'invalid_package'):
                 installer.check_bundle(bundle, 'windows-x64')
@@ -134,12 +134,12 @@ class InstallTransactions(unittest.TestCase):
         for target, child in (('../../../../outside', None), ('Versions', 'alias/file'), ('Versions', 'Alias/file')):
             with tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary)
-                link = zipfile.ZipInfo('YTDL Studio.app/Contents/Alias')
+                link = zipfile.ZipInfo('NÜVEL Studio.app/Contents/Alias')
                 link.external_attr = (stat.S_IFLNK | 0o777) << 16
                 with zipfile.ZipFile(root / 'bad.zip', 'w') as package:
                     package.writestr(link, target)
                     if child:
-                        package.writestr('YTDL Studio.app/Contents/' + child, b'not allowed through link')
+                        package.writestr('NÜVEL Studio.app/Contents/' + child, b'not allowed through link')
                 with self.assertRaises(releases.UpdateError), patch.object(installer.subprocess, 'run') as run:
                     installer.unpack(root / 'bad.zip', root / 'new', 'macos-arm64')
                 run.assert_not_called()
@@ -148,7 +148,7 @@ class InstallTransactions(unittest.TestCase):
     def test_framework_symlinks_inside_mac_bundle_are_preserved(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            framework = 'YTDL Studio.app/Contents/Frameworks/Python.framework/'
+            framework = 'NÜVEL Studio.app/Contents/Frameworks/Python.framework/'
             with zipfile.ZipFile(root / 'mac.zip', 'w') as package:
                 package.writestr(framework + 'Versions/3.12/Python', b'framework binary')
                 for name, target in (('Versions/Current', '3.12'), ('Python', 'Versions/Current/Python')):
@@ -162,8 +162,8 @@ class InstallTransactions(unittest.TestCase):
             self.assertEqual(link.read_bytes(), b'framework binary')
 
     def test_extraction_rejects_traversal_absolute_paths_and_unexpected_root(self):
-        for name in ('../outside', '/outside', 'YTDL Studio/../../outside',
-                     'YTDL Studio/C:/outside', 'another-app/file', 'YTDL Studio\\outside'):
+        for name in ('../outside', '/outside', 'NÜVEL Studio/../../outside',
+                     'NÜVEL Studio/C:/outside', 'another-app/file', 'NÜVEL Studio\\outside'):
             with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary)
                 with zipfile.ZipFile(root / 'bad.zip', 'w') as package:
@@ -177,7 +177,7 @@ class InstallTransactions(unittest.TestCase):
     def test_windows_archives_cannot_contain_symlinks(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            info = zipfile.ZipInfo('YTDL Studio/link')
+            info = zipfile.ZipInfo('NÜVEL Studio/link')
             info.external_attr = (stat.S_IFLNK | 0o777) << 16
             with zipfile.ZipFile(root / 'bad.zip', 'w') as package:
                 package.writestr(info, '../outside')
@@ -186,9 +186,9 @@ class InstallTransactions(unittest.TestCase):
 
     def plan_fixture(self, root):
         target = fixture_bundle(root / 'installed app')
-        stage = root / '.ytdl-update-test'
+        stage = root / '.nuvel-update-test'
         stage.mkdir()
-        candidate = fixture_bundle(stage / 'new/YTDL Studio', '99.0.0')
+        candidate = fixture_bundle(stage / 'new/NÜVEL Studio', '99.0.0')
         plan = stage / 'plan.json'
         plan.write_text(json.dumps(dict(schema=1, target=str(target), candidate=str(candidate),
                                        platform='windows-x64', version='99.0.0')))
@@ -242,12 +242,12 @@ class InstallTransactions(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()
             target, active, candidate, plan = self.plan_fixture(root)
-            old = root / '.ytdl-update-old'
+            old = root / '.nuvel-update-old'
             fixture_bundle(old / 'previous')
             fixture_bundle(old / 'helper' / target.name)
             (old / 'result.json').write_text(json.dumps(dict(ok=True, version='1.0.0')))
             (old / 'plan.json').write_text(json.dumps(dict(target=str(target), platform='windows-x64')))
-            unrelated = root / '.ytdl-update-personal'; unrelated.mkdir()
+            unrelated = root / '.nuvel-update-personal'; unrelated.mkdir()
             (unrelated / 'keep.txt').write_text('keep')
             installer.cleanup_completed(target, active, 'windows-x64')
             self.assertFalse(old.exists())
@@ -259,8 +259,8 @@ class InstallTransactions(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()
             current = fixture_bundle(root / 'my installed app')
-            built = fixture_bundle(root / 'built/YTDL Studio', '99.0.0')
-            stage = root / '.ytdl-update-test'; stage.mkdir()
+            built = fixture_bundle(root / 'built/NÜVEL Studio', '99.0.0')
+            stage = root / '.nuvel-update-test'; stage.mkdir()
             archive_bundle(built, stage / 'package.zip')
             with patch.object(installer, 'verify_native') as verify:
                 plan = installer.stage_update(current, stage / 'package.zip', stage, 'windows-x64', '99.0.0')
@@ -274,7 +274,7 @@ class UpdateServiceTests(unittest.TestCase):
     @unittest.skipUnless(os.name == 'nt', 'Windows Credential Manager required')
     def test_windows_secure_store_round_trip_uses_only_a_disposable_credential(self):
         import uuid
-        with patch.object(update_credentials, 'SERVICE', 'YTDLStudio.Test.' + uuid.uuid4().hex):
+        with patch.object(update_credentials, 'SERVICE', 'NuvelStudio.Test.' + uuid.uuid4().hex):
             try:
                 try:
                     update_credentials.windows_token('github_pat_disposable_test')

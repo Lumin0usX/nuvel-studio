@@ -9,7 +9,7 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 from app_version import REPOSITORY, VERSION, version_tuple
 
 MAX_PACKAGE = 2 * 1024**3
-ASSETS = {'windows-x64': 'YTDL-Studio-Windows-x64.zip', 'macos-arm64': 'YTDL-Studio-macOS-arm64.zip'}
+ASSETS = {'windows-x64': 'NUVEL-Studio-Windows-x64.zip', 'macos-arm64': 'NUVEL-Studio-macOS-arm64.zip'}
 MANIFEST = 'studio-update.json'
 
 
@@ -44,7 +44,7 @@ class ReleaseClient:
         if path != prefix.rstrip('/') + '?per_page=20' and (not path.startswith(prefix) or '?' in path or '..' in path):
             raise UpdateError('invalid_release')
         headers = {'Accept': 'application/octet-stream' if binary else 'application/vnd.github+json',
-                   'User-Agent': 'YTDL-Studio/' + VERSION, 'X-GitHub-Api-Version': '2022-11-28'}
+                   'User-Agent': 'NUVEL-Studio/' + VERSION, 'X-GitHub-Api-Version': '2022-11-28'}
         if self.token:
             headers['Authorization'] = 'Bearer ' + self.token
         try:

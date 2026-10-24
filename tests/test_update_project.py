@@ -20,12 +20,12 @@ class SourceUpdateTests(unittest.TestCase):
                               capture_output=True, text=True, encoding='utf-8', timeout=15).stdout.strip()
 
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory(prefix='ytdl-update-test-')
+        self.temporary = tempfile.TemporaryDirectory(prefix='nuvel-update-test-')
         self.addCleanup(self.temporary.cleanup)
         root = Path(self.temporary.name)
         self.origin = root / 'origin.git'
         self.author = root / 'author'
-        self.clone = root / 'YTDL Studio ไทย'
+        self.clone = root / 'NÜVEL Studio ไทย'
         self.git(root, 'init', '--bare', str(self.origin))
         self.git(root, 'init', '--initial-branch=main', str(self.author))
         self.identity(self.author)
@@ -242,8 +242,8 @@ class UpdateWorkflowTests(unittest.TestCase):
 @unittest.skipUnless(sys.platform == 'win32', 'Windows batch launcher tests')
 class WindowsBatchUpdateTests(unittest.TestCase):
     def run_batch(self, updater, *args):
-        with tempfile.TemporaryDirectory(prefix='ytdl-batch-test-') as temporary:
-            folder = Path(temporary, 'YTDL Studio ไทย')
+        with tempfile.TemporaryDirectory(prefix='nuvel-batch-test-') as temporary:
+            folder = Path(temporary, 'NÜVEL Studio ไทย')
             folder.mkdir()
             shutil.copyfile(Path(__file__).resolve().parents[1] / 'update.bat', folder / 'update.bat')
             (folder / 'update_project.py').write_text(updater, encoding='utf-8')

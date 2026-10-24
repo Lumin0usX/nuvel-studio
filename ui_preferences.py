@@ -14,7 +14,7 @@ def preferences_path():
         root = Path.home() / 'Library/Application Support'
     else:
         root = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config'))
-    return root / 'YTDLStudio' / 'preferences.json'
+    return root / 'NuvelStudio' / 'preferences.json'
 
 
 def validate_preferences(values):

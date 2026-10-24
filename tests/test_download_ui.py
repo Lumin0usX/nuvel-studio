@@ -2,12 +2,12 @@
 import queue
 import unittest
 from unittest.mock import Mock, patch
-from legacy_tk import YTDLStudio
+from legacy_tk import NuvelStudio
 
 
 class JobTransitions(unittest.TestCase):
     def setUp(self):
-        self.app = YTDLStudio.__new__(YTDLStudio)
+        self.app = NuvelStudio.__new__(NuvelStudio)
         self.app.events = queue.Queue()
         for attr in ('root', 'bar', 'percent_text', 'status', 'progress_text', 'status_label',
                      'download_btn', 'cookie_combo', 'mode', 'video_btn', 'audio_btn', 'mode_hint'):

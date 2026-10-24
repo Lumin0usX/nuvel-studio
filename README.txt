@@ -3,7 +3,7 @@ NÜVEL STUDIO
 
 แอปพร้อมใช้ (เมื่อมีการเผยแพร่ Release)
 ดาวน์โหลด ZIP สำหรับ Windows x64 หรือ Mac Apple Silicon จาก GitHub Releases
-แตกไฟล์แล้วเปิด NÜVEL Studio.exe หรือ YTDL Studio.app ไม่ต้องติดตั้ง Python/Git
+แตกไฟล์แล้วเปิด NÜVEL Studio.exe หรือ NÜVEL Studio.app ไม่ต้องติดตั้ง Python/Git
 อัปเดตครั้งต่อไป: Settings > App updates
 repo เป็น private จึงต้องตั้ง GitHub token แบบ Contents: read-only ในแอปครั้งแรก
 token เก็บใน Windows Credential Manager / macOS Keychain

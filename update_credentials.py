@@ -6,7 +6,7 @@ import re
 import subprocess
 import sys
 
-SERVICE = 'YTDLStudio.GitHubReleases'
+SERVICE = 'NuvelStudio.GitHubReleases'
 ACCOUNT = 'github.com'
 
 

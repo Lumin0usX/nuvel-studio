@@ -35,6 +35,7 @@ class StudioAPI:
         self._platforms = []
         self._version = ''
         self._image_engine = dict(available=False, modules=[])
+        self._catalog_revision = secrets.token_hex(8)
         threading.Thread(target=self._scan, daemon=True).start()
 
     def _scan(self):
@@ -50,16 +51,22 @@ class StudioAPI:
             self._platforms = platforms
             self._version = version
             self._image_engine = engine
+            self._catalog_revision = secrets.token_hex(8)
 
     def _update(self, **values):
         with self._lock:
             self._state.update(values)
 
-    def snapshot(self):
+    def snapshot(self, catalog_revision=None):
         with self._lock:
-            return dict(**copy.deepcopy(self._state), platforms=copy.deepcopy(self._platforms),
-                        version=self._version, image_engine=copy.deepcopy(self._image_engine),
-                        preferences=copy.deepcopy(self._preferences), app_update=self._updates.snapshot())
+            result = dict(**copy.deepcopy(self._state), catalog_revision=self._catalog_revision,
+                          preferences=copy.deepcopy(self._preferences), app_update=self._updates.snapshot())
+            # Progress changes frequently; the engine catalog and its 50 icons do not.
+            # No argument preserves the complete snapshot for existing clients/tests.
+            if catalog_revision != self._catalog_revision:
+                result.update(platforms=copy.deepcopy(self._platforms), version=self._version,
+                              image_engine=copy.deepcopy(self._image_engine))
+            return result
 
     def check_app_update(self):
         return self._updates.check()
@@ -245,7 +252,10 @@ class StudioAPI:
             def postprocess(data):
                 check_cancel()
                 self._update(phase='processing', detail='กำลังรวมภาพและเสียง หรือแปลงไฟล์', speed='', eta='')
-            opts = dict(outtmpl=os.path.join(folder, '%(title).150B [%(extractor_key)s-%(id)s].%(ext)s'),
+            # Audio extraction may remove its input after conversion. Never let
+            # that intermediate file reuse an earlier video download's name.
+            media_suffix = ' [audio]' if mode == 'audio' else ''
+            opts = dict(outtmpl=os.path.join(folder, '%(title).150B [%(extractor_key)s-%(id)s]' + media_suffix + '.%(ext)s'),
                         noplaylist=True, progress_hooks=[progress], postprocessor_hooks=[postprocess],
                         windowsfilenames=sys.platform == 'win32', quiet=True, ffmpeg_location=ffmpeg_path())
             opts.update(media_options(mode, quality))
@@ -408,6 +418,7 @@ def main(native_only=False):
     tested = None
     smoke_closed = None
     if '--self-test' in sys.argv:
+        print('Native startup check: validating bundled engines and fonts.', flush=True)
         subprocess.run([ffmpeg_path(), '-version'], check=True, capture_output=True, timeout=10)
         if getattr(sys, 'frozen', False):
             from font_assets import check_font_assets
@@ -420,8 +431,11 @@ def main(native_only=False):
                 raise RuntimeError('The packaged image engine did not report any extractors.')
         tested = threading.Event()
         smoke_closed = threading.Event()
+        smoke_stage = {'value': 'waiting for the WebView loaded event'}
         def smoke_test():
             try:
+                smoke_stage['value'] = 'waiting for the UI, brand assets and Python bridge'
+                print('Native startup check: WebView loaded.', flush=True)
                 deadline = time.monotonic() + 15
                 requested = False
                 while time.monotonic() < deadline:
@@ -431,12 +445,20 @@ def main(native_only=False):
                         requested = True
                     if requested and window.evaluate_js('window.__studioSmoke === true'):
                         tested.set()
+                        print('Native startup check: UI, bridge and font rendering passed.', flush=True)
                         break
                     time.sleep(.1)
+                if not tested.is_set():
+                    details = window.evaluate_js('JSON.stringify({document:document.readyState,ui:Boolean(window.studioReady),bridge:Boolean(window.pywebview?.api?.snapshot),images:Array.from(document.querySelectorAll(".brand img")).map(img => ({loaded:img.complete,width:img.naturalWidth})),fonts:document.fonts.status})')
+                    print('Native startup check did not become ready: ' + str(details), flush=True)
+            except Exception as exc:
+                print('Native startup check failed: ' + repr(exc), flush=True)
+                raise
             finally:
                 window.destroy()
         def timeout():
             if not smoke_closed.wait(45):
+                print('Native startup check timed out: ' + smoke_stage['value'], flush=True)
                 os._exit(1)
         window.events.loaded += smoke_test
         threading.Thread(target=timeout, daemon=True).start()
@@ -466,7 +488,7 @@ def main(native_only=False):
     elif api._updates.snapshot().get('phase') == 'installing' and api._updates.plan:
         # Windows' supervisor starts the helper outside its child Job Object.
         # macOS has no supervisor and can launch a detached helper directly.
-        handoff = os.environ.get('YTDL_UPDATE_HANDOFF')
+        handoff = os.environ.get('NUVEL_UPDATE_HANDOFF')
         if sys.platform == 'win32' and handoff:
             Path(handoff).write_text(json.dumps(dict(plan=str(api._updates.plan))), encoding='utf-8')
         else:

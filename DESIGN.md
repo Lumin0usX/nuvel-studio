@@ -1,4 +1,4 @@
-# YTDL Studio / Obsidian Futuristic
+# NÜVEL Studio / Obsidian Futuristic
 
 ## Implementation
 

@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import unicodedata
 
 from app_version import VERSION, DISPLAY_NAME, version_tuple
 from release_client import ASSETS, MANIFEST
@@ -18,10 +19,14 @@ def collect(project, platform_key, destination):
     if not matches:
         raise RuntimeError('No verified native build archive was found.')
     archive = matches[-1]
-    root = 'YTDL Studio' if platform_key == 'windows-x64' else 'YTDL Studio.app'
+    root = 'NÜVEL Studio' if platform_key == 'windows-x64' else 'NÜVEL Studio.app'
     with zipfile.ZipFile(archive) as package:
-        marker = json.loads(package.read(marker_path(Path(root), platform_key).as_posix()))
-    if marker != dict(product='YTDL Studio', platform=platform_key, version=VERSION):
+        expected = marker_path(Path(root), platform_key).as_posix()
+        matches = [name for name in package.namelist() if unicodedata.normalize('NFC', name) == expected]
+        if len(matches) != 1:
+            raise RuntimeError('The archive must contain exactly one product marker.')
+        marker = json.loads(package.read(matches[0]))
+    if marker != dict(product='NÜVEL Studio', platform=platform_key, version=VERSION):
         raise RuntimeError('Build version does not match this release.')
     destination.mkdir(parents=True, exist_ok=True)
     shutil.copy2(archive, destination / archive.name)

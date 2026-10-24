@@ -92,7 +92,7 @@
     syncSelections();
   }
   try {
-    const saved = JSON.parse(localStorage.getItem('ytdl-obsidian-preferences-v1') || '{}');
+    const saved = JSON.parse(localStorage.getItem('nuvel-obsidian-preferences-v1') || '{}');
     if (styles.includes(saved?.visualStyle)) visualStyle = saved.visualStyle;
     reducedMotion = saved?.reducedMotion === true;
     glassOpacity = normalizeOpacity(saved?.glassOpacity);

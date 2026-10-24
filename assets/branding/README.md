@@ -36,25 +36,10 @@ await sharp('ui/brand/favicon.svg', {density: 288})
   .resize(1024, 1024).png().toFile('assets/branding/app-icon-1024.png');
 ```
 
-The repository URL, OS preferences/keychain namespaces, bundle ID, update marker
-product and release archive names retain their existing identifiers so older installations can still receive updates.
-Windows builds produce **NÜVEL Studio.exe** and **NÜVEL Studio.lnk**. The old
-executable remains a regular compatibility copy, and existing old-name shortcuts
-are backed up and redirected to the new primary executable. Both executable names
-must pass native startup acceptance before publication; no symlink permission
-is required on Windows. The app folder remains `app-windows` and release ZIP
-layout retains its `YTDL Studio` root.
-
-macOS builds now produce **NÜVEL Studio.app** with a **NÜVEL Studio** executable.
-After native acceptance, previous project apps and old-name launcher links move
-to rollback backups in `dist`; only `NÜVEL Studio.app` remains in the project root.
-Failed publication restores the previous apps and links. Old released updaters still
-receive a ZIP rooted at `YTDL Studio.app` and a compatibility executable symlink
-inside `Contents/MacOS`; the primary executable and process name use NÜVEL.
-macOS `CFBundleName`/`CFBundleDisplayName`,
-Windows ProductName/FileDescription, native window/dialog titles, UI labels and
-release titles use the NÜVEL display name. Source and packaged Windows shortcuts
-use the new icon. Source pywebview launches also receive the native icon explicitly.
-The native startup test requires the sidebar brand images to load successfully.
-A new native build must pass every existing self-test before
-replacing the installed app; changing source assets does not modify an old app.
+The application uses the NÜVEL identity for all owned filenames, bundle
+metadata, preference and credential namespaces, archive names and updater roots.
+Windows packages contain a single NÜVEL Studio.exe; macOS packages contain
+NÜVEL Studio.app with one main executable, normalized for macOS signing.
+Neither platform generates compatibility aliases or duplicate executable copies.
+Native startup acceptance is mandatory before installation or publication.
+The full identity boundary is documented in the root README.
