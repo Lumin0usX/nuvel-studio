@@ -10,6 +10,11 @@ ORIGINS = frozenset({
     'https://github.com/lumin0usx/nuvel-studio',
     'git@github.com:lumin0usx/nuvel-studio',
     'ssh://git@github.com/lumin0usx/nuvel-studio',
+    # Existing clones retain the original URL after the GitHub repository rename.
+    # These are exact migration aliases, not a general bypass of the allowlist.
+    'https://github.com/lumin0usx/ytdl-studio',
+    'git@github.com:lumin0usx/ytdl-studio',
+    'ssh://git@github.com/lumin0usx/ytdl-studio',
 })
 
 
@@ -42,7 +47,7 @@ def update_source(project, allowed_origins=ORIGINS):
     branch = git('branch', '--show-current')
     if branch != 'main':
         raise UpdateError('Updates require the main branch. Switch branches manually before retrying.')
-    origin = git('config', '--get', 'remote.origin.url').rstrip('/').removesuffix('.git').lower()
+    origin = git('config', '--get', 'remote.origin.url').lower().rstrip('/').removesuffix('.git')
     if origin not in allowed_origins:
         raise UpdateError('Origin is not the NÜVEL Studio repository. Check your Git remote configuration.')
     changes = git('status', '--porcelain', '--untracked-files=normal')

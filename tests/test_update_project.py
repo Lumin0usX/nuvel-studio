@@ -75,6 +75,39 @@ class SourceUpdateTests(unittest.TestCase):
         self.assertFalse(self.update())
         self.unchanged()
 
+    def test_current_and_previous_repository_urls_fetch_without_rewriting_origin(self):
+        self.publish()
+        urls = [f'{prefix}{name}.git' for name in ('nuvel-studio', 'ytdl-studio')
+                for prefix in ('https://github.com/Lumin0usX/',
+                               'git@github.com:Lumin0usX/',
+                               'ssh://git@github.com/Lumin0usX/')]
+        urls.append('https://github.com/Lumin0usX/YTDL-STUDIO.GIT/')
+        for index, url in enumerate(urls):
+            with self.subTest(url=url):
+                # Redirect transport to the local fixture so these use the real
+                # allowlist and Git fetch/merge without any GitHub/network access.
+                self.git(self.clone, 'config', '--add', f'url.{self.origin.as_posix()}.insteadOf', url)
+                self.git(self.clone, 'remote', 'set-url', 'origin', url)
+                with redirect_stdout(io.StringIO()):
+                    changed = update_source(self.clone)
+                self.assertEqual(changed, index == 0)
+                self.assertEqual(self.git(self.clone, 'rev-parse', 'HEAD'),
+                                 self.git(self.author, 'rev-parse', 'HEAD'))
+                self.assertEqual(self.git(self.clone, 'config', '--get', 'remote.origin.url'), url)
+
+    def test_similar_repository_urls_are_rejected_without_fetch(self):
+        for url in ('https://github.com/another-user/ytdl-studio.git',
+                    'https://github.com/Lumin0usX/ytdl-studio-fork.git',
+                    'https://github.com.evil.invalid/Lumin0usX/ytdl-studio.git',
+                    'https://github.com/Lumin0usX/ytdl-studio.git?other=1',
+                    'git@github.com:another-user/nuvel-studio.git'):
+            with self.subTest(url=url):
+                self.git(self.clone, 'remote', 'set-url', 'origin', url)
+                with self.assertRaisesRegex(UpdateError, 'Origin is not'):
+                    update_source(self.clone)
+                self.assertFalse((self.clone / '.git/FETCH_HEAD').exists())
+                self.unchanged()
+
     def test_ignored_download_cannot_be_overwritten_by_a_new_tracked_file(self):
         for directory in (self.author, self.clone):
             (directory / 'Downloads').mkdir()

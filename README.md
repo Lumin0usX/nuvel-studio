@@ -222,6 +222,9 @@ app only after a successful check. There is no build/skip-build choice.
 The private repository requires existing GitHub access. Local changes and
 diverged history stop the update without discarding files. See
 [macOS update instructions](README-macOS.md) for setup and limitations.
+The source updater also accepts this project's original GitHub repository URL
+as a migration alias for existing clones, without changing their remote or
+accepting repositories owned by other accounts.
 
 ## Quality preferences
 
