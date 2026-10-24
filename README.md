@@ -18,6 +18,13 @@ archive names, roots or product IDs. Configure private-repository access again
 for the new credential namespace. Existing downloads are unaffected. The new
 repository address below requires the GitHub repository rename to be completed.
 
+Source-folder updates on macOS can migrate the already-branded 1.1.2–1.x app
+automatically: the builder checks its historical bundle ID, build marker,
+matching versions, name and executable before accepting it. The old app is
+backed up only after the new app passes its native startup test. Historical
+identifiers are retained only as read-only migration checks; new packages use
+the 2.0 identity. This does not change the older packaged in-app updater.
+
 ## Download the ready-to-use app
 
 Open [Releases](https://github.com/Lumin0usX/nuvel-studio/releases) while signed in

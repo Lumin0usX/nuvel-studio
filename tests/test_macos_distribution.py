@@ -96,6 +96,91 @@ class MacDistributionTests(unittest.TestCase):
             self.publish()
         self.assertEqual(self.version(self.current), 'old')
 
+    def make_previous_identity(self, version='1.1.4'):
+        info_path = self.current / 'Contents/Info.plist'
+        info = plistlib.loads(info_path.read_bytes())
+        info.update(CFBundleIdentifier='local.ytdlstudio.app',
+                    CFBundleName=DISPLAY_NAME, CFBundleDisplayName=DISPLAY_NAME,
+                    CFBundleVersion=version, CFBundleShortVersionString=version)
+        info_path.write_bytes(plistlib.dumps(info))
+        marker = self.current / 'Contents/Resources/studio-build.json'
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.write_text(json.dumps(dict(product='YTDL Studio', platform='macos-arm64',
+                                         version=version)), encoding='utf-8')
+
+    def test_rebranded_releases_and_decomposed_executable_are_recognized(self):
+        folder = self.current / 'Contents/MacOS'
+        executable_name = unicodedata.normalize('NFD', DISPLAY_NAME)
+        intermediate = folder / 'renaming'
+        (folder / DISPLAY_NAME).rename(intermediate)
+        intermediate.rename(folder / executable_name)
+        for version in ('1.1.2', '1.1.3', '1.1.4'):
+            with self.subTest(version=version):
+                self.make_previous_identity(version)
+                info_path = self.current / 'Contents/Info.plist'
+                info = plistlib.loads(info_path.read_bytes())
+                info['CFBundleExecutable'] = executable_name
+                info_path.write_bytes(plistlib.dumps(info))
+                distribution._check_existing(self.current, self.project)
+
+    def test_previous_identity_migrates_only_after_native_verification(self):
+        self.make_previous_identity()
+        original_info = (self.current / 'Contents/Info.plist').read_bytes()
+        def verify(candidate):
+            self.assertEqual(self.version(self.current), 'old')
+            self.assertEqual(self.version(candidate), 'new')
+        result, verifier = self.publish(verifier=verify)
+        self.assertEqual(result, self.current)
+        self.assertEqual(self.version(self.current), 'new')
+        verifier.assert_called_once()
+        backup, = self.built.parent.glob('previous-*-' + distribution.APP_NAME)
+        self.assertEqual(self.version(backup), 'old')
+        self.assertEqual((backup / 'Contents/Info.plist').read_bytes(), original_info)
+
+    def test_previous_identity_is_preserved_on_startup_or_publication_failure(self):
+        self.make_previous_identity()
+        with self.assertRaisesRegex(RuntimeError, 'native startup failed'):
+            self.publish(verifier=lambda _: (_ for _ in ()).throw(RuntimeError('native startup failed')))
+        self.assertEqual(self.version(self.current), 'old')
+        self.assertEqual(list(self.built.parent.glob('previous-*')), [])
+        with patch.object(distribution.os, 'replace', side_effect=OSError('publication failed')):
+            with self.assertRaisesRegex(OSError, 'publication failed'):
+                self.publish()
+        self.assertEqual(self.version(self.current), 'old')
+        self.assertEqual(list(self.built.parent.glob('previous-*')), [])
+
+    def test_previous_bundle_id_alone_does_not_allow_replacement(self):
+        self.make_previous_identity()
+        marker = self.current / 'Contents/Resources/studio-build.json'
+        original = json.loads(marker.read_text(encoding='utf-8'))
+        for change in (dict(product=DISPLAY_NAME), dict(platform='windows-x64'),
+                       dict(version='2.0.0'), dict(version='1.1.3'), dict(version='invalid')):
+            with self.subTest(change=change):
+                marker.write_text(json.dumps(original | change), encoding='utf-8')
+                with self.assertRaisesRegex(RuntimeError, 'unrelated application'):
+                    self.publish()
+                self.assertEqual(self.version(self.current), 'old')
+        marker.unlink()
+        with self.assertRaisesRegex(RuntimeError, 'unrelated application'):
+            self.publish()
+
+    def test_previous_identity_requires_our_name_and_existing_executable(self):
+        self.make_previous_identity()
+        info_path = self.current / 'Contents/Info.plist'
+        original = plistlib.loads(info_path.read_bytes())
+        for change in (dict(CFBundleIdentifier='someone.else.app'),
+                       dict(CFBundleName='Another app'),
+                       dict(CFBundleExecutable='../other'),
+                       dict(CFBundleVersion='1.1.3')):
+            with self.subTest(change=change):
+                info_path.write_bytes(plistlib.dumps(original | change))
+                with self.assertRaisesRegex(RuntimeError, 'unrelated application'):
+                    self.publish()
+        info_path.write_bytes(plistlib.dumps(original))
+        (self.current / 'Contents/MacOS' / DISPLAY_NAME).unlink()
+        with self.assertRaisesRegex(RuntimeError, 'unrelated application'):
+            self.publish()
+
     def test_build_outside_dist_is_not_published(self):
         with self.assertRaises(ValueError):
             distribution.publish_build(self.project, self.current)

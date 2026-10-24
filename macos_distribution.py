@@ -8,7 +8,7 @@ import tempfile
 import uuid
 import unicodedata
 
-from app_version import DISPLAY_NAME
+from app_version import DISPLAY_NAME, version_tuple
 
 
 APP_NAME = DISPLAY_NAME + '.app'
@@ -84,6 +84,31 @@ def _exists(path):
     return path.exists() or path.is_symlink()
 
 
+def _is_previous_identity(path, info):
+    """Recognize the already-rebranded 1.x app only for source-build migration.
+
+    These historical identifiers are read-only migration data. New bundles and
+    the release updater continue to require the current product identity.
+    """
+    if info.get('CFBundleIdentifier') != 'local.ytdlstudio.app':
+        return False
+    try:
+        marker = json.loads((path / 'Contents/Resources/studio-build.json').read_text(encoding='utf-8'))
+        version = marker['version']
+        if marker['product'] != 'YTDL Studio' or marker['platform'] != 'macos-arm64' or \
+                not (version_tuple('1.1.2') <= version_tuple(version) < version_tuple('2.0.0')) or \
+                info.get('CFBundleVersion') != version or info.get('CFBundleShortVersionString') != version or \
+                unicodedata.normalize('NFC', info.get('CFBundleName', '')) != DISPLAY_NAME:
+            return False
+        executable_name = info.get('CFBundleExecutable', '')
+        if unicodedata.normalize('NFC', executable_name) != DISPLAY_NAME:
+            return False
+        executable = path / 'Contents/MacOS' / executable_name
+        return executable.is_file() and executable.resolve().is_relative_to((path / 'Contents/MacOS').resolve())
+    except (OSError, ValueError, TypeError, KeyError):
+        return False
+
+
 def _check_existing(path, project):
     if not _exists(path):
         return
@@ -97,7 +122,8 @@ def _check_existing(path, project):
             info = plistlib.load(stream)
     except (OSError, ValueError, plistlib.InvalidFileException) as exc:
         raise RuntimeError('Refusing to replace an unrecognized folder: ' + str(path)) from exc
-    if info.get('CFBundleIdentifier') != BUNDLE_ID:
+    if not isinstance(info, dict) or (info.get('CFBundleIdentifier') != BUNDLE_ID and
+                                     not _is_previous_identity(path, info)):
         raise RuntimeError('Refusing to replace an unrelated application: ' + str(path))
 
 
