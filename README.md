@@ -25,6 +25,32 @@ backed up only after the new app passes its native startup test. Historical
 identifiers are retained only as read-only migration checks; new packages use
 the 2.0 identity. This does not change the older packaged in-app updater.
 
+## Uninstall
+
+Open **Settings → Uninstall → Uninstall app**. Confirm the removal; the app
+closes before an independent helper moves its verified bundle to the system
+[Trash](https://developer.apple.com/documentation/foundation/filemanager/trashitem(at:resultingitemurl:)) /
+[Recycle Bin](https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shfileoperationw).
+It works offline and a packaged installation does not require a system Python.
+Close other copies of the app first. Active downloads or updates block removal.
+
+Downloaded media, the source checkout, build environments and old builds are
+kept. **Also remove preferences, startup logs and saved GitHub release access**
+is off by default; selecting it removes only this app's known preference/log
+files and its own credential-store entry, not Git/GitHub CLI credentials.
+Only a matching adjacent Windows shortcut is removed. Other copied shortcuts
+and other app installations are kept.
+
+Source installations also have **uninstall.bat** and **uninstall_macos.command**
+for double-click removal of the project-local app. `uninstall.bat --check` or
+`./uninstall_macos.command --check` validates the target without uninstalling.
+The source scripts use the existing Python environment and do not install or
+download anything. If the app folder contains downloads/extra files, move them
+outside the app first. New builds include an installed-file inventory to catch
+extra files even if the output-folder preference has since changed. Older
+builds conservatively reject media found outside their UI/artwork directories.
+This portable app does not register a Windows Apps & Features uninstall entry.
+
 ## Download the ready-to-use app
 
 Open [Releases](https://github.com/Lumin0usX/nuvel-studio/releases) while signed in

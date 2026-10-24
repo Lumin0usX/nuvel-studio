@@ -67,6 +67,11 @@ def main():
         shutil.copy2(project / name, app / 'Contents/Resources' / name)
     from macos_distribution import sign_bundle
     sign_bundle(app)
+    # The inventory includes the code-signature resources and is itself a
+    # signed resource. Its file list excludes only its own path.
+    from app_uninstall import write_inventory
+    write_inventory(app, 'macos-arm64')
+    sign_bundle(app)
     if os.environ.get('CI'):
         from macos_distribution import verify_app, archive_bundle
         verify_app(app)

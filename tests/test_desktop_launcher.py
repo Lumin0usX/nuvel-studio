@@ -77,10 +77,30 @@ class DesktopLauncherTests(unittest.TestCase):
             self.assertEqual(launcher.launch(), 0)
         self.assertEqual(order, ['gui session closed', 'helper started'])
 
+    def test_uninstall_helper_runs_after_gui_shutdown_for_source_and_packaged_apps(self):
+        for frozen in (False, True):
+            with self.subTest(frozen=frozen):
+                order = []
+                def closed_gui(command, log, gate):
+                    (gate.parent / 'update.json').write_text(json.dumps({
+                        'action': 'uninstall', 'plan': 'prepared-uninstall.json'}))
+                    order.append('gui session closed')
+                    return 0
+                with tempfile.TemporaryDirectory() as temporary, \
+                     patch.object(launcher, 'logs_directory', return_value=Path(temporary)), \
+                     patch.object(sys, 'frozen', frozen, create=True), \
+                     patch.object(launcher, 'supervise', side_effect=closed_gui), \
+                     patch('app_uninstall.launch_helper', side_effect=lambda path: order.append('uninstall helper started')), \
+                     patch('update_installer.launch_helper') as update:
+                    self.assertEqual(launcher.launch(), 0)
+                update.assert_not_called()
+                self.assertEqual(order, ['gui session closed', 'uninstall helper started'])
+
     def test_closing_busy_window_requires_confirmation_then_cancels(self):
         for confirmation in (False, True):
             with self.subTest(confirmation=confirmation):
                 api = Mock()
+                api._uninstall_plan = None
                 api.snapshot.return_value = {'phase': 'downloading'}
                 api._preferences = {'language': 'en'}
                 window = Mock()

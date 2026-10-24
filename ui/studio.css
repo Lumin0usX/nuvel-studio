@@ -180,6 +180,11 @@ h1 { font-size: 32px; line-height: 1.4; font-weight: 600; letter-spacing: -.7px;
 #overview-page > .page-heading { max-width: 840px; }
 
 /* Composer: one focused input, contextual output settings, one primary action. */
+.app-removal h2 { margin-bottom: 8px; }
+.uninstall-option { display: flex; gap: 12px; align-items: flex-start; margin: 24px 0; line-height: 1.7; }
+.uninstall-option input { flex: 0 0 auto; margin-top: 5px; }
+.dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+#uninstall-feedback { color: var(--muted); line-height: 1.7; overflow-wrap: anywhere; }
 #download-form { padding: 0; background: transparent; border: 0; border-radius: 0; grid-area: composer; }
 #download-form > .section-heading { margin-bottom: 0; }
 .url-field { display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 18px; background: var(--surface); border: 1px solid var(--control-border); border-radius: 14px; min-height: 68px; transition: border-color 160ms, box-shadow 160ms; }

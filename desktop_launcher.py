@@ -198,9 +198,15 @@ def launch(self_test=False, applet=False, check=False, smoke_result=None):
                             command.extend(['--smoke-result', str(smoke_result)])
                     result = supervise(command, log, gate)
                     handoff = gate.parent / 'update.json'
-                    if result == 0 and handoff.is_file() and getattr(sys, 'frozen', False) and not self_test:
-                        from update_installer import launch_helper
-                        launch_helper(Path(json.loads(handoff.read_text(encoding='utf-8'))['plan']))
+                    if result == 0 and handoff.is_file() and not self_test:
+                        request = json.loads(handoff.read_text(encoding='utf-8'))
+                        if request.get('action') == 'uninstall':
+                            from app_uninstall import launch_helper
+                        elif getattr(sys, 'frozen', False):
+                            from update_installer import launch_helper
+                        else:
+                            raise RuntimeError('Release installation requires a packaged application.')
+                        launch_helper(Path(request['plan']))
                 if result:
                     raise RuntimeError(f'The native interface exited with code {result}.')
                 print('Session closed; owned child processes stopped.', flush=True)
@@ -222,6 +228,9 @@ def launch(self_test=False, applet=False, check=False, smoke_result=None):
 
 
 def main():
+    if sys.argv[1:2] in (['--uninstall'], ['--finish-uninstall']):
+        from app_uninstall import main as uninstall_main
+        return uninstall_main(sys.argv[2:] if sys.argv[1] == '--uninstall' else sys.argv[1:])
     if sys.argv[1:2] == ['--apply-update']:
         from update_installer import helper_main
         return helper_main(sys.argv[2], sys.argv[3])

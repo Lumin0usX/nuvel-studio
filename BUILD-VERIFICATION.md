@@ -130,3 +130,39 @@ source launcher was archived. Test downloads were removed from Downloads and the
 local fixture server was stopped. GitHub repository rename remains blocked by
 the lack of an authenticated browser session and denied CLI network access;
 no commit, push, tag or release publication was performed.
+
+## Offline uninstaller verification — 2026-10-24
+
+Added Settings → Uninstall and the source-folder `uninstall.bat` /
+`uninstall_macos.command` entry points. Removal defaults to keeping preferences;
+it preserves downloaded media, source, build environments and backups. Only a
+verified app bundle and a matching adjacent Windows shortcut are recycled.
+Optional cleanup removes known preference/log files and this app's release
+credential. New builds inventory their installed files to reject extra user
+content before removal. Windows hands the request to its supervisor after the
+owned GUI process tree closes, so its uninstaller survives Job Object cleanup.
+
+The full Python suite passed **218 tests, with 5 skips** (223 total). A subsequent
+native Trash regression was added and passed with the focused uninstaller suite
+(19 passed, 1 symlink-permission skip); that regression also runs on macOS CI.
+All seven JavaScript suites, Python compilation, shell syntax and diff checks
+passed. `uninstall.bat --check` validated the existing local install without
+changing it. Native Windows process lookup and Unicode shortcut inspection were
+checked, and the native recycle API moved only disposable QA fixtures.
+
+An isolated PyInstaller build completed at
+`dist/uninstall-verification-20261024-114819/NÜVEL Studio` using the existing
+builder-generated spec and unchanged engine binaries. Its GUI-subsystem check
+passed. The real frozen `--uninstall --check --check-result` invocation exited 0;
+`uninstall-readonly-proof.json` in that build directory identifies the exact
+isolated bundle. Executable SHA-256:
+`05ecfce7446dc456989062fd228f369359a4c078315db5d5056c9a1720035adb`.
+
+The isolated native app was opened on the user's desktop. Settings and its
+confirmation dialog rendered correctly; the settings-removal checkbox was
+unchecked. Cancel returned to Settings with the app intact, and the review
+window was closed normally. The user's installed app, media, preferences and
+credentials were not uninstalled or reset. This is an isolated test build, not
+a release archive or replacement of the current installation. Native macOS
+uninstall/signing execution still requires a Mac; no GitHub publication was
+performed for this change.

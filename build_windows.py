@@ -87,10 +87,12 @@ def build():
     bundle = output / DISPLAY_NAME
     for name in ('LICENSE', 'THIRD_PARTY_NOTICES.md'):
         shutil.copy2(PROJECT / name, bundle / name)
+    from update_installer import write_marker
+    from app_uninstall import write_inventory
+    write_marker(bundle, 'windows-x64')
+    write_inventory(bundle, 'windows-x64')
     if os.environ.get('CI'):
-        from update_installer import write_marker
         from windows_distribution import verify_app, archive_bundle
-        write_marker(bundle, 'windows-x64')
         verify_app(bundle)
         archive_bundle(bundle, output / 'NUVEL-Studio-Windows-x64.zip')
         print('Verified Windows release archive:', output / 'NUVEL-Studio-Windows-x64.zip')

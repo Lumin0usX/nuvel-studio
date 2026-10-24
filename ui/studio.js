@@ -27,6 +27,7 @@ let previewData = null, metadataState = {kind: 'empty'}, formError = '';
 let engineVersion = '', preferenceSave = Promise.resolve();
 let catalogRevision = null;
 let appUpdate = {phase: 'idle', current: '', packaged: false};
+let preparingUninstall = false;
 let fontOptionLanguage = '';
 const fontLoading = new Set(), fontStatus = {}, pendingFonts = {};
 
@@ -178,6 +179,8 @@ function updateButtons() {
   $('analyze').disabled = !connected || !valid || $('analyze').dataset.loading === 'true';
   $('analyze').title = !valid ? t('Paste a valid link to analyze it.') : !connected ? t('ยังไม่เชื่อมต่อ') : '';
   $('download').title = !valid ? t('Paste a valid link to download.') : !connected ? t('ยังไม่เชื่อมต่อ') : '';
+  $('open-uninstall').disabled = !connected || !window.pywebview?.api || busy ||
+    ['checking','downloading','verifying','installing'].includes(appUpdate.phase);
 }
 function updateSource() {
   const value = $('url').value.trim(), parsed = parseURL(value);
@@ -736,6 +739,34 @@ $('update-token').addEventListener('keydown', event => {
 });
 $('forget-update-token').addEventListener('click', () => updateAction('connect_updates', '', true));
 $('create-update-token').addEventListener('click', () => updateAction('open_update_access'));
+$('open-uninstall').addEventListener('click', () => {
+  $('uninstall-settings').checked = false;
+  $('uninstall-feedback').textContent = '';
+  preparingUninstall = false;
+  $('uninstall-dialog').querySelectorAll('button').forEach(button => button.disabled = false);
+  $('uninstall-dialog').showModal();
+});
+$('uninstall-dialog').addEventListener('cancel', event => { if (preparingUninstall) event.preventDefault(); });
+$('confirm-uninstall').addEventListener('click', async () => {
+  if (preparingUninstall) return;
+  preparingUninstall = true;
+  $('uninstall-dialog').querySelectorAll('button').forEach(button => button.disabled = true);
+  $('uninstall-feedback').textContent = t('Preparing uninstall…');
+  try {
+    const result = await api('uninstall_app', $('uninstall-settings').checked);
+    if (result.error) {
+      const errors = {download_active: 'Finish or cancel the download before uninstalling.',
+        update_busy: 'Wait for the update to finish before uninstalling.', native_required: 'Open the desktop app to uninstall.'};
+      $('uninstall-feedback').textContent = t(errors[result.error] || result.error);
+      preparingUninstall = false;
+      $('uninstall-dialog').querySelectorAll('button').forEach(button => button.disabled = false);
+    }
+  } catch {
+    $('uninstall-feedback').textContent = t('Could not confirm uninstall. If the app stays open, retry.');
+    preparingUninstall = false;
+    $('uninstall-dialog').querySelectorAll('button').forEach(button => button.disabled = false);
+  }
+});
 async function poll() {
   if (polling) return;
   polling = true;

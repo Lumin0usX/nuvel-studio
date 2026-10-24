@@ -1048,6 +1048,18 @@
   }
 }/* CATALOG_END */;
   const UPDATE_CATALOG = /* UPDATE_CATALOG_START */{
+    "Could not confirm uninstall. If the app stays open, retry.": ["ยืนยันการถอนการติดตั้งไม่ได้ หากแอปยังเปิดอยู่ให้ลองอีกครั้ง", "アンインストールを確認できませんでした。アプリが開いたままの場合は再試行してください。", "无法确认卸载。如果应用仍在运行，请重试。"],
+    "Uninstall": ["ถอนการติดตั้ง", "アンインストール", "卸载"],
+    "Uninstall app": ["ถอนการติดตั้งแอป", "アプリをアンインストール", "卸载应用"],
+    "Uninstall NÜVEL Studio?": ["ถอนการติดตั้ง NÜVEL Studio?", "NÜVEL Studio をアンインストールしますか？", "卸载 NÜVEL Studio？"],
+    "Remove the app from this device. Downloaded media and source files are kept.": ["นำแอปออกจากอุปกรณ์นี้ โดยเก็บไฟล์สื่อที่ดาวน์โหลดและซอร์สโค้ดไว้", "このデバイスからアプリを削除します。ダウンロード済みのメディアとソースは保持されます。", "从此设备移除应用，保留已下载的媒体和源代码。"],
+    "The app will close and move to the Trash or Recycle Bin. Your downloaded media, source code and build backups will be kept.": ["แอปจะปิดและย้ายไปถังขยะ โดยเก็บไฟล์สื่อที่ดาวน์โหลด ซอร์สโค้ด และตัว build สำรองไว้", "アプリを終了し、ゴミ箱に移動します。ダウンロード済みのメディア、ソースコード、ビルドのバックアップは保持されます。", "应用将关闭并移至废纸篓或回收站。保留已下载的媒体、源代码及构建备份。"],
+    "Also remove preferences, startup logs and saved GitHub release access": ["ลบการตั้งค่า บันทึกการเปิดแอป และสิทธิ์เข้าถึง GitHub release ที่บันทึกไว้ด้วย", "設定、起動ログ、保存済みの GitHub リリースへのアクセス情報も削除", "同时移除偏好设置、启动日志及已保存的 GitHub 发布访问凭据"],
+    "Preparing uninstall…": ["กำลังเตรียมถอนการติดตั้ง…", "アンインストールを準備中…", "正在准备卸载…"],
+    "Finish or cancel the download before uninstalling.": ["รอให้ดาวน์โหลดเสร็จหรือยกเลิกก่อนถอนการติดตั้ง", "アンインストールする前にダウンロードを完了またはキャンセルしてください。", "卸载前请完成或取消下载。"],
+    "Wait for the update to finish before uninstalling.": ["รอให้การอัปเดตเสร็จก่อนถอนการติดตั้ง", "更新が完了してからアンインストールしてください。", "请等待更新完成后再卸载。"],
+    "Open the desktop app to uninstall.": ["เปิดแอปเดสก์ท็อปเพื่อถอนการติดตั้ง", "アンインストールするにはデスクトップアプリを開いてください。", "请打开桌面应用进行卸载。"],
+    "The desktop app is closing. The uninstaller will show the result.": ["แอปกำลังปิด ตัวถอนการติดตั้งจะแจ้งผลให้ทราบ", "アプリを終了しています。アンインストーラーが結果を表示します。", "桌面应用正在关闭，卸载程序将显示结果。"],
     "Paste a media link to get started.": ["วางลิงก์สื่อเพื่อเริ่มดาวน์โหลด", "メディアのリンクを貼り付けて開始", "粘贴媒体链接以开始下载"],
     "Output:": ["ไฟล์:", "出力:", "输出："],
     "Source resolution is never upscaled.": ["ไม่ขยายความละเอียดเกินต้นฉบับ", "元の解像度を超える拡大は行いません。", "不会放大到高于原始分辨率。"],

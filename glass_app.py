@@ -28,6 +28,7 @@ class StudioAPI:
         self._lock = threading.RLock()
         self._cancel = threading.Event()
         self._updates = AppUpdates()
+        self._uninstall_plan = None
         self._preferences = load_preferences()
         self._state = dict(phase='idle', percent=0, title='', detail='', speed='', eta='',
                            folder=self._preferences.get('folder', str(Path.home() / 'Downloads')), history=[], error='',
@@ -95,6 +96,23 @@ class StudioAPI:
     def open_update_access(self):
         webbrowser.open('https://github.com/settings/personal-access-tokens/new')
         return dict(ok=True)
+
+    def uninstall_app(self, remove_settings=False):
+        with self._lock:
+            if self._window is None:
+                return dict(error='native_required')
+            if self._state['phase'] in ('connecting', 'downloading', 'processing', 'cancelling'):
+                return dict(error='download_active')
+            if self._updates.snapshot()['phase'] in ('checking', 'downloading', 'verifying', 'installing') or self._uninstall_plan:
+                return dict(error='update_busy')
+            try:
+                from app_uninstall import find_target, platform_key, stage_uninstall
+                self._uninstall_plan = stage_uninstall(find_target(), platform_key(), remove_settings,
+                                                     [self._state['folder']])
+            except Exception as exc:
+                return dict(error=str(exc))
+            self._window.destroy()
+            return dict(ok=True)
 
     def save_preferences(self, values):
         try:
@@ -485,6 +503,13 @@ def main(native_only=False):
                 get_console.restype = wintypes.HWND
                 result['console_attached'] = bool(get_console())
             proof.write_text(json.dumps(result), encoding='utf-8')
+    elif api._uninstall_plan:
+        handoff = os.environ.get('NUVEL_UPDATE_HANDOFF')
+        if sys.platform == 'win32' and handoff:
+            Path(handoff).write_text(json.dumps(dict(action='uninstall', plan=str(api._uninstall_plan))), encoding='utf-8')
+        else:
+            from app_uninstall import launch_helper
+            launch_helper(api._uninstall_plan)
     elif api._updates.snapshot().get('phase') == 'installing' and api._updates.plan:
         # Windows' supervisor starts the helper outside its child Job Object.
         # macOS has no supervisor and can launch a detached helper directly.
