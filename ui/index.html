@@ -70,7 +70,9 @@
                 <label><input type="radio" name="mode" value="audio"><span><svg><use href="#audio-icon"/></svg><span>เสียง</span></span></label>
                 <label><input type="radio" name="mode" value="image"><span><svg><use href="#image-icon"/></svg><span>ภาพ</span></span></label>
               </fieldset>
-              <div class="download-settings"><div class="download-options">
+              <div class="download-settings">
+                <div class="output-name-option"><div class="output-name-heading"><label for="output-name">File name</label><span>Optional</span></div><input id="output-name" type="text" placeholder="Use source name" autocomplete="off" spellcheck="false" maxlength="160" aria-describedby="output-name-hint"><p id="output-name-hint" class="helper-text">Leave blank to use the source name. No extension needed.</p></div>
+                <div class="download-options">
                 <div class="quality-option"><div class="quality-heading"><label for="quality" id="quality-label">ความละเอียด</label><span class="format-option" id="output-format-note"><span>Output:</span> <strong id="output-format">MP4</strong></span></div><select id="quality" aria-describedby="quality-hint output-format-note"></select></div>
                 <div class="destination-option"><span class="field-label" id="destination-label">บันทึกไปที่</span><button type="button" id="change-folder" class="destination" title="เปลี่ยนโฟลเดอร์ปลายทาง" aria-labelledby="destination-label folder-label"><svg><use href="#folder-icon"/></svg><strong id="folder-label">Downloads</strong><svg class="destination-arrow"><use href="#chevron-icon"/></svg></button></div>
                 <button id="download" class="primary-button" type="submit" disabled><svg><use href="#download-icon"/></svg><span>ดาวน์โหลดวิดีโอ</span></button>

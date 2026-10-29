@@ -1,5 +1,41 @@
 # NÜVEL Studio build verification
 
+## Output filename feature — 2026-10-29/30
+
+Added an optional filename field to the existing download form, above quality,
+destination and Download. Blank requests retain the original source naming.
+Video/audio publish the completed, converted file with the requested literal
+name; direct images retain the detected image extension; albums number each
+image in download order. Collisions use numeric suffixes and never overwrite
+existing files. Names are validated for both Windows and macOS. The field,
+helper text and validation messages support all four UI languages.
+
+Validation on this Mac:
+
+- Nine feature tests passed, including real yt-dlp/FFmpeg video, native audio
+  and MP3 conversion, preserving an earlier same-named video, literal template
+  characters, Unicode, direct-image collisions, gallery numbering and separate
+  intermediate files for posts returning multiple videos.
+- All seven JavaScript suites passed, including form request payloads for all
+  three media modes and the four translation catalogs.
+- Safari inspection of the actual source UI confirmed Thai layout, the album
+  hint, and preserving a Thai/Japanese name across mode and language changes.
+  This was a file-based UI preview, not a packaged frontend/backend smoke test.
+- Full Python suite: 231 results, 215 passed, 12 skipped, three errors and one
+  failure. Errors: missing `_tkinter` and two denied loopback-server binds.
+  Failure: unchanged macOS archive test reads the Ü ZIP name as CP437. The same
+  archive test failed in isolation without importing any filename-feature
+  runtime modules; archive/updater code was not changed by this feature.
+- Native build preflight passed. Build stopped at the mandatory gallery-dl
+  executable check: `semctl: Operation not permitted`. No self-test was skipped,
+  no new main app/ZIP was produced and the existing project app was preserved.
+  Windows native packaging has not been rerun for this feature.
+
+Logs: `dist/output-names-20261029/` (`feature-tests.log`, `python-tests.log`,
+`archive-baseline.log`, `build.log`). Partial engine build:
+`dist/20261029-151615-328991/`. The source remains version 2.0.0; this change does
+not create a version tag or publish a release.
+
 ## Identity boundary: 2.0.0 (unreleased)
 
 The source now uses NÜVEL Studio throughout its owned application identity.

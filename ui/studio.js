@@ -165,6 +165,8 @@ function renderQuality() {
     current === 'audio' ? (value === 'best' ? t('Keeps the best original audio format.') : t('Converts to MP3; source quality still applies.')) :
     value === 'best' ? t('Keeps the original image file.') : t('Resizes without enlarging smaller images.');
   $('image-hint').hidden = current !== 'image';
+  $('output-name-hint').textContent = t('Leave blank to use the source name. No extension needed.') +
+    (current === 'image' ? ' ' + t('Albums add a number to each image.') : '');
   renderPlatforms(knownPlatforms); updateButtons();
 }
 $('quality').addEventListener('change', () => {qualities[mode()] = $('quality').value; renderQuality();});
@@ -272,7 +274,7 @@ async function startDownload(request) {
 $('download-form').addEventListener('submit', event => {
   event.preventDefault();
   if (!parseURL($('url').value.trim())) {showError(t('วางลิงก์แบบเต็มที่ขึ้นต้นด้วย https://')); $('url').focus(); return;}
-  startDownload({url: $('url').value.trim(), mode: mode(), quality: qualities[mode()], ...settings});
+  startDownload({url: $('url').value.trim(), mode: mode(), quality: qualities[mode()], output_name: $('output-name').value.trim(), ...settings});
 });
 document.addEventListener('keydown', event => {
   if ((event.metaKey || event.ctrlKey) && event.key === 'Enter' && currentPage === 'overview' && !document.querySelector('dialog[open]')) {

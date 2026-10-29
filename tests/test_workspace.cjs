@@ -36,4 +36,24 @@ assert.equal(elements['recent-list'].children[0].item.id,'real-entry');
 context.snapshot = {phase:'idle',history:[]}; render();
 assert.equal(workspace.classes.has('has-activity'),false);
 assert.equal(elements['recent-section'].classes.has('is-empty'),true);
-console.log('Workspace passed: compact empty state, real job/history expansion and collapse after records are removed');
+// Submit the authored form handler: names remain literal, blank is optional,
+// and each media mode sends the same request field to the backend.
+const submitStart = source.indexOf("$('download-form').addEventListener('submit'"),
+  submitEnd = source.indexOf("\ndocument.addEventListener('keydown'", submitStart);
+assert.ok(submitStart >= 0 && submitEnd > submitStart);
+let submit, submitted, selectedMode = 'video';
+const inputs = {'url': {value: ' https://example.org/clip '}, 'output-name': {value: ' ทริป 100% {id} '},
+  'download-form': {addEventListener: (event, handler) => {assert.equal(event, 'submit'); submit = handler;}}};
+const formContext = vm.createContext({$: id => inputs[id], parseURL: value => new URL(value),
+  mode: () => selectedMode, qualities: {video: 'best', audio: '128', image: 'best'},
+  settings: {folder: '/downloads', cookies: 'none'}, startDownload: request => submitted = request});
+vm.runInContext(source.slice(submitStart, submitEnd), formContext);
+for (selectedMode of ['video', 'audio', 'image']) {
+  submit({preventDefault() {}});
+  assert.equal(submitted.output_name, 'ทริป 100% {id}');
+  assert.equal(submitted.mode, selectedMode);
+}
+inputs['output-name'].value = '  ';
+submit({preventDefault() {}});
+assert.equal(submitted.output_name, '');
+console.log('Workspace passed: compact activity, optional literal output names and requests for all three modes');

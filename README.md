@@ -270,6 +270,13 @@ apps continue to use the separate release-based in-app updater.
 
 All three modes default to the highest quality the source exposes.
 
+Before downloading, optionally enter a **File name** in the download form.
+Leave it blank to retain the source naming. Extensions follow the actual output
+format automatically; a supplied media extension is removed from the name first.
+Albums use numbered names such as `Trip-001.jpg` and `Trip-002.png`. Existing files
+are kept, with `(1)`, `(2)`, etc. added to new names when needed. Names apply to
+the current download request and its retry, rather than being saved as settings.
+
 - Video: highest available, or a height ceiling from 360p through 8K/4320p.
   The downloader chooses the best format at or below the cap; if none exists,
   it reports an error instead of downloading above the cap. It does not upscale.

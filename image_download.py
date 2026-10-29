@@ -17,6 +17,7 @@ from urllib.parse import unquote, urlsplit
 from urllib.request import Request, urlopen
 from image_quality import resize_image
 from download_engine import IMAGE_MODULES, PLATFORM_DOMAINS
+from output_names import validate_output_name, save_named_file
 
 EXTENSIONS = ('jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'heic', 'heif', 'bmp', 'tif', 'tiff', 'jxl', 'ico')
 MAX_IMAGE_BYTES = 256 * 1024 * 1024
@@ -113,7 +114,7 @@ def _safe_stem(url):
     return stem
 
 
-def download_direct(url, folder, cancel, update, cookies='none', cookie_path=''):
+def download_direct(url, folder, cancel, update, cookies='none', cookie_path='', output_name=''):
     """Return None for HTML/non-images; never save an HTML page as an image."""
     check_cancel(cancel)
     request = Request(url, headers={'User-Agent': 'Mozilla/5.0 NUVEL-Studio', 'Accept': 'image/*,*/*;q=0.5'})
@@ -156,14 +157,14 @@ def download_direct(url, folder, cancel, update, cookies='none', cookie_path='')
                         raise RuntimeError('ไฟล์ภาพใหญ่เกิน 256 MB')
                     output.write(block)
                     elapsed = max(time.monotonic() - started, .01)
-                    update(phase='downloading', title=f'{_safe_stem(url)}.{extension}',
+                    update(phase='downloading', title=f'{output_name or _safe_stem(url)}.{extension}',
                            detail='กำลังดาวน์โหลดภาพต้นฉบับ', percent=min(99, received * 100 / total) if total else 0,
                            progress_known=total > 0, speed=f'{received / elapsed / 1048576:.1f} MB/s', eta='')
                     block = response.read(65536)
             check_cancel(cancel)
             if total and received != total:
                 raise RuntimeError('ดาวน์โหลดภาพไม่ครบ ลองใหม่อีกครั้ง')
-            stem = _safe_stem(url)
+            stem = output_name or _safe_stem(url)
             for number in range(10000):
                 name = f'{stem}{" (" + str(number) + ")" if number else ""}.{extension}'
                 target = Path(folder) / name
@@ -196,7 +197,7 @@ def gallery_args(command, url, folder, cookies, cookie_path):
     return args + ['--', url]
 
 
-def download_gallery(url, folder, cancel, update, cookies='none', cookie_path='', quality='best'):
+def download_gallery(url, folder, cancel, update, cookies='none', cookie_path='', quality='best', output_name=''):
     command = gallery_command()
     if not command:
         raise RuntimeError('โหลดภาพจากโพสต์ต้องติดตั้ง gallery-dl: รันตัวติดตั้งของแอปอีกครั้ง '
@@ -227,6 +228,7 @@ def download_gallery(url, folder, cancel, update, cookies='none', cookie_path=''
     reader = threading.Thread(target=read_output, daemon=True)
     reader.start()
     saved = set()
+    saved_paths = []
     errors = deque(maxlen=8)
     update(phase='downloading', progress_known=False, percent=0, speed='', eta='',
            folder=str(job_folder), detail='กำลังค้นหาและดาวน์โหลดภาพจากโพสต์')
@@ -242,6 +244,7 @@ def download_gallery(url, folder, cancel, update, cookies='none', cookie_path=''
                 if path.is_file() and path.resolve().is_relative_to(job_folder.resolve()) and path.suffix.lower().lstrip('.') in EXTENSIONS:
                     if str(path.resolve()) not in saved:
                         resize_image(path, quality, cancel)
+                        saved_paths.append(path)
                     saved.add(str(path.resolve()))
                     update(title=f'ภาพจาก {urlsplit(url).hostname}', image_count=len(saved),
                            detail=f'บันทึกแล้ว {len(saved)} ภาพ · กำลังตรวจสอบภาพถัดไป')
@@ -253,7 +256,17 @@ def download_gallery(url, folder, cancel, update, cookies='none', cookie_path=''
         if not saved:
             raise RuntimeError('ไม่พบภาพในลิงก์นี้ ลองใช้ลิงก์โพสต์/อัลบั้มภาพโดยตรง '
                                'หรือเลือกบัญชีที่เปิดโพสต์นี้ได้')
-        return dict(count=len(saved), folder=str(job_folder), title=f'ภาพจาก {urlsplit(url).hostname} ({len(saved)} ภาพ)')
+        if output_name:
+            for number, path in enumerate(saved_paths, 1):
+                stem = output_name + (f'-{number:03d}' if len(saved_paths) > 1 else '')
+                target = path
+                if path.name != stem + path.suffix:
+                    target = save_named_file(path, job_folder, stem, lambda: check_cancel(cancel))
+                    path.unlink()
+            title = target.name if len(saved_paths) == 1 else output_name
+        else:
+            title = f'ภาพจาก {urlsplit(url).hostname} ({len(saved)} ภาพ)'
+        return dict(count=len(saved), folder=str(job_folder), title=title)
     finally:
         stop_reader.set()
         if process.poll() is None:
@@ -266,14 +279,15 @@ def download_gallery(url, folder, cancel, update, cookies='none', cookie_path=''
         reader.join(timeout=1)
 
 
-def download_images(url, folder, cancel, update, cookies='none', cookie_path='', quality='best'):
+def download_images(url, folder, cancel, update, cookies='none', cookie_path='', quality='best', output_name=''):
+    output_name = validate_output_name(output_name)
     # Known file links use streaming without needing the optional gallery CLI.
     # Extensionless links are probed only on hosts without gallery support.
     host = urlsplit(url).hostname.lower()
     gallery_hosts = tuple(domain for slug in IMAGE_MODULES for domain in PLATFORM_DOMAINS[slug])
     direct = is_direct_url(url)
     if direct or not any(host == domain or host.endswith('.' + domain) for domain in gallery_hosts):
-        result = download_direct(url, folder, cancel, update, cookies, cookie_path)
+        result = download_direct(url, folder, cancel, update, cookies, cookie_path, output_name=output_name)
         if result:
             if quality != 'best':
                 update(phase='processing', progress_known=False, speed='', eta='', detail='กำลังปรับขนาดภาพตามที่เลือก')
@@ -281,4 +295,4 @@ def download_images(url, folder, cancel, update, cookies='none', cookie_path='',
             return result
         if direct:
             raise RuntimeError('ลิงก์นี้ไม่ได้ส่งไฟล์ภาพที่รองรับ อาจเป็นหน้าเข้าสู่ระบบหรือไฟล์ชนิดอื่น')
-    return download_gallery(url, folder, cancel, update, cookies, cookie_path, quality=quality)
+    return download_gallery(url, folder, cancel, update, cookies, cookie_path, quality=quality, output_name=output_name)

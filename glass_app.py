@@ -1,6 +1,7 @@
 """Desktop shell, with an authenticated local-browser fallback."""
 import base64
 import copy
+from contextlib import nullcontext
 import json
 import os
 from pathlib import Path
@@ -8,6 +9,7 @@ import secrets
 import subprocess
 import sys
 import threading
+import tempfile
 import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -20,6 +22,7 @@ from media_quality import validate_quality, quality_label, media_options, add_vi
 from ui_preferences import load_preferences, save_preferences
 from app_updates import AppUpdates
 from app_version import DISPLAY_NAME
+from output_names import validate_output_name, save_named_file
 
 
 class StudioAPI:
@@ -220,6 +223,7 @@ class StudioAPI:
                 return dict(error='เลือกวิดีโอ เสียง หรือภาพ')
             try:
                 quality = validate_quality(mode, options.get('quality', 'best'))
+                output_name = validate_output_name(options.get('output_name', ''))
             except ValueError as exc:
                 return dict(error=str(exc))
             cookies = options.get('cookies', 'none')
@@ -234,7 +238,8 @@ class StudioAPI:
                          speed='', eta='', error='', folder=str(folder.resolve()), mode=mode,
                          quality=quality, quality_label=quality_label(mode, quality), source=parsed.hostname,
                          url=url, total_bytes=0, downloaded_bytes=0, history_id='')
-            threading.Thread(target=self._download, args=(url, str(folder.resolve()), mode, cookies, cookie_path, quality), daemon=True).start()
+            threading.Thread(target=self._download, args=(url, str(folder.resolve()), mode, cookies, cookie_path, quality),
+                             kwargs=dict(output_name=output_name), daemon=True).start()
             return dict(ok=True)
 
     def cancel_download(self):
@@ -245,9 +250,9 @@ class StudioAPI:
                              else 'กำลังหยุด · หากกำลังแปลงไฟล์จะรอให้ขั้นตอนนี้จบ')
         return dict(ok=True)
 
-    def _download(self, url, folder, mode, cookies, cookie_path, quality='best'):
+    def _download(self, url, folder, mode, cookies, cookie_path, quality='best', output_name=''):
         if mode == 'image':
-            self._download_images(url, folder, cookies, cookie_path, quality)
+            self._download_images(url, folder, cookies, cookie_path, quality, output_name)
             return
         try:
             import yt_dlp
@@ -273,24 +278,44 @@ class StudioAPI:
             # Audio extraction may remove its input after conversion. Never let
             # that intermediate file reuse an earlier video download's name.
             media_suffix = ' [audio]' if mode == 'audio' else ''
-            opts = dict(outtmpl=os.path.join(folder, '%(title).150B [%(extractor_key)s-%(id)s]' + media_suffix + '.%(ext)s'),
-                        noplaylist=True, progress_hooks=[progress], postprocessor_hooks=[postprocess],
-                        windowsfilenames=sys.platform == 'win32', quiet=True, ffmpeg_location=ffmpeg_path())
-            opts.update(media_options(mode, quality))
-            if cookies not in ('none', 'file'):
-                opts['cookiesfrombrowser'] = (cookies,)
-            with yt_dlp.YoutubeDL(opts) as ydl:
-                add_video_postprocessor(ydl, mode, check_cancel)
-                if cookies == 'file':
-                    from yt_dlp.cookies import YoutubeDLCookieJar
-                    jar = YoutubeDLCookieJar(cookie_path)
-                    jar.load(ignore_discard=True, ignore_expires=True)
-                    jar.filename = None
-                    ydl.cookiejar = jar
-                check_cancel()
-                if ydl.download([url]):
-                    raise RuntimeError('ดาวน์โหลดไม่สำเร็จ ลองใช้ลิงก์คลิปโดยตรง')
-                check_cancel()
+            named_files = []
+            # Isolate intermediates: extracting named audio must never consume
+            # an existing video of the same name. Publish only after conversion.
+            workspace = tempfile.TemporaryDirectory(dir=folder, prefix='.studio-download-') if output_name else nullcontext(folder)
+            with workspace as work_folder:
+                def save_output(filename):
+                    path = Path(filename)
+                    if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(Path(work_folder).resolve()):
+                        raise RuntimeError('The download did not return a valid output file.')
+                    named_files.append(save_named_file(path, folder, output_name, check_cancel))
+                # Keep distinct intermediates for extractors returning multiple
+                # videos. The user's name is used literally only when publishing.
+                template = '%(autonumber)06d [%(id).100B].%(ext)s' if output_name else \
+                    '%(title).150B [%(extractor_key)s-%(id)s]' + media_suffix + '.%(ext)s'
+                opts = dict(outtmpl=os.path.join(work_folder, template),
+                            noplaylist=True, progress_hooks=[progress], postprocessor_hooks=[postprocess],
+                            windowsfilenames=sys.platform == 'win32', quiet=True, ffmpeg_location=ffmpeg_path())
+                if output_name:
+                    opts['post_hooks'] = [save_output]
+                opts.update(media_options(mode, quality))
+                if cookies not in ('none', 'file'):
+                    opts['cookiesfrombrowser'] = (cookies,)
+                with yt_dlp.YoutubeDL(opts) as ydl:
+                    add_video_postprocessor(ydl, mode, check_cancel)
+                    if cookies == 'file':
+                        from yt_dlp.cookies import YoutubeDLCookieJar
+                        jar = YoutubeDLCookieJar(cookie_path)
+                        jar.load(ignore_discard=True, ignore_expires=True)
+                        jar.filename = None
+                        ydl.cookiejar = jar
+                    check_cancel()
+                    if ydl.download([url]):
+                        raise RuntimeError('ดาวน์โหลดไม่สำเร็จ ลองใช้ลิงก์คลิปโดยตรง')
+                    check_cancel()
+                if output_name and not named_files:
+                    raise RuntimeError('The download did not return a valid output file.')
+            if named_files:
+                self._update(title=named_files[-1].name)
             with self._lock:
                 history = [dict(id=secrets.token_hex(8), title=self._state['title'], mode=mode, folder=folder,
                                 source=self._state.get('source', ''), status='done',
@@ -303,9 +328,9 @@ class StudioAPI:
             else:
                 self._update(phase='error', detail='ดาวน์โหลดไม่สำเร็จ', error=download_error(exc), speed='', eta='')
 
-    def _download_images(self, url, folder, cookies, cookie_path, quality='best'):
+    def _download_images(self, url, folder, cookies, cookie_path, quality='best', output_name=''):
         try:
-            result = download_images(url, folder, self._cancel, self._update, cookies, cookie_path, quality=quality)
+            result = download_images(url, folder, self._cancel, self._update, cookies, cookie_path, quality=quality, output_name=output_name)
             if self._cancel.is_set():
                 raise RuntimeError('หยุดแล้ว')
             with self._lock:
