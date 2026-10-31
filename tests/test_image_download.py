@@ -115,20 +115,53 @@ class GalleryProcessTests(unittest.TestCase):
             with patch.object(images, 'gallery_command', return_value=command):
                 result = images.download_gallery('https://instagram.com/p/example', folder, threading.Event(), Mock())
             self.assertEqual(result['count'], 2)
-            self.assertTrue(Path(result['folder']).is_relative_to(folder))
+            self.assertEqual(Path(result['folder']), Path(folder))
+            self.assertEqual((Path(folder) / 'a.jpg').read_bytes(), b'test')
+            self.assertEqual((Path(folder) / 'b.png').read_bytes(), b'test')
+            self.assertFalse([p for p in Path(folder).iterdir() if p.is_dir()])
+
+    def test_gallery_flattens_nested_paths_and_preserves_namesakes_across_jobs(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'photo.jpg').write_bytes(b'keep existing')
+            command = self._fake(folder, 'p=folder/"extractor"/"album"/"photo.jpg"\np.parent.mkdir(parents=True)\np.write_bytes(b"new image")\nprint("STUDIO_IMAGE_SAVED:"+str(p),flush=True)\n')
+            with patch.object(images, 'gallery_command', return_value=command):
+                for _ in range(2):
+                    result = images.download_gallery('https://example.org/post', folder, threading.Event(), Mock())
+                    self.assertEqual(result['folder'], folder)
+            self.assertEqual((root / 'photo.jpg').read_bytes(), b'keep existing')
+            for name in ('photo (1).jpg', 'photo (2).jpg'):
+                self.assertEqual((root / name).read_bytes(), b'new image')
+            self.assertFalse([p for p in root.iterdir() if p.is_dir()])
 
     def test_gallery_zero_images_is_an_error(self):
         with tempfile.TemporaryDirectory() as folder:
             command = self._fake(folder, 'print("No image results",flush=True)\n')
             with patch.object(images, 'gallery_command', return_value=command), self.assertRaises(RuntimeError):
                 images.download_gallery('https://example.org/post', folder, threading.Event(), Mock())
+            self.assertFalse([p for p in Path(folder).iterdir() if p.is_dir()])
 
     def test_gallery_failure_after_partial_download_is_not_success(self):
         with tempfile.TemporaryDirectory() as folder:
             command = self._fake(folder, 'p=folder/"a.jpg"\np.write_bytes(b"test")\nprint("STUDIO_IMAGE_SAVED:"+str(p),flush=True)\nsys.exit(4)\n')
             with patch.object(images, 'gallery_command', return_value=command), self.assertRaises(RuntimeError):
                 images.download_gallery('https://example.org/post', folder, threading.Event(), Mock())
-            self.assertEqual(len(list(Path(folder).rglob('a.jpg'))), 1)
+            self.assertEqual((Path(folder) / 'a.jpg').read_bytes(), b'test')
+            self.assertFalse([p for p in Path(folder).iterdir() if p.is_dir()])
+
+    def test_cancel_keeps_finished_images_in_destination_and_removes_work_folder(self):
+        cancel = threading.Event()
+        with tempfile.TemporaryDirectory() as folder:
+            command = self._fake(folder, 'for name in ["a.jpg","b.png"]:\n (folder/name).write_bytes(b"finished")\n'
+                                 'for name in ["a.jpg","b.png"]:\n print("STUDIO_IMAGE_SAVED:"+str(folder/name),flush=True)\ntime.sleep(30)\n')
+            def update(**values):
+                if values.get('image_count') == 1:
+                    cancel.set()
+            with patch.object(images, 'gallery_command', return_value=command), self.assertRaises(RuntimeError):
+                images.download_gallery('https://example.org/post', folder, cancel, update)
+            self.assertEqual((Path(folder) / 'a.jpg').read_bytes(), b'finished')
+            self.assertEqual((Path(folder) / 'b.png').read_bytes(), b'finished')
+            self.assertFalse([p for p in Path(folder).iterdir() if p.is_dir()])
 
     def test_cancel_terminates_silent_child(self):
         cancel = threading.Event()
@@ -137,6 +170,26 @@ class GalleryProcessTests(unittest.TestCase):
             with patch.object(images, 'gallery_command', return_value=command):
                 with self.assertRaises(RuntimeError):
                     images.download_gallery('https://example.org/post', folder, cancel, lambda **_: cancel.set())
+
+    def test_resize_failure_preserves_original_directly_in_destination(self):
+        with tempfile.TemporaryDirectory() as folder:
+            command = self._fake(folder, 'p=folder/"a.jpg"\np.write_bytes(b"original")\nprint("STUDIO_IMAGE_SAVED:"+str(p),flush=True)\n')
+            with patch.object(images, 'gallery_command', return_value=command), \
+                    patch.object(images, 'resize_image', side_effect=RuntimeError('resize failed')), \
+                    self.assertRaisesRegex(RuntimeError, 'resize failed'):
+                images.download_gallery('https://example.org/post', folder, threading.Event(), Mock(), quality='640')
+            self.assertEqual((Path(folder) / 'a.jpg').read_bytes(), b'original')
+            self.assertFalse([p for p in Path(folder).iterdir() if p.is_dir()])
+
+    def test_failed_destination_copy_keeps_staged_original_for_recovery(self):
+        with tempfile.TemporaryDirectory() as folder:
+            command = self._fake(folder, 'p=folder/"a.jpg"\np.write_bytes(b"original")\nprint("STUDIO_IMAGE_SAVED:"+str(p),flush=True)\n')
+            with patch.object(images, 'gallery_command', return_value=command), \
+                    patch.object(images, 'save_named_file', side_effect=OSError('disk full')), \
+                    self.assertRaisesRegex(OSError, 'disk full'):
+                images.download_gallery('https://example.org/post', folder, threading.Event(), Mock())
+            staged, = Path(folder).glob('.studio-images-*')
+            self.assertEqual((staged / 'a.jpg').read_bytes(), b'original')
 
 
 class ImageAPITests(unittest.TestCase):

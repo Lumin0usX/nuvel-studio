@@ -42,6 +42,18 @@ class OutputNameTests(unittest.TestCase):
             self.assertFalse((root / 'Cancelled.mp3').exists())
             self.assertEqual(source.read_bytes(), b'new audio')
 
+    def test_long_source_name_collision_keeps_extension_and_valid_unicode(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            source = root / 'source.png'; source.write_bytes(b'new')
+            stem = 'ก' * 83
+            existing = root / (stem + '.png'); existing.write_bytes(b'keep')
+            target = save_named_file(source, root, stem)
+            self.assertLessEqual(len(target.name.encode('utf-8')), 255)
+            self.assertTrue(target.name.endswith(' (1).png'))
+            self.assertEqual(target.read_bytes(), b'new')
+            self.assertEqual(existing.read_bytes(), b'keep')
+
 
 class NamedDownloadTests(unittest.TestCase):
     def setUp(self):
@@ -167,9 +179,10 @@ class NamedDownloadTests(unittest.TestCase):
             with patch.object(images, 'gallery_command', return_value=[sys.executable, str(script)]):
                 result = images.download_images('https://instagram.com/p/example', folder, threading.Event(), Mock(), output_name='ทริป {id}')
             album = Path(result['folder'])
+            self.assertEqual(album, Path(folder))
             self.assertEqual(result['count'], 2)
             self.assertEqual(result['title'], 'ทริป {id}')
             self.assertEqual((album / 'ทริป {id}-001.jpg').read_bytes(), b'z.jpg')
             self.assertEqual((album / 'ทริป {id}-002.png').read_bytes(), b'a.png')
-            self.assertEqual(len(list(album.iterdir())), 2)
+            self.assertFalse([p for p in album.iterdir() if p.is_dir()])
 

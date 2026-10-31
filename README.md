@@ -310,8 +310,8 @@ outside the catalog can also be entered directly. The catalog includes Flickr,
 Imgur, Tumblr, Pixiv, DeviantArt, Unsplash and Bluesky with their own logo tiles.
 A profile URL can download multiple posts; use a post URL for a smaller job.
 
-Direct files go into the selected folder without overwriting existing files.
-Gallery jobs use a separate `Images-<timestamp>` subfolder. Progress shows
+Direct files and gallery images go straight into the selected destination,
+without a per-job subfolder or overwriting existing files. Progress shows
 image counts when the total is unknown. Cancellation preserves completed
 images; partial/failed jobs are not added to the success history. Direct
 images have a 256 MB per-file limit. SVG and arbitrary HTML scraping are not

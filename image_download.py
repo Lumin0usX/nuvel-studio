@@ -1,6 +1,5 @@
 """Image transfers and an isolated gallery-dl CLI adapter (never imported here)."""
 from collections import deque
-from datetime import datetime
 import importlib.util
 import os
 from pathlib import Path
@@ -203,8 +202,38 @@ def download_gallery(url, folder, cancel, update, cookies='none', cookie_path=''
         raise RuntimeError('โหลดภาพจากโพสต์ต้องติดตั้ง gallery-dl: รันตัวติดตั้งของแอปอีกครั้ง '
                            '(Mac .app: ติดตั้ง gallery-dl แยกด้วย pipx install gallery-dl หรือ brew install gallery-dl)')
     check_cancel(cancel)
-    job_folder = Path(folder) / ('Images-' + datetime.now().strftime('%Y%m%d-%H%M%S-%f'))
-    job_folder.mkdir()
+    # Isolate extractor paths and collisions until files are ready, then place
+    # the completed images directly in the selected destination.
+    job_folder = Path(tempfile.mkdtemp(dir=folder, prefix='.studio-images-'))
+    saved_paths, targets = [], []
+    try:
+        _run_gallery(command, url, folder, job_folder, cancel, update, cookies, cookie_path, quality, saved_paths)
+    finally:
+        # Keep completed images even when a later image fails or is cancelled.
+        # A failed copy leaves its staged original available for recovery.
+        # Cancellation can leave completion messages unread; gallery-dl's
+        # unfinished transfers still have .part extensions and are excluded.
+        known = {path.resolve() for path in saved_paths}
+        for path in sorted(job_folder.rglob('*')):
+            if path.is_file() and not path.is_symlink() and path.suffix.lower().lstrip('.') in EXTENSIONS and \
+                    path.resolve().is_relative_to(job_folder.resolve()) and path.resolve() not in known:
+                saved_paths.append(path)
+                known.add(path.resolve())
+        for number, path in enumerate(saved_paths, 1):
+            stem = path.stem
+            if output_name:
+                stem = output_name + (f'-{number:03d}' if len(saved_paths) > 1 else '')
+            target = save_named_file(path, folder, stem)
+            targets.append(target)
+            path.unlink()
+        shutil.rmtree(job_folder)
+    title = f'ภาพจาก {urlsplit(url).hostname} ({len(targets)} ภาพ)'
+    if output_name:
+        title = targets[0].name if len(targets) == 1 else output_name
+    return dict(count=len(targets), folder=str(folder), title=title)
+
+
+def _run_gallery(command, url, folder, job_folder, cancel, update, cookies, cookie_path, quality, saved_paths):
     env = dict(os.environ, PYTHONIOENCODING='utf-8', PYTHONUNBUFFERED='1')
     process = subprocess.Popen(gallery_args(command, url, job_folder, cookies, cookie_path),
                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
@@ -228,10 +257,9 @@ def download_gallery(url, folder, cancel, update, cookies='none', cookie_path=''
     reader = threading.Thread(target=read_output, daemon=True)
     reader.start()
     saved = set()
-    saved_paths = []
     errors = deque(maxlen=8)
     update(phase='downloading', progress_known=False, percent=0, speed='', eta='',
-           folder=str(job_folder), detail='กำลังค้นหาและดาวน์โหลดภาพจากโพสต์')
+           folder=str(folder), detail='กำลังค้นหาและดาวน์โหลดภาพจากโพสต์')
     try:
         while process.poll() is None or reader.is_alive() or not events.empty():
             check_cancel(cancel)
@@ -243,8 +271,8 @@ def download_gallery(url, folder, cancel, update, cookies='none', cookie_path=''
                 path = Path(line[len(MARKER):])
                 if path.is_file() and path.resolve().is_relative_to(job_folder.resolve()) and path.suffix.lower().lstrip('.') in EXTENSIONS:
                     if str(path.resolve()) not in saved:
-                        resize_image(path, quality, cancel)
                         saved_paths.append(path)
+                        resize_image(path, quality, cancel)
                     saved.add(str(path.resolve()))
                     update(title=f'ภาพจาก {urlsplit(url).hostname}', image_count=len(saved),
                            detail=f'บันทึกแล้ว {len(saved)} ภาพ · กำลังตรวจสอบภาพถัดไป')
@@ -256,17 +284,6 @@ def download_gallery(url, folder, cancel, update, cookies='none', cookie_path=''
         if not saved:
             raise RuntimeError('ไม่พบภาพในลิงก์นี้ ลองใช้ลิงก์โพสต์/อัลบั้มภาพโดยตรง '
                                'หรือเลือกบัญชีที่เปิดโพสต์นี้ได้')
-        if output_name:
-            for number, path in enumerate(saved_paths, 1):
-                stem = output_name + (f'-{number:03d}' if len(saved_paths) > 1 else '')
-                target = path
-                if path.name != stem + path.suffix:
-                    target = save_named_file(path, job_folder, stem, lambda: check_cancel(cancel))
-                    path.unlink()
-            title = target.name if len(saved_paths) == 1 else output_name
-        else:
-            title = f'ภาพจาก {urlsplit(url).hostname} ({len(saved)} ภาพ)'
-        return dict(count=len(saved), folder=str(job_folder), title=title)
     finally:
         stop_reader.set()
         if process.poll() is None:

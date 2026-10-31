@@ -35,7 +35,11 @@ def save_named_file(source, folder, stem, check_cancel=lambda: None):
     source, folder = Path(source), Path(folder)
     for number in range(10000):
         check_cancel()
-        name = stem + (f' ({number})' if number else '') + source.suffix
+        suffix = (f' ({number})' if number else '') + source.suffix
+        # Source-generated names can already fill the filesystem's component
+        # limit. Leave room for the collision suffix without splitting Unicode.
+        prefix = stem.encode('utf-8')[:255 - len(suffix.encode('utf-8'))].decode('utf-8', errors='ignore')
+        name = prefix + suffix
         target = folder / name
         try:
             destination = target.open('xb')

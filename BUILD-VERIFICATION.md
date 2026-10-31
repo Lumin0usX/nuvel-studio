@@ -1,5 +1,27 @@
 # NÜVEL Studio build verification
 
+## Direct destination files — 2026-10-31
+
+Gallery images now finish directly in the selected output directory, including
+images extracted into nested source folders. No `Images-<timestamp>` job folder
+remains after completion. Internal staging isolates engine paths; completed
+images are published with exclusive file creation and staging is removed.
+Source names and optional custom/numbered names are retained, with collision
+suffixes. Completed images survive cancellation (including unread completion
+messages), later download failures and resize failures. A failed destination
+copy retains its staged original for recovery. History points to the selected
+destination. Updated the help text in all four languages and the README.
+
+- Image tests: 21 passed. Output-name/media tests: 10 passed, including real
+  video/audio conversion. All seven JavaScript suites passed. `git diff --check`
+  passed. Windows native packaging and live-site transfers were not run.
+- Native macOS build preflight passed, but the required packaged gallery-dl
+  check failed with `semctl: Operation not permitted`. No main app or ZIP was
+  produced, no acceptance check was skipped, and the installed app was kept.
+  Partial build: `dist/20261031-203426-865868/`.
+- Logs: `dist/flat-output-20261031/`. This is a source change; it does not bump
+  the version, create a release tag or publish a packaged update.
+
 ## Output filename feature — 2026-10-29/30
 
 Added an optional filename field to the existing download form, above quality,
