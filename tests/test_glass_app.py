@@ -39,6 +39,8 @@ class GlassAPITests(unittest.TestCase):
             self.assertEqual(state['history'][0]['folder'],folder)
             self.assertEqual(state['history'][0]['mode'],'audio')
             self.assertNotIn('cookiesfrombrowser',ydl.call_args.args[0])
+            for option in ('allow_unplayable_formats', 'usenetrc', 'cachedir'):
+                self.assertIs(ydl.call_args.args[0][option], False)
 
     def test_real_audio_extraction_preserves_a_previously_downloaded_video(self):
         from platform_runtime import ffmpeg_path

@@ -17,15 +17,10 @@ class WindowsBuildWorkflowTests(unittest.TestCase):
     def test_packaged_branding_flows_through_the_real_publication_code(self):
         """Mock native tools, then exercise actual file copying, shortcuts and ZIP layout."""
         import windows_distribution
-        from download_engine import PLATFORMS
         source = Path(build_windows.__file__).resolve().parent
         with tempfile.TemporaryDirectory(prefix='NÜVEL ไทย build ') as temporary:
             project = Path(temporary).resolve()
-            for _, _, slug, _ in PLATFORMS:
-                icon = project / 'assets/platforms' / (slug + '.png')
-                icon.parent.mkdir(parents=True, exist_ok=True)
-                icon.write_bytes(b'platform fixture')
-            (project / 'assets/branding').mkdir()
+            (project / 'assets/branding').mkdir(parents=True)
             shutil.copy2(source / 'assets/branding/app-icon.ico', project / 'assets/branding/app-icon.ico')
             (project / 'ui').mkdir()
             for name in ('index.html', 'studio.css', 'i18n.js', 'studio.js', 'theme.js',
@@ -61,7 +56,8 @@ class WindowsBuildWorkflowTests(unittest.TestCase):
             with patch.object(build_windows, 'PROJECT', project), \
                     patch.dict(sys.modules, {'webview.platforms.edgechromium': Mock(), 'Microsoft.Web.WebView2.Core': core,
                                             'PyInstaller': pyinstaller, 'PyInstaller.__main__': pyinstaller.__main__}), \
-                    patch('imageio_ffmpeg.get_ffmpeg_exe', return_value=str(ffmpeg)), \
+                    patch('ffmpeg_distribution.selected_bundle', return_value=(ffmpeg, gallery_source, {})), \
+                    patch('ffmpeg_distribution.verify_media') as media_check, \
                     patch('build_gallery_tool.build_tool', return_value=(gallery, gallery_source)), \
                     patch.object(build_windows.subprocess, 'CREATE_NO_WINDOW', 0, create=True), \
                     patch.object(build_windows.subprocess, 'run'), \
@@ -70,8 +66,10 @@ class WindowsBuildWorkflowTests(unittest.TestCase):
                     patch.dict(build_windows.os.environ, {'CI': ''}), redirect_stdout(io.StringIO()):
                 build_windows.build()
             args = recorded['args']
+            media_check.assert_called_once_with(ffmpeg, 'windows-x64')
             self.assertEqual(args[args.index('--name') + 1], DISPLAY_NAME)
             self.assertIn('--windowed', args)
+            self.assertIn(str(gallery_source) + ';third-party/ffmpeg/source', args)
             self.assertEqual(Path(args[args.index('--icon') + 1]).suffix, '.ico')
             self.assertIn("StringStruct('ProductName', 'NÜVEL Studio')", recorded['version'])
             self.assertIn("StringStruct('FileDescription', 'NÜVEL Studio')", recorded['version'])

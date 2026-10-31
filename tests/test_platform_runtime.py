@@ -28,7 +28,7 @@ class PlatformTests(unittest.TestCase):
             self.assertEqual(runtime.scroll_units(120), -1)
 
     def test_resources_do_not_depend_on_working_directory(self):
-        self.assertTrue(runtime.resource_path('assets', 'platforms', 'vimeo.png').is_file())
+        self.assertTrue(runtime.resource_path('assets', 'branding', 'app-icon.ico').is_file())
 
     def test_bundled_ffmpeg_preferred(self):
         with patch.object(runtime.sys, 'platform', 'darwin'), patch.object(Path, 'is_file', return_value=True):

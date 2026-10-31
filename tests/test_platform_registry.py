@@ -8,15 +8,16 @@ from download_engine import PLATFORMS, PLATFORM_DOMAINS, AUDIO_ONLY, IMAGE_MODUL
 
 
 class PlatformRegistryTests(unittest.TestCase):
-    def test_assets_and_domains_cover_registry(self):
+    def test_names_and_domains_cover_registry_without_platform_artwork(self):
         root = Path(__file__).resolve().parents[1]
         slugs = [row[2] for row in PLATFORMS]
         self.assertEqual(len(slugs), len(set(slugs)))
         self.assertEqual(set(slugs), set(PLATFORM_DOMAINS))
         for slug in slugs:
             with self.subTest(slug=slug):
-                self.assertTrue((root / 'assets' / 'platforms' / (slug + '.png')).is_file())
                 self.assertTrue(PLATFORM_DOMAINS[slug])
+        self.assertTrue(all(row[0] for row in PLATFORMS))
+        self.assertFalse(list((root / 'assets/platforms').glob('*.png')))
 
     def test_photo_only_sources_do_not_promise_video(self):
         _, states = platform_support()
@@ -72,7 +73,8 @@ class PlatformRegistryTests(unittest.TestCase):
         catalog = api.snapshot()['platforms']
         self.assertEqual(len(catalog), 50)
         for item in catalog:
-            self.assertTrue(item['icon'].startswith('data:image/png;base64,'))
+            self.assertNotIn('icon', item)
+            self.assertTrue(item['name'])
             if item['slug'] in AUDIO_ONLY:
                 self.assertEqual(item['video_status'], 'unsupported')
 

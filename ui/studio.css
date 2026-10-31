@@ -271,7 +271,7 @@ select:focus-visible, .path-input input:focus-visible, .output-name-option input
 .secondary-button svg { width: 16px; height: 16px; }
 .secondary-button:hover { border-color: var(--border-strong); background: var(--elevated); }
 
-/* Sources: a quiet utility rail, full-color support marks, subdued unavailable items. */
+/* Plain source names identify engine compatibility, without platform marks. */
 .sources { padding: 20px 0 0; min-width: 0; grid-area: sources; border-top: 1px solid var(--line); }
 .sources-toggle { list-style: none; border-radius: 5px; cursor: pointer; }
 .sources-toggle::-webkit-details-marker { display: none; }
@@ -294,8 +294,6 @@ select:focus-visible, .path-input input:focus-visible, .output-name-option input
 .sources-foot:not(:has(> p:not([hidden]))) { display: none; }
 .platform-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(156px,1fr)); gap: 4px 8px; max-height: none; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; overscroll-behavior: contain; padding: 0; overflow: visible; }
 .platform { width: 100%; min-width: 0; display: flex; align-items: center; text-align: left; gap: 6px; padding: 7px 8px; min-height: 38px; border: 1px solid transparent; border-radius: var(--radius-small); color: var(--label); }
-.platform img { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; }
-:root[data-theme="light"] .platform[data-platform="twitter"] img { filter: brightness(.2); }
 .platform-name { font-size: 14px; flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .platform .status-dot { width: 12px; height: 12px; display: grid; place-items: center; color: var(--success); }
 .platform .status-dot svg { width: 13px; height: 13px; }

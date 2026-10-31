@@ -1,5 +1,11 @@
 # NÜVEL Studio Windows compatibility
 
+**2026-10-31 legal-audit status:** new builds require a source-bearing LGPL
+FFmpeg bundle and pass real MP4/AAC/MP3 codec checks before GUI packaging.
+No replacement Windows binary or native Windows build was tested in this audit.
+The desktop acceptance described below is historical, not validation of this
+change. See [FFmpeg migration](legal/FFMPEG-LGPL.md).
+
 Windows x64 uses the existing Python/pywebview EdgeChromium shell.
 The source entry point is `nuvel_studio.py`; packaged launches use
 `nuvel-windows/NÜVEL Studio.exe` and the `NÜVEL Studio.lnk` shortcut.

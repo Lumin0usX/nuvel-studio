@@ -17,7 +17,7 @@ class MetadataAndHistoryTests(unittest.TestCase):
             client.extract_info.return_value = dict(title='Actual source title', duration=61,
                 thumbnail='https://example.com/image.jpg', extractor_key='Example',
                 formats=[dict(height=720, ext='mp4'), dict(height=1080, ext='webm'), dict(height=720, ext='mp4')])
-            result = self.api.analyze_url(dict(url='https://example.com/clip'))
+            result = self.api.analyze_url(dict(url='https://example.com/clip', allow_unplayable_formats=True, usenetrc=True))
             client.extract_info.assert_called_once_with('https://example.com/clip', download=False)
             client.download.assert_not_called()
             self.assertEqual(result['title'], 'Actual source title')
@@ -25,6 +25,8 @@ class MetadataAndHistoryTests(unittest.TestCase):
             self.assertEqual(result['formats'], ['mp4', 'webm'])
             self.assertEqual(self.api.snapshot()['phase'], 'idle')
             self.assertNotIn('cookiesfrombrowser', ydl.call_args.args[0])
+            for option in ('allow_unplayable_formats', 'usenetrc', 'cachedir'):
+                self.assertIs(ydl.call_args.args[0][option], False)
 
     def test_metadata_validation_and_image_mode(self):
         with patch('yt_dlp.YoutubeDL') as ydl:

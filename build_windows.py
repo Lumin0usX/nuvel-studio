@@ -37,12 +37,10 @@ def build():
     from Microsoft.Web.WebView2.Core import CoreWebView2Environment
     if not CoreWebView2Environment.GetAvailableBrowserVersionString():
         raise RuntimeError('Microsoft Edge WebView2 Runtime is required.')
-    import imageio_ffmpeg
+    from ffmpeg_distribution import selected_bundle, verify_media
+    ffmpeg_input, ffmpeg_source, _ = selected_bundle('windows-x64')
+    verify_media(ffmpeg_input, 'windows-x64')
     import PyInstaller.__main__
-    from download_engine import PLATFORMS
-    for _, _, slug, _ in PLATFORMS:
-        if not (PROJECT / 'assets/platforms' / (slug + '.png')).is_file():
-            raise RuntimeError('A required platform icon is missing: ' + slug)
     for filename in ('index.html', 'studio.css', 'i18n.js', 'studio.js', 'theme.js', 'appearance.js', 'fonts.js', 'fonts.css', 'font-catalog.js'):
         if not (PROJECT / 'ui' / filename).is_file():
             raise RuntimeError('A required UI resource is missing: ' + filename)
@@ -54,7 +52,7 @@ def build():
     staging = output / 'build-input'
     staging.mkdir(parents=True)
     ffmpeg = staging / 'ffmpeg.exe'
-    shutil.copy2(imageio_ffmpeg.get_ffmpeg_exe(), ffmpeg)
+    shutil.copy2(ffmpeg_input, ffmpeg)
     subprocess.run([str(ffmpeg), '-version'], check=True, capture_output=True, timeout=10,
                    creationflags=subprocess.CREATE_NO_WINDOW)
     from app_version import VERSION, DISPLAY_NAME, version_tuple
@@ -76,6 +74,8 @@ def build():
         '--add-binary', str(ffmpeg) + ';bin',
         '--add-binary', str(gallery) + ';bin', '--version-file', str(version),
         '--add-data', str(gallery_source) + ';third-party/gallery-dl',
+        '--add-data', str(ffmpeg_source) + ';third-party/ffmpeg/source',
+        '--add-data', str(ffmpeg_input.parent / 'manifest.json') + ';third-party/ffmpeg',
         '--collect-all', 'yt_dlp', '--collect-all', 'yt_dlp_ejs', '--collect-all', 'curl_cffi',
         '--collect-all', 'certifi', '--collect-all', 'webview', '--collect-all', 'pythonnet',
         '--collect-all', 'clr_loader', '--hidden-import', 'webview.platforms.winforms',

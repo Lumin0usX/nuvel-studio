@@ -1,5 +1,10 @@
 # NÜVEL Studio — macOS Apple Silicon
 
+> สถานะ 2026-10-31: build ใหม่ต้องกำหนด `NUVEL_FFMPEG_BUNDLE` เป็น FFmpeg แบบ
+> LGPL ที่มี source/build materials ครบ ไม่ใช้ GPL binary จาก imageio ในแพ็กใหม่
+> ยังไม่มี LGPL binary ที่ผ่าน native acceptance ดู [ข้อกำหนด](legal/FFMPEG-LGPL.md)
+> และ [ผลตรวจการแจกจ่าย](legal/AUDIT.md) แอปเดิมยังไม่ถูกแทนที่
+
 ## แอปพร้อมใช้และอัปเดตในแอป
 
 ดาวน์โหลด **NUVEL-Studio-macOS-arm64.zip** จาก Releases ของ repo ส่วนตัว

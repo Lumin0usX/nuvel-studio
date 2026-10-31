@@ -13,6 +13,14 @@ venv/
 .env.*
 !.env.example
 *cookies*.txt
+*cookies*.json
+*.har
+.netrc
+_netrc
+credentials*.json
+tokens*.json
+secrets*.json
+/audit-report.json
 *.pem
 *.key
 *.p12

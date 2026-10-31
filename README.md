@@ -66,6 +66,10 @@ asset, not GitHub's automatically generated source-code archive.
   folder, and open it. Python, Homebrew and a terminal are not needed.
 
 Both packages include FFmpeg and an isolated gallery-dl CLI for image posts.
+The legal audit selected LGPL FFmpeg for future packages. Builders now stop
+until an explicit source-bearing LGPL bundle is supplied; migration and native
+acceptance remain incomplete. Review the [audit](legal/AUDIT.md) and
+[FFmpeg requirements](legal/FFMPEG-LGPL.md) before building or distributing.
 Local builds are ad-hoc signed, not Apple-notarized or Windows Authenticode-signed;
 OS trust prompts can appear on a first download. A release is published only
 after both native build jobs and their startup checks succeed.
@@ -148,7 +152,9 @@ short-lived repository token only for publishing release assets.
 - Optional browser cookies or a Netscape-format cookie file for authenticated content.
 
 Platform indicators report installed extractor support, not successful live
-tests of every service or URL. This project does not bypass DRM.
+tests of every service or URL. The app does not enable DRM-protected formats.
+Technical support is not permission to download or reuse content. Follow the
+source's terms and obtain any required rights. See [legal/distribution audit](legal/AUDIT.md).
 The installed engines currently report 34 video, 40 audio and 25 image sources
 across the 50 entries; counts change with engine availability/version.
 
@@ -157,7 +163,7 @@ across the 50 entries; counts change with engine availability/version.
 The HTML/CSS/JavaScript interface runs in the existing pywebview shell (or its
 authenticated localhost fallback). Native window controls remain unchanged.
 Status polling acknowledges an engine-catalog revision, so unchanged platform
-logos and extractor details are not resent with each progress update. A fresh
+source names and extractor details are not resent with each progress update. A fresh
 connection or completed engine scan sends the complete catalog again; clients
 requesting `snapshot()` without an argument still receive the full response.
 The overview keeps a bounded composer close to the sidebar, with compact media
@@ -307,7 +313,7 @@ some sites require cookies from an account that can view the content.
 Image mode shows separate source indicators; they inspect local extractor
 modules and do not promise that every post will work. Other gallery-dl sources
 outside the catalog can also be entered directly. The catalog includes Flickr,
-Imgur, Tumblr, Pixiv, DeviantArt, Unsplash and Bluesky with their own logo tiles.
+Imgur, Tumblr, Pixiv, DeviantArt, Unsplash and Bluesky as plain source names.
 A profile URL can download multiple posts; use a post URL for a smaller job.
 
 Direct files and gallery images go straight into the selected destination,
@@ -425,7 +431,7 @@ python -m unittest discover -s tests -v
 | `download_engine.py` | Platform registry and error guidance |
 | `platform_runtime.py` | Cross-platform resources, FFmpeg, and folder opening |
 | `ui_preferences.py` | Validated, atomic per-user appearance/destination preferences |
-| `assets/platforms/` | Bundled platform marks |
+| `legal/` | Distribution audit, platform terms register and proposed freeware permission |
 | `legacy_tk.py` | Previous interface, available with `--classic` |
 | `tests/` | Automated tests |
 

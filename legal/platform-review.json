@@ -1,0 +1,775 @@
+{
+  "date": "2026-10-31",
+  "scope": "technical catalog / incomplete platform legal review",
+  "platforms": [
+    {
+      "name": "YouTube",
+      "slug": "youtube",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "youtube.com",
+        "youtu.be"
+      ],
+      "document": "https://www.youtube.com/static?template=terms",
+      "status": "restriction",
+      "note": "จำกัดการดาวน์โหลดและ automated access เว้นแต่บริการ/ผู้ให้บริการอนุญาต; สิทธิ์ของเจ้าของคลิปเป็นอีกส่วนหนึ่ง",
+      "legal_clearance": false
+    },
+    {
+      "name": "TikTok",
+      "slug": "tiktok",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "tiktok.com"
+      ],
+      "document": "https://www.tiktok.com/legal/page/row/terms-of-service/en",
+      "status": "restriction",
+      "note": "ROW terms จำกัด automated scripts; ต้องตรวจฉบับประเทศและวิธีดาวน์โหลดที่อนุญาต",
+      "legal_clearance": false
+    },
+    {
+      "name": "Facebook",
+      "slug": "facebook",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "facebook.com",
+        "fb.watch"
+      ],
+      "document": "https://www.facebook.com/terms.php",
+      "status": "blocked",
+      "note": "หน้าที่เปิด redirect ไป login; ยังไม่ยืนยันข้อความ terms ปัจจุบันจากหน้านี้",
+      "legal_clearance": false
+    },
+    {
+      "name": "Instagram",
+      "slug": "instagram",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "instagram.com"
+      ],
+      "document": "https://help.instagram.com/581066165581870/",
+      "status": "blocked",
+      "note": "ได้รับ 429; ยังไม่ให้ clearance เรื่อง automated access หรือสิทธิ์ในโพสต์",
+      "legal_clearance": false
+    },
+    {
+      "name": "X / Twitter",
+      "slug": "twitter",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "x.com",
+        "twitter.com"
+      ],
+      "document": "https://x.com/en/tos",
+      "status": "restriction",
+      "note": "จำกัด scraping โดยไม่มี written permission ยกเว้นที่กฎหมายกำหนด",
+      "legal_clearance": false
+    },
+    {
+      "name": "Reddit",
+      "slug": "reddit",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "reddit.com",
+        "redd.it"
+      ],
+      "document": "https://support.reddithelp.com/hc/en-us/articles/360043512931-Don-t-break-the-site",
+      "status": "restriction",
+      "note": "นโยบายห้าม scraping ที่ไม่มี authorized agreement; ต้องตรวจ User Agreement/Developer Terms ด้วย",
+      "legal_clearance": false
+    },
+    {
+      "name": "Vimeo",
+      "slug": "vimeo",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "vimeo.com"
+      ],
+      "document": "https://vimeo.com/legal/",
+      "status": "restriction",
+      "note": "จำกัด download และ automated access เว้นแต่ได้รับอนุญาตตามบริการ/API/ข้อยกเว้นที่ระบุ",
+      "legal_clearance": false
+    },
+    {
+      "name": "Dailymotion",
+      "slug": "dailymotion",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "dailymotion.com",
+        "dai.ly"
+      ],
+      "document": "https://legal.dailymotion.com/en/terms-of-use/",
+      "status": "pending",
+      "note": "พบเอกสาร; ต้องทบทวนสิทธิ์ download วิธี automated และข้อตกลงของผู้ลงเนื้อหาเพิ่มเติม",
+      "legal_clearance": false
+    },
+    {
+      "name": "Twitch",
+      "slug": "twitch",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "twitch.tv"
+      ],
+      "document": "https://legal.twitch.com/en/legal/terms-of-service/",
+      "status": "blocked",
+      "note": "หน้าที่อ่านได้เป็น shell สั้น; ยังไม่ตรวจครบ operative clauses ของ terms",
+      "legal_clearance": false
+    },
+    {
+      "name": "Bilibili",
+      "slug": "bilibili",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "bilibili.com",
+        "b23.tv"
+      ],
+      "document": "https://www.bilibili.com/blackboard/protocal/licence.html",
+      "status": "blocked",
+      "note": "หน้าเงื่อนไขไม่ส่งข้อความที่อ่านได้; ต้องทบทวนฉบับภาษาจีนปัจจุบัน",
+      "legal_clearance": false
+    },
+    {
+      "name": "Pinterest",
+      "slug": "pinterest",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "pinterest.com",
+        "pin.it"
+      ],
+      "document": "https://policy.pinterest.com/en/terms-of-service",
+      "status": "restriction",
+      "note": "ห้าม scrape/collect/copy ด้วยวิธี automated ที่ไม่ได้รับอนุญาตล่วงหน้า",
+      "legal_clearance": false
+    },
+    {
+      "name": "Bluesky",
+      "slug": "bluesky",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "bsky.app"
+      ],
+      "document": "https://bsky.social/about/support/tos",
+      "status": "pending",
+      "note": "พบ terms; โปรโตคอลสาธารณะไม่ใช่ blanket copyright license ต้องตรวจเนื้อหา/บริการที่ใช้จริง",
+      "legal_clearance": false
+    },
+    {
+      "name": "SoundCloud",
+      "slug": "soundcloud",
+      "declared_routes": [
+        "Audio"
+      ],
+      "domains": [
+        "soundcloud.com",
+        "on.soundcloud.com"
+      ],
+      "document": "https://soundcloud.com/terms-of-use",
+      "status": "conditional",
+      "note": "terms อนุญาต download ผ่านฟีเจอร์ที่ uploader เปิดและตาม territorial availability; ไม่เท่ากับอนุญาต stream ripping ทุกกรณี",
+      "legal_clearance": false
+    },
+    {
+      "name": "Bandcamp",
+      "slug": "bandcamp",
+      "declared_routes": [
+        "Audio"
+      ],
+      "domains": [
+        "bandcamp.com"
+      ],
+      "document": "https://bandcamp.com/terms_of_use",
+      "status": "conditional",
+      "note": "ต้องคง notices/restrictions ของเนื้อหา; ตรวจสิทธิ์จากศิลปิน/การซื้อหรือ free download และวิธีเข้าถึงแยกกัน",
+      "legal_clearance": false
+    },
+    {
+      "name": "Mixcloud",
+      "slug": "mixcloud",
+      "declared_routes": [
+        "Audio"
+      ],
+      "domains": [
+        "mixcloud.com"
+      ],
+      "document": "https://www.mixcloud.com/terms/",
+      "status": "pending",
+      "note": "พบ terms; ต้องทบทวน offline listening/download และวิธี automated ก่อนรับรอง extractor",
+      "legal_clearance": false
+    },
+    {
+      "name": "Audiomack",
+      "slug": "audiomack",
+      "declared_routes": [
+        "Audio"
+      ],
+      "domains": [
+        "audiomack.com"
+      ],
+      "document": "https://audiomack.com/about/terms-of-service",
+      "status": "pending",
+      "note": "พบ terms เรื่องเนื้อหา; ยังไม่ยืนยัน permission ของ automated extraction และไฟล์แต่ละรายการ",
+      "legal_clearance": false
+    },
+    {
+      "name": "Flickr",
+      "slug": "flickr",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "flickr.com",
+        "flic.kr"
+      ],
+      "document": "https://www.flickr.com/help/terms",
+      "status": "restriction",
+      "note": "จำกัด robots/scraping; ข้อยกเว้น user content ที่เปิด download ไม่ใช่สิทธิ์ดึงทุกภาพ/ใช้ซ้ำทุกแบบ",
+      "legal_clearance": false
+    },
+    {
+      "name": "Imgur",
+      "slug": "imgur",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "imgur.com"
+      ],
+      "document": "https://imgur.com/tos",
+      "status": "pending",
+      "note": "พบ terms; การเปิดดูภาพไม่ใช่การให้ license ของเจ้าของภาพแก่ผู้ใช้ทุกคน",
+      "legal_clearance": false
+    },
+    {
+      "name": "Tumblr",
+      "slug": "tumblr",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "tumblr.com"
+      ],
+      "document": "https://help.tumblr.com/knowledge-base/terms-of-service/",
+      "status": "blocked",
+      "note": "help page ชี้ไป current terms แต่หน้า terms ตอบ 406; ต้องอ่านฉบับที่ใช้งานจริง",
+      "legal_clearance": false
+    },
+    {
+      "name": "Pixiv",
+      "slug": "pixiv",
+      "declared_routes": [
+        "Image"
+      ],
+      "domains": [
+        "pixiv.net"
+      ],
+      "document": "https://policies.pixiv.net/en.html",
+      "status": "blocked",
+      "note": "อ่านเอกสารนโยบายเต็มไม่ได้ในรอบนี้; ต้องตรวจ terms และสิทธิ์ผู้วาด",
+      "legal_clearance": false
+    },
+    {
+      "name": "DeviantArt",
+      "slug": "deviantart",
+      "declared_routes": [
+        "Image"
+      ],
+      "domains": [
+        "deviantart.com",
+        "sta.sh"
+      ],
+      "document": "https://www.deviantart.com/about/policy/service",
+      "status": "blocked",
+      "note": "403; ต้องตรวจสิทธิ์งานศิลปะและ automation policy ก่อนรับรอง",
+      "legal_clearance": false
+    },
+    {
+      "name": "Unsplash",
+      "slug": "unsplash",
+      "declared_routes": [
+        "Image"
+      ],
+      "domains": [
+        "unsplash.com"
+      ],
+      "document": "https://unsplash.com/terms",
+      "status": "restriction",
+      "note": "license ภาพมีเงื่อนไขแยก; terms จำกัด automated tools ยกเว้น API ที่ทำตาม API Terms",
+      "legal_clearance": false
+    },
+    {
+      "name": "VK",
+      "slug": "vk",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "vk.com",
+        "vkvideo.ru"
+      ],
+      "document": "https://vk.com/legal/terms",
+      "status": "blocked",
+      "note": "เข้าถึงข้อความ terms ไม่สำเร็จ; ต้องทบทวนฉบับ/ประเทศที่ใช้จริง",
+      "legal_clearance": false
+    },
+    {
+      "name": "RuTube",
+      "slug": "rutube",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "rutube.ru"
+      ],
+      "document": "https://rutube.ru/info/agreement/",
+      "status": "pending",
+      "note": "พบข้อตกลงภาษารัสเซีย; ยังไม่ให้ clearance วิธี extraction และสิทธิ์ของเจ้าของวิดีโอ",
+      "legal_clearance": false
+    },
+    {
+      "name": "Rumble",
+      "slug": "rumble",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "rumble.com"
+      ],
+      "document": "https://rumble.com/s/terms",
+      "status": "pending",
+      "note": "พบ terms; ต้องแยก license ของผู้ลงเนื้อหากับสิทธิ์ใช้บริการ/ดาวน์โหลด",
+      "legal_clearance": false
+    },
+    {
+      "name": "Streamable",
+      "slug": "streamable",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "streamable.com"
+      ],
+      "document": "https://streamable.com/terms",
+      "status": "pending",
+      "note": "พบ current terms; ยังไม่ยืนยัน permission ของการดึงไฟล์แบบอัตโนมัติ",
+      "legal_clearance": false
+    },
+    {
+      "name": "Internet Archive",
+      "slug": "archive",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "archive.org"
+      ],
+      "document": "https://archive.org/about/terms",
+      "status": "blocked",
+      "note": "หน้า terms ไม่ส่งเนื้อหาที่อ่านได้; ต้องดู license ราย item และแยก public files จากเนื้อหายืม/DRM",
+      "legal_clearance": false
+    },
+    {
+      "name": "Niconico",
+      "slug": "niconico",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "nicovideo.jp",
+        "nico.ms"
+      ],
+      "document": "https://account.nicovideo.jp/rules/account",
+      "status": "blocked",
+      "note": "ดึงเอกสารไม่สำเร็จ; ต้องตรวจ account/content terms และเนื้อหาที่จำกัดสิทธิ์",
+      "legal_clearance": false
+    },
+    {
+      "name": "Douyin",
+      "slug": "douyin",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "douyin.com"
+      ],
+      "document": "https://www.douyin.com/agreements/",
+      "status": "blocked",
+      "note": "อ่านได้เพียง landing page ไม่ใช่เนื้อหาข้อตกลงเต็ม; ไม่ใช้ terms ของ TikTok แทนโดยอัตโนมัติ",
+      "legal_clearance": false
+    },
+    {
+      "name": "Snapchat",
+      "slug": "snapchat",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "snapchat.com"
+      ],
+      "document": "https://www.snap.com/terms",
+      "status": "restriction",
+      "note": "จำกัด robots/scripts/automated extraction โดยมีข้อยกเว้นเฉพาะ; Spotlight สาธารณะไม่ใช่ blanket permission",
+      "legal_clearance": false
+    },
+    {
+      "name": "LinkedIn",
+      "slug": "linkedin",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "linkedin.com"
+      ],
+      "document": "https://www.linkedin.com/legal/user-agreement",
+      "status": "restriction",
+      "note": "จำกัด bots หรือ unauthorized automated methods; ต้องตรวจเส้นทางที่ได้รับอนุญาต",
+      "legal_clearance": false
+    },
+    {
+      "name": "Telegram",
+      "slug": "telegram",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "t.me"
+      ],
+      "document": "https://telegram.org/tos",
+      "status": "pending",
+      "note": "เส้นทางในแอปเป็น public embed; ยังต้องตรวจสิทธิ์ของผู้โพสต์และ terms ไม่อนุมานว่าใช้ private channel ได้",
+      "legal_clearance": false
+    },
+    {
+      "name": "Weibo",
+      "slug": "weibo",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "weibo.com",
+        "weibo.cn"
+      ],
+      "document": "https://weibo.com/signup/v5/protocol",
+      "status": "pending",
+      "note": "พบข้อตกลงภาษาจีน; ต้องตรวจสิทธิ์ในโพสต์ วิธี automated และฉบับที่ผูกกับบัญชี",
+      "legal_clearance": false
+    },
+    {
+      "name": "Xiaohongshu / RED",
+      "slug": "rednote",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "xiaohongshu.com",
+        "xhslink.com"
+      ],
+      "document": "https://agree.xiaohongshu.com/h5/terms/ZXXY20220331001/-1",
+      "status": "blocked",
+      "note": "หน้า agreement ไม่ส่งเนื้อหาที่อ่านได้; ต้องแยก Xiaohongshu กับ RED ตามผลิตภัณฑ์/ภูมิภาค",
+      "legal_clearance": false
+    },
+    {
+      "name": "Kick",
+      "slug": "kick",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "kick.com"
+      ],
+      "document": "https://kick.com/terms-of-service",
+      "status": "pending",
+      "note": "พบ terms; ต้องตรวจสิทธิ์ creator และเงื่อนไขวิธีเข้าถึง clips/VOD",
+      "legal_clearance": false
+    },
+    {
+      "name": "Odysee",
+      "slug": "odysee",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "odysee.com",
+        "lbry.tv"
+      ],
+      "document": "https://odysee.com/$/tos",
+      "status": "blocked",
+      "note": "หน้า JavaScript ไม่มีเนื้อหา terms ที่อ่านได้; สิทธิ์ของ uploader ยังต้องตรวจแยก",
+      "legal_clearance": false
+    },
+    {
+      "name": "PeerTube",
+      "slug": "peertube",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "framatube.org",
+        "peertube.tv",
+        "tilvids.com",
+        "diode.zone",
+        "video.blender.org"
+      ],
+      "document": "https://joinpeertube.org/faq",
+      "status": "instance",
+      "note": "FAQ อธิบายระบบหลาย instance; ไม่ใช่ terms ของทุก server ต้องตรวจ server ที่ URL ชี้ไปและ license ของวิดีโอ",
+      "legal_clearance": false
+    },
+    {
+      "name": "TED",
+      "slug": "ted",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "ted.com"
+      ],
+      "document": "https://www.ted.com/about/our-organization/our-policies-terms/ted-com-terms-of-use",
+      "status": "conditional",
+      "note": "terms แยกเนื้อหาบางส่วนที่เป็น CC ออกจาก subscription/commercial content; ตรวจ usage policy และสิทธิ์ดัดแปลง/แยกเสียง",
+      "legal_clearance": false
+    },
+    {
+      "name": "9GAG",
+      "slug": "ninegag",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "9gag.com"
+      ],
+      "document": "https://about.9gag.com/tos",
+      "status": "pending",
+      "note": "พบ EULA/terms; ต้องตรวจ license ของแต่ละโพสต์และ automated download เพิ่ม",
+      "legal_clearance": false
+    },
+    {
+      "name": "Medal.tv",
+      "slug": "medal",
+      "declared_routes": [
+        "Video",
+        "Audio"
+      ],
+      "domains": [
+        "medal.tv"
+      ],
+      "document": "https://medal.tv/terms",
+      "status": "pending",
+      "note": "พบ terms; ไม่ถือว่า creator clip ทุกชิ้นมี permission ให้ดึงและใช้ซ้ำ",
+      "legal_clearance": false
+    },
+    {
+      "name": "Apple Podcasts",
+      "slug": "applepodcasts",
+      "declared_routes": [
+        "Audio"
+      ],
+      "domains": [
+        "podcasts.apple.com"
+      ],
+      "document": "https://www.apple.com/legal/internet-services/itunes/us/terms.html",
+      "status": "restriction",
+      "note": "Apple จำกัด automated scraping; RSS enclosure ของ publisher อาจมีสิทธิ์แยก ต้องตรวจว่า extractor ใช้เส้นทางใด",
+      "legal_clearance": false
+    },
+    {
+      "name": "Audius",
+      "slug": "audius",
+      "declared_routes": [
+        "Audio"
+      ],
+      "domains": [
+        "audius.co"
+      ],
+      "document": "https://audius.co/documents/TermsOfUse.pdf",
+      "status": "pending",
+      "note": "พบ terms PDF; ยังต้องตรวจ downloader/API route และ permission ของศิลปิน ไม่ใช้การเป็น decentralized protocol เป็น license",
+      "legal_clearance": false
+    },
+    {
+      "name": "ArtStation",
+      "slug": "artstation",
+      "declared_routes": [
+        "Image"
+      ],
+      "domains": [
+        "artstation.com"
+      ],
+      "document": "https://www.artstation.com/tos",
+      "status": "pending",
+      "note": "พบ terms; ต้องตรวจสิทธิ์ artwork/download และวิธี automated เพิ่ม",
+      "legal_clearance": false
+    },
+    {
+      "name": "Behance",
+      "slug": "behance",
+      "declared_routes": [
+        "Image"
+      ],
+      "domains": [
+        "behance.net"
+      ],
+      "document": "https://www.adobe.com/legal/terms.html",
+      "status": "pending",
+      "note": "ตรวจพบ Adobe general terms แต่ยังต้องตรวจ supplemental terms ของ Behance และสิทธิ์ของเจ้าของผลงาน",
+      "legal_clearance": false
+    },
+    {
+      "name": "Pexels",
+      "slug": "pexels",
+      "declared_routes": [
+        "Image"
+      ],
+      "domains": [
+        "pexels.com"
+      ],
+      "document": "https://www.pexels.com/license/",
+      "status": "conditional",
+      "note": "license อนุญาตใช้/download ภายใต้ข้อห้ามบางแบบ; ต้องตรวจ ToS/API และวิธี automated แยก ไม่ใช่ clearance ของ scraper",
+      "legal_clearance": false
+    },
+    {
+      "name": "500px",
+      "slug": "fivehundredpx",
+      "declared_routes": [
+        "Image"
+      ],
+      "domains": [
+        "500px.com"
+      ],
+      "document": "https://about.500px.com/terms/",
+      "status": "blocked",
+      "note": "official help ชี้ URL นี้ แต่เปิด terms ไม่สำเร็จ; การมีภาพให้ดูไม่แทนใบอนุญาตภาพ",
+      "legal_clearance": false
+    },
+    {
+      "name": "Wallhaven",
+      "slug": "wallhaven",
+      "declared_routes": [
+        "Image"
+      ],
+      "domains": [
+        "wallhaven.cc"
+      ],
+      "document": "https://wallhaven.cc/terms",
+      "status": "blocked",
+      "note": "403; ต้องตรวจนโยบายปัจจุบันและสิทธิ์ของภาพที่นำมาโพสต์",
+      "legal_clearance": false
+    },
+    {
+      "name": "ImgBB",
+      "slug": "imgbb",
+      "declared_routes": [
+        "Image"
+      ],
+      "domains": [
+        "imgbb.com",
+        "ibb.co"
+      ],
+      "document": "https://imgbb.com/tos",
+      "status": "pending",
+      "note": "พบ terms ของผู้ให้บริการ hosting; ไม่อนุมานว่าไฟล์ภาพทุกไฟล์ไม่มีลิขสิทธิ์",
+      "legal_clearance": false
+    },
+    {
+      "name": "Lensdump",
+      "slug": "lensdump",
+      "declared_routes": [
+        "Image"
+      ],
+      "domains": [
+        "lensdump.com"
+      ],
+      "document": "https://lensdump.com/terms",
+      "status": "pending",
+      "note": "พบ terms; ต้องตรวจสิทธิ์ของผู้ลงภาพและวิธี retrieval เพิ่ม",
+      "legal_clearance": false
+    },
+    {
+      "name": "Wikimedia Commons",
+      "slug": "wikimediacommons",
+      "declared_routes": [
+        "Video",
+        "Audio",
+        "Image"
+      ],
+      "domains": [
+        "commons.wikimedia.org"
+      ],
+      "document": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use",
+      "status": "conditional",
+      "note": "ต้องทำตาม license ของแต่ละไฟล์เมื่อใช้ต่อ รวม attribution/share-alike ที่ใช้จริง; ตรวจ bot/API rules เพิ่ม",
+      "legal_clearance": false
+    }
+  ]
+}

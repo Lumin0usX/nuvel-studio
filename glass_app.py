@@ -1,5 +1,4 @@
 """Desktop shell, with an authenticated local-browser fallback."""
-import base64
 import copy
 from contextlib import nullcontext
 import json
@@ -47,10 +46,8 @@ class StudioAPI:
         engine = image_support()
         platforms = []
         for name, key, slug, color in PLATFORMS:
-            icon = resource_path('assets', 'platforms', slug + '.png')
             platforms.append(dict(name=name, slug=slug, color=color, status=states[name],
-                                  domains=PLATFORM_DOMAINS[slug], **platform_modes(slug, states[name], engine),
-                                  icon='data:image/png;base64,' + base64.b64encode(icon.read_bytes()).decode()))
+                                  domains=PLATFORM_DOMAINS[slug], **platform_modes(slug, states[name], engine)))
         with self._lock:
             self._platforms = platforms
             self._version = version
@@ -65,7 +62,7 @@ class StudioAPI:
         with self._lock:
             result = dict(**copy.deepcopy(self._state), catalog_revision=self._catalog_revision,
                           preferences=copy.deepcopy(self._preferences), app_update=self._updates.snapshot())
-            # Progress changes frequently; the engine catalog and its 50 icons do not.
+            # Progress changes frequently; the engine catalog does not.
             # No argument preserves the complete snapshot for existing clients/tests.
             if catalog_revision != self._catalog_revision:
                 result.update(platforms=copy.deepcopy(self._platforms), version=self._version,
@@ -178,7 +175,7 @@ class StudioAPI:
             import yt_dlp
             opts = dict(quiet=True, no_warnings=True, noplaylist=True, skip_download=True,
                         socket_timeout=12, retries=0, extractor_retries=0, cachedir=False,
-                        playlist_items='1')
+                        playlist_items='1', allow_unplayable_formats=False, usenetrc=False)
             if cookies not in ('none', 'file'):
                 opts['cookiesfrombrowser'] = (cookies,)
             with yt_dlp.YoutubeDL(opts) as ydl:
@@ -294,7 +291,8 @@ class StudioAPI:
                     '%(title).150B [%(extractor_key)s-%(id)s]' + media_suffix + '.%(ext)s'
                 opts = dict(outtmpl=os.path.join(work_folder, template),
                             noplaylist=True, progress_hooks=[progress], postprocessor_hooks=[postprocess],
-                            windowsfilenames=sys.platform == 'win32', quiet=True, ffmpeg_location=ffmpeg_path())
+                            windowsfilenames=sys.platform == 'win32', quiet=True, ffmpeg_location=ffmpeg_path(),
+                            allow_unplayable_formats=False, usenetrc=False, cachedir=False)
                 if output_name:
                     opts['post_hooks'] = [save_output]
                 opts.update(media_options(mode, quality))

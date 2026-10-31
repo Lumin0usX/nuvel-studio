@@ -1,4 +1,5 @@
 """Quality preferences. Explicit values are ceilings; 'best' selects the best source."""
+import os
 import sys
 
 QUALITY_CHOICES = {
@@ -6,6 +7,14 @@ QUALITY_CHOICES = {
     'audio': ('best', '320', '256', '192', '128', '96'),
     'image': ('best', '4096', '2560', '2048', '1920', '1280', '1024', '640'),
 }
+
+
+def lgpl_encoder_options(target):
+    if target == 'macos-arm64':
+        return ['-c:v', 'h264_videotoolbox', '-allow_sw', '1', '-q:v', '75']
+    if target == 'windows-x64':
+        return ['-c:v', 'h264_mf', '-rate_control', 'quality', '-quality', '90']
+    raise ValueError('Unsupported native encoder target')
 
 
 def validate_quality(mode, quality):
@@ -39,8 +48,14 @@ def media_options(mode, quality='best'):
             # intermediate; QuickTimeMP4PP always produces the final MP4.
             return dict(format=f'bestvideo*{limit}+bestaudio/best{limit}',
                         merge_output_format='mkv', postprocessors=[])
-        return dict(format=f'bestvideo*{limit}+bestaudio/best{limit}', merge_output_format='mp4',
-                    postprocessors=[dict(key='FFmpegVideoConvertor', preferedformat='mp4')])
+        options = dict(format=f'bestvideo*{limit}+bestaudio/best{limit}', merge_output_format='mp4',
+                       postprocessors=[dict(key='FFmpegVideoConvertor', preferedformat='mp4')])
+        if sys.platform == 'win32' and (getattr(sys, 'frozen', False) or os.environ.get('NUVEL_FFMPEG_BUNDLE')):
+            # MP4's implicit default encoder can require GPL x264. Name the
+            # system Media Foundation encoder explicitly for LGPL packages.
+            options['postprocessor_args'] = {'VideoConvertor+ffmpeg_o': lgpl_encoder_options('windows-x64')
+                                            + ['-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k']}
+        return options
     raise ValueError('โหมดนี้ไม่ใช่วิดีโอหรือเสียง')
 
 

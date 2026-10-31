@@ -39,5 +39,12 @@ def ffmpeg_path():
     bundled = resource_path('bin', 'ffmpeg.exe' if sys.platform == 'win32' else 'ffmpeg')
     if bundled.is_file():
         return str(bundled)
+    if os.environ.get('NUVEL_FFMPEG_BUNDLE'):
+        from ffmpeg_distribution import selected_bundle
+        target = 'macos-arm64' if sys.platform == 'darwin' else 'windows-x64'
+        return str(selected_bundle(target)[0])
+    if getattr(sys, 'frozen', False):
+        raise RuntimeError('The packaged FFmpeg engine is missing. Reinstall the application.')
+    # Source-only development fallback. Builders never redistribute this file.
     import imageio_ffmpeg
     return imageio_ffmpeg.get_ffmpeg_exe()

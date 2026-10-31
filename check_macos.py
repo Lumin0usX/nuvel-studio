@@ -14,9 +14,6 @@ def main():
     import yt_dlp
     import curl_cffi
     from platform_runtime import ffmpeg_path, resource_path
-    from download_engine import PLATFORMS
-    for _, _, slug, _ in PLATFORMS:
-        assert resource_path('assets', 'platforms', slug + '.png').is_file()
     for filename in ('index.html', 'studio.css', 'i18n.js', 'studio.js', 'theme.js', 'appearance.js', 'fonts.js', 'fonts.css', 'font-catalog.js'):
         assert resource_path('ui', filename).is_file()
     from font_assets import check_font_assets
@@ -28,7 +25,7 @@ def main():
     if 'arm64' not in architecture:
         raise SystemExit('FFmpeg must contain ARM64 code: ' + architecture)
     subprocess.run([executable, '-version'], check=True, capture_output=True)
-    print(f'OK: native ARM64 Python, WebKit, {len(PLATFORMS)} icons, yt-dlp, curl-cffi and FFmpeg')
+    print('OK: native ARM64 Python, WebKit, UI assets, yt-dlp, curl-cffi and FFmpeg')
 
 
 if __name__ == '__main__':

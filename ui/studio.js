@@ -497,11 +497,10 @@ function renderPlatforms(platforms) {
     button.dataset.platform = platform.slug;
     button.dataset.search = platform.name.toLowerCase() + ' ' + (platform.domains || []).join(' ');
     button.title = platform.name + ' · ' + labels[platform.status]; button.setAttribute('aria-label', button.title); button.setAttribute('aria-pressed', 'false');
-    const img = node('img'); img.src = platform.icon; img.alt = ''; img.draggable = false;
     const name = node('span', 'platform-name', platform.name);
     const state = node('span', 'status-dot');
     if (platform.status === 'supported') state.append(icon('check'));
-    button.append(img, name, state);
+    button.append(name, state);
     button.addEventListener('click', () => {
       $('platforms').querySelectorAll('button').forEach(el => {el.classList.remove('chosen'); el.setAttribute('aria-pressed', 'false');});
       button.classList.add('chosen'); button.setAttribute('aria-pressed', 'true');

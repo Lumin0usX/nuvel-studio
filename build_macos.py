@@ -12,7 +12,9 @@ from datetime import datetime
 def main():
     from check_macos import main as preflight
     preflight()
-    import imageio_ffmpeg
+    from ffmpeg_distribution import selected_bundle, verify_media
+    ffmpeg, ffmpeg_source, _ = selected_bundle('macos-arm64')
+    verify_media(ffmpeg, 'macos-arm64')
     import PyInstaller.__main__
     project = Path(__file__).resolve().parent
     # A fresh output directory preserves previous builds.
@@ -20,7 +22,7 @@ def main():
     staging = output / 'build-input'
     staging.mkdir(parents=True)
     bundled_ffmpeg = staging / 'ffmpeg'
-    shutil.copy2(imageio_ffmpeg.get_ffmpeg_exe(), bundled_ffmpeg)
+    shutil.copy2(ffmpeg, bundled_ffmpeg)
     bundled_ffmpeg.chmod(0o755)
     from app_version import VERSION, DISPLAY_NAME
     from build_gallery_tool import build_tool
@@ -37,10 +39,13 @@ def main():
         '--add-binary', str(bundled_ffmpeg) + ':bin',
         '--add-binary', str(gallery) + ':bin',
         '--add-data', str(gallery_source) + ':third-party/gallery-dl',
+        '--add-data', str(ffmpeg_source) + ':third-party/ffmpeg/source',
+        '--add-data', str(ffmpeg.parent / 'manifest.json') + ':third-party/ffmpeg',
         '--collect-all', 'yt_dlp', '--collect-all', 'yt_dlp_ejs',
         '--collect-all', 'curl_cffi', '--collect-all', 'certifi',
         '--collect-all', 'webview', '--hidden-import', 'webview.platforms.cocoa',
         '--exclude-module', 'gallery_dl',  # gallery-dl is a separate external CLI
+        '--exclude-module', 'imageio_ffmpeg',  # do not collect its GPL binary
         '--collect-all', 'PIL',
         '--copy-metadata', 'yt-dlp',
     ])

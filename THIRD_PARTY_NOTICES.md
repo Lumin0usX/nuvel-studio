@@ -17,7 +17,7 @@ upstream projects and in the installed packages.
 - FFmpeg: https://ffmpeg.org/legal.html
 - pywebview: https://github.com/r0x0r/pywebview
 - PyInstaller: https://github.com/pyinstaller/pyinstaller
-- gallery-dl (GPL-2.0): https://github.com/mikf/gallery-dl
+- gallery-dl (audited 1.32.17: GPL version 2): https://github.com/mikf/gallery-dl
 - Pillow: https://github.com/python-pillow/Pillow
 
 Image-post extraction invokes gallery-dl as a separate command-line process.
@@ -34,6 +34,21 @@ and satisfy any applicable source-distribution requirements. A private
 repository and this project's proprietary license do not remove those
 obligations. Generated applications and binaries are excluded from this
 source repository by default.
+
+The 2026-10-31 audit is **not a distribution clearance**. Both inspected macOS
+FFmpeg files identify as GPL version 2 or later and enable GPL components;
+the BSD license of the imageio-ffmpeg Python wrapper is not FFmpeg's license.
+The current Windows executable has not been attested in this audit. Matching
+FFmpeg/library source and build materials have not been supplied by this tree.
+Gallery-dl's copied Python source does not by itself establish completeness for
+its whole frozen executable, dependencies and bootloader. See `legal/AUDIT.md`.
+
+New builders require an explicit source-bearing LGPL FFmpeg bundle through
+`NUVEL_FFMPEG_BUNDLE`, exclude imageio-ffmpeg from the GUI package, and include
+the supplied source/build materials under `third-party/ffmpeg`. This migration
+is incomplete: no replacement LGPL binary or native package has passed acceptance
+in this audit. Source development can still use the GPL imageio binary; old
+packages are unaffected. See `legal/FFMPEG-LGPL.md`.
 
 ## Bundled fonts
 
@@ -62,6 +77,9 @@ ImgBB, Lensdump, and Wikimedia Commons names and marks identify their respective
 platforms. They belong to their respective owners. Their inclusion does not
 imply endorsement, sponsorship, or affiliation.
 
-The bundled small platform graphics are stylized identification marks
-rendered by `build_platform_icons.py`, not official brand asset downloads.
-No ownership of the underlying brands or trademarks is claimed.
+The current source and new builds use plain platform names, without the former
+platform artwork. Historical Git commits and previously built/released packages
+can still contain that artwork; they have not been rewritten or withdrawn.
+`build_platform_icons.py` is retained as a legacy command name for regenerating
+the text-only offline catalog. The separate NÜVEL identity remains unchanged;
+its supplied brand-kit provenance still requires the owner's confirmation.

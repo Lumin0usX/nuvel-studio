@@ -98,6 +98,7 @@ class DirectImageTests(unittest.TestCase):
         self.assertNotIn('--print', args)  # lowercase print would disable downloads
         self.assertNotIn('--cookies', args)
         self.assertNotIn('--cookies-from-browser', args)
+        self.assertNotIn('--cookies-export', args)
         self.assertEqual(args[-2:], ['--', 'https://example.org/post'])
         file_args = images.gallery_args(['gallery-dl'], 'https://example.org/post', '.', 'file', 'cookies.txt')
         self.assertEqual(file_args[file_args.index('--cookies') + 1], 'cookies.txt')

@@ -222,18 +222,9 @@ class NuvelStudio:
         self.support_summary = tk.StringVar(value="กำลังตรวจสอบตัวรองรับ...")
         tk.Label(sidebar, textvariable=self.support_summary, bg=PANEL, fg=MUTED, font=(FONT_FAMILY, 9)).pack(anchor="w", pady=(4, 16))
         self.platform_labels = {}
-        self.platform_icons = {}
-        icon_dir = resource_path("assets", "platforms")
         for name, key, icon_name, color in PLATFORMS:
             row = tk.Frame(sidebar, bg=PANEL)
             row.pack(fill="x", pady=6)
-            try:
-                icon = tk.PhotoImage(master=self.root, file=os.path.join(icon_dir, icon_name + ".png"))
-                self.platform_icons[name] = icon  # Keep Tk images alive.
-                tk.Label(row, image=icon, bg=PANEL, width=32, height=30).pack(side="left", padx=(0, 9))
-            except tk.TclError:
-                # Missing assets must not stop the downloader from opening.
-                tk.Label(row, text="●", bg=PANEL, fg=color, width=3).pack(side="left", padx=(0, 9))
             self._label(row, name, 10).pack(side="left")
             label = tk.Label(row, text="ตรวจสอบ…", bg=PANEL, fg=MUTED, font=(FONT_FAMILY, 9))
             label.pack(side="right", padx=(10, 0))
@@ -393,6 +384,9 @@ class NuvelStudio:
                 "progress_hooks": [progress],
                 "windowsfilenames": sys.platform == "win32",
                 "quiet": True,
+                "allow_unplayable_formats": False,
+                "usenetrc": False,
+                "cachedir": False,
                 "ffmpeg_location": ffmpeg_path(),
             }
             if cookie_source == "ไฟล์ cookies.txt":
@@ -484,7 +478,7 @@ if __name__ == "__main__":
         window.withdraw()
         app = NuvelStudio(window)
         window.update_idletasks()
-        assert len(app.platform_icons) == len(PLATFORMS), "Missing bundled icons"
+        assert set(app.platform_labels) == {row[0] for row in PLATFORMS}, "Missing source names"
         app._set_mode("audio")
         app._set_mode("video")
         window.destroy()

@@ -1,5 +1,56 @@
 # NÜVEL Studio build verification
 
+## Distribution audit and LGPL migration — 2026-10-31
+
+Started from `ea27c53`. Scope/results and primary legal sources are in
+`legal/AUDIT.md`; all 50 catalog entries are recorded in `legal/PLATFORM_REVIEW.md`.
+Neither document certifies redistribution clearance. Changes remove platform
+artwork, preserve plain source names, add four-language permission/nonaffiliation
+notices, explicitly reject unplayable DRM formats/implicit netrc/cache, and add
+redacted local Git/dependency evidence tools and a credential check in CI.
+
+The owner delegated FFmpeg selection. Future native builders require a
+source-bearing LGPL FFmpeg CLI with input hashes, source/library inventory,
+licenses and actual build materials. They reject GPL/nonfree/version3 evidence,
+exclude imageio's GPL executable from collection, and require real local
+MP4/AAC/MP3 encode/decode checks before GUI packaging. This evidence gate is not
+proof of source correspondence or a complete license review. No replacement
+LGPL binary has yet been built/verified. Mac packages select VideoToolbox and Windows conversion explicitly selects
+Media Foundation; source-only development without a selected LGPL bundle retains its old engine.
+
+Current full Python result: **248 results: 232 passed, 12 skipped, 1 failure,
+3 errors**. The remaining failure is the pre-existing macOS ditto ZIP's missing
+UTF-8 filename interpretation (`NÜVEL` decodes as CP437). Errors are missing
+`_tkinter` on this Python 3.15 installation and two denied loopback HTTP binds.
+No failing test was disabled or changed to a skip. The 7 LGPL evidence/encoder-selection tests pass; focused checks also passed
+the Windows builder workflow tests
+(5 passed, 4 Windows-only skips). The latter mock native tools and do not
+constitute native Windows execution. Audit-tool tests also pass. All **7
+JavaScript suites** pass, including complete four-language catalog coverage.
+Safari loaded the current UI and displayed the new notices/plain names; its
+file preview has no backend connection and is not native bridge acceptance.
+
+Initial native build attempt reached the packaged gallery CLI check and stopped:
+`Failed to initialize sync semaphore! semctl: Operation not permitted`.
+After the LGPL decision, the builder stops earlier because no reviewed
+`NUVEL_FFMPEG_BUNDLE` has been provisioned. Shell DNS cannot resolve ffmpeg.org.
+A direct VideoToolbox trial (also 320×240 with software fallback allowed) fails
+to create its compression session with **OSStatus -12908**. The root causes of
+these launch-context failures are not established. See `legal/FFMPEG-LGPL.md`.
+No main app/ZIP was accepted, no installed app was replaced, and no release
+was published. Native bridge/font/engine checks were not bypassed.
+
+Local evidence is retained in ignored `dist/legal-audit-20261031/`: redacted
+source/history findings, a separate previous-app scan, dependency notices and
+FFmpeg version/license/hash evidence, and test/build logs. The initial local
+Git object scan covers 25 commits, 462 blobs and 4 tags including unreachable
+objects, with no source/history credential candidate matching its heuristics.
+Author identifiers/local paths remain, and remote-only refs/releases/LFS and
+other devices have not been exhaustively scanned. Reports contain fingerprints
+instead of secret values. LICENSE remains Proprietary; freeware permission,
+rights-metadata behavior, dependency source closure and unresolved platform
+terms still require work before public distribution.
+
 ## Direct destination files — 2026-10-31
 
 Gallery images now finish directly in the selected output directory, including

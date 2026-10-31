@@ -1048,6 +1048,8 @@
   }
 }/* CATALOG_END */;
   const UPDATE_CATALOG = /* UPDATE_CATALOG_START */{
+    "Only download content you have permission to save. Follow the source's terms.": ["ดาวน์โหลดเฉพาะเนื้อหาที่คุณมีสิทธิ์บันทึก และปฏิบัติตามเงื่อนไขของต้นทาง", "保存する権利のあるコンテンツのみをダウンロードし、提供元の利用規約に従ってください。", "请仅下载您有权保存的内容，并遵守来源平台的条款。"],
+    "Source names indicate engine compatibility, not permission to download. No affiliation or endorsement.": ["ชื่อแหล่งข้อมูลระบุความเข้ากันได้ของตัวดาวน์โหลด ไม่ใช่การอนุญาตให้ดาวน์โหลด และไม่ได้แสดงความเป็นพันธมิตรหรือการรับรอง", "提供元の名前はエンジンの対応状況を示すもので、ダウンロードの許可や提携・推奨を意味しません。", "来源名称仅表示下载引擎的兼容性，不代表下载授权、合作关系或背书。"],
     "File name": ["ชื่อไฟล์", "ファイル名", "文件名"],
     "Optional": ["ไม่บังคับ", "任意", "可选"],
     "Use source name": ["ใช้ชื่อจากต้นทาง", "元の名前を使用", "使用来源名称"],

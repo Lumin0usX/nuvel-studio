@@ -1,5 +1,10 @@
 # NÜVEL Studio — Windows x64
 
+> สถานะ 2026-10-31: build ใหม่ต้องกำหนด `NUVEL_FFMPEG_BUNDLE` เป็น FFmpeg แบบ
+> LGPL ที่มี source/build materials ไม่ใช้ GPL binary จาก imageio ในแพ็กใหม่
+> ยังไม่มี LGPL binary ของ Windows ที่ตรวจจริงในรอบนี้ ดู [ข้อกำหนด](legal/FFMPEG-LGPL.md)
+> และ [ผลตรวจ](legal/AUDIT.md) แอปเดิมยังไม่ถูกแทนที่
+
 ## แอปพร้อมใช้และอัปเดตในแอป
 
 ดาวน์โหลด **NUVEL-Studio-Windows-x64.zip** จาก Releases ของ repo ส่วนตัว
