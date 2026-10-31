@@ -1,5 +1,30 @@
 # NÜVEL Studio / Obsidian Futuristic
 
+## Responsive download form review (2026-10-31)
+
+Found a cascade conflict: at a 500px viewport the composer had 388px available,
+but the later viewport fallback overrode its container query and forced two
+186px columns. Moved the existing container queries after the viewport fallbacks
+so the actual composer width determines the layout, and refreshed the stylesheet
+cache key. The same form now uses one 388px column. Desktop layout is retained.
+
+Reviewed the actual source HTML with bundled CSS/JS in Safari using a temporary
+iframe preview. Its read-only diagnostics measured the document scroll width,
+control bounds and computed grid columns. Twenty-one inspected states passed:
+
+- English video: 360, 390, 500, 600, 780, 1024, 1240 and 1440px widths.
+- Thai: all three modes at 500 and 780px, retaining a long Thai/Japanese filename.
+- Japanese and Simplified Chinese: all three modes at 780px.
+- Expanded sidebar at 780 x 640: controls remain inside the composer; keyboard
+  scrolling brings the Download button into view.
+
+No horizontal document overflow or form controls outside the composer were
+detected in these states. Static checks used the app's animation toggle, then
+restored the preview preferences. All seven JavaScript suites and
+`git diff --check` passed. The preview did not simulate backend jobs or claim a
+working native bridge. Native Windows rendering, active-job layouts and a new
+packaged build were not verified in this review. The installed app is unchanged.
+
 ## Implementation
 
 Vanilla HTML, CSS and JavaScript, hosted by the existing Python/pywebview shell.
