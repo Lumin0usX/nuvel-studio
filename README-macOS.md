@@ -5,18 +5,20 @@
 > ยังไม่มี LGPL binary ที่ผ่าน native acceptance ดู [ข้อกำหนด](legal/FFMPEG-LGPL.md)
 > และ [ผลตรวจการแจกจ่าย](legal/AUDIT.md) แอปเดิมยังไม่ถูกแทนที่
 
-## แอปพร้อมใช้และอัปเดตในแอป
+## สถานะซอร์สและ binary
 
-ดาวน์โหลด **NUVEL-Studio-macOS-arm64.zip** จาก Releases ของ repo ส่วนตัว
-แตก ZIP แล้วย้าย **NÜVEL Studio.app** ไปยังโฟลเดอร์ที่คุณมีสิทธิ์เขียน
-เปิดแอปได้เลยโดยไม่ต้องติดตั้ง Python หรือ Homebrew
+ขณะนี้ **ไม่มี binary สำหรับ Windows หรือ macOS ให้ดาวน์โหลด** และยังไม่อนุมัติ
+การแจกแพ็กเกจ โค้ดต้นฉบับที่อยู่ในขอบเขตของโปรเจกต์ใช้ **GPL-3.0-only**
+ส่วน dependency และ assets ของบุคคลที่สามยังใช้ license ของตนเอง
+ดู [LICENSE](LICENSE), [COPYRIGHT](COPYRIGHT) และ [third-party notices](THIRD_PARTY_NOTICES.md)
 
-อัปเดตผ่าน **Settings → App updates** ได้ สำหรับ repo ส่วนตัวตั้ง fine-grained
-GitHub token ที่อ่าน Contents ของ repo นี้ได้ในครั้งแรก แอปเก็บ token ใน macOS Keychain
-แอปยังลงนามแบบ ad-hoc และยังไม่ notarized จึงอาจมีข้อความตรวจสอบจาก macOS ตอนเปิดครั้งแรก
-รายละเอียดการออก release อยู่ใน [README.md](README.md#download-the-ready-to-use-app)
+เก็บ tags และ release entries เดิมไว้เพื่ออ้างอิงประวัติ ไม่ใช่แพ็กเกจพร้อมติดตั้ง
+ซอร์ส ZIP ที่ GitHub สร้างอัตโนมัติก็ไม่ใช่ตัวแอป ดู
+[สถานะการแจกจ่าย](README.md#source-availability-and-historical-releases)
+ตัวอัปเดตในแอปยังคงอยู่สำหรับสำเนาที่ติดตั้งไว้ แต่ไม่มีแพ็กเกจอัปเดตแจกในขณะนี้
 
-ขั้นตอนด้านล่างสำหรับผู้ที่ต้องการ build จาก source เอง
+ขั้นตอนด้านล่างเป็นการพัฒนาในเครื่อง การแพ็กยังต้องมี LGPL FFmpeg พร้อม source/
+build materials ที่ผ่านการตรวจ และต้องผ่านข้อกำหนดอื่นก่อนจะแจก binary ได้
 
 ## เริ่มใช้งาน
 
@@ -28,7 +30,7 @@ GitHub token ที่อ่าน Contents ของ repo นี้ได้ใ
 
 เปิดใช้งานปกติโดยไม่มี Terminal ไม่ต้องเปิด `start_macos.command`
 ตัวแอปรวม Python, WebKit bridge, yt-dlp, UI, โลโก้ และ FFmpeg ARM64
-สามารถนำ `.app` ไปไว้ใน Applications ได้ ส่วน ZIP สำหรับแจกจ่ายอยู่ใน `dist/<เวลาที่ build>`
+สามารถนำ `.app` ไปไว้ใน Applications ได้ ส่วน ZIP ในเครื่องอยู่ใน `dist/<เวลาที่ build>` ยังไม่ใช่แพ็กเกจที่โครงการรับรองสำหรับเผยแพร่
 
 ## อัปเดต
 

@@ -1,14 +1,14 @@
 NÜVEL STUDIO
 ===========
 
-แอปพร้อมใช้ (เมื่อมีการเผยแพร่ Release)
-ดาวน์โหลด ZIP สำหรับ Windows x64 หรือ Mac Apple Silicon จาก GitHub Releases
-แตกไฟล์แล้วเปิด NÜVEL Studio.exe หรือ NÜVEL Studio.app ไม่ต้องติดตั้ง Python/Git
-อัปเดตครั้งต่อไป: Settings > App updates
-repo เป็น private จึงต้องตั้ง GitHub token แบบ Contents: read-only ในแอปครั้งแรก
-token เก็บใน Windows Credential Manager / macOS Keychain
-เครื่องที่รันจาก source ต้อง build เวอร์ชันนี้หนึ่งครั้งก่อนใช้การติดตั้งอัปเดตในแอป
-รายละเอียดการใช้งานและเผยแพร่ release ดู README.md
+สถานะ: เผยแพร่เฉพาะซอร์สโค้ด ยังไม่มี binary Windows/macOS ให้ดาวน์โหลด
+โค้ดต้นฉบับในขอบเขตของโปรเจกต์ใช้ GPL-3.0-only; Copyright © 2026 Lumin0usX
+ส่วนประกอบของบุคคลที่สามยังใช้ license ของตนเอง ดู THIRD_PARTY_NOTICES.md
+เก็บ tags และ release entries เดิมไว้เพื่ออ้างอิงประวัติ ไม่ใช่แพ็กเกจพร้อมใช้
+ซอร์ส ZIP จาก GitHub ไม่ใช่ตัวแอป และขณะนี้ไม่มีแพ็กเกจสำหรับอัปเดตในแอป
+
+การแพ็กจาก source ยังต้องมี LGPL FFmpeg พร้อม source/build materials ที่ผ่านการตรวจ
+การ build สำเร็จในเครื่องไม่ใช่การอนุมัติให้แจก binary
 
 Build จาก source
 
@@ -30,4 +30,4 @@ macOS Apple Silicon
 คลิปที่ต้องใช้บัญชีสามารถเลือก cookies ได้ โปรแกรมไม่แก้ไฟล์ cookies ต้นฉบับ
 
 รายละเอียด: README.md, README-Windows.md และ README-macOS.md
-โค้ดต้นฉบับของโปรเจกต์สงวนสิทธิ์ตาม LICENSE
+โค้ดต้นฉบับในขอบเขตของโปรเจกต์ใช้ GPL-3.0-only ตาม LICENSE และ COPYRIGHT

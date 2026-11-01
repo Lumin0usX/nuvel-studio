@@ -5,19 +5,20 @@
 > ยังไม่มี LGPL binary ของ Windows ที่ตรวจจริงในรอบนี้ ดู [ข้อกำหนด](legal/FFMPEG-LGPL.md)
 > และ [ผลตรวจ](legal/AUDIT.md) แอปเดิมยังไม่ถูกแทนที่
 
-## แอปพร้อมใช้และอัปเดตในแอป
+## สถานะซอร์สและ binary
 
-ดาวน์โหลด **NUVEL-Studio-Windows-x64.zip** จาก Releases ของ repo ส่วนตัว
-แตก ZIP ทั้งโฟลเดอร์ แล้วเปิด **NÜVEL Studio.exe** โดยไม่ต้องติดตั้ง Python หรือ Git
-เก็บโฟลเดอร์ `_internal` ไว้ข้างไฟล์ exe เสมอ ต้องมี Microsoft Edge WebView2 Runtime
-ซึ่งโดยปกติติดตั้งมาแล้วบน Windows 10/11
+ขณะนี้ **ไม่มี binary สำหรับ Windows หรือ macOS ให้ดาวน์โหลด** และยังไม่อนุมัติ
+การแจกแพ็กเกจ โค้ดต้นฉบับที่อยู่ในขอบเขตของโปรเจกต์ใช้ **GPL-3.0-only**
+ส่วน dependency และ assets ของบุคคลที่สามยังใช้ license ของตนเอง
+ดู [LICENSE](LICENSE), [COPYRIGHT](COPYRIGHT) และ [third-party notices](THIRD_PARTY_NOTICES.md)
 
-อัปเดตครั้งถัดไปผ่าน **Settings → App updates** ได้เลย สำหรับ repo ส่วนตัว
-ตั้ง fine-grained GitHub token ที่อ่าน Contents ของ repo นี้ได้เพียงครั้งแรก
-แอปเก็บ token ใน Windows Credential Manager ไม่เขียนลงไฟล์ตั้งค่า
-รายละเอียดการออก release อยู่ใน [README.md](README.md#download-the-ready-to-use-app)
+เก็บ tags และ release entries เดิมไว้เพื่ออ้างอิงประวัติ ไม่ใช่แพ็กเกจพร้อมติดตั้ง
+ซอร์ส ZIP ที่ GitHub สร้างอัตโนมัติก็ไม่ใช่ตัวแอป ดู
+[สถานะการแจกจ่าย](README.md#source-availability-and-historical-releases)
+ตัวอัปเดตในแอปยังคงอยู่สำหรับสำเนาที่ติดตั้งไว้ แต่ไม่มีแพ็กเกจอัปเดตแจกในขณะนี้
 
-ขั้นตอนด้านล่างสำหรับผู้ที่ต้องการ build จาก source เอง
+ขั้นตอนด้านล่างเป็นการพัฒนาในเครื่อง การแพ็กยังต้องมี LGPL FFmpeg พร้อม source/
+build materials ที่ผ่านการตรวจ และต้องผ่านข้อกำหนดอื่นก่อนจะแจก binary ได้
 
 ## เริ่มใช้งาน
 
@@ -33,7 +34,7 @@ Windows ต้องมี Microsoft Edge WebView2 Runtime
 รุ่น 2.0 ใช้ชื่อและ product ID ใหม่ทั้งหมด ต้องติดตั้งแพ็กเกจใหม่นี้หนึ่งครั้ง
 แล้วตั้งค่าการเข้าถึง GitHub อีกครั้งก่อนใช้อัปเดตในแอป
 
-ZIP สำหรับส่งต่ออยู่ใน `dist/windows-<เวลาที่ build>` แตก ZIP แล้วเปิด `.exe` ได้
+ZIP ที่สร้างในเครื่องอยู่ใน `dist/windows-<เวลาที่ build>` ยังไม่ใช่แพ็กเกจที่โครงการรับรองสำหรับเผยแพร่
 เครื่องปลายทางไม่ต้องติดตั้ง Python แต่ยังต้องมี WebView2 Runtime
 ภาพจากโพสต์ใช้ gallery-dl CLI ที่แพ็กเป็นโปรเซสแยกไปด้วยแล้ว
 เครื่องปลายทางไม่ต้องติดตั้ง CLI เอง ลิงก์ไฟล์ภาพโดยตรงใช้ตัวดาวน์โหลดในแอป

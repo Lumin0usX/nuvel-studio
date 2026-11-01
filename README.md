@@ -4,11 +4,17 @@ A desktop video, audio and image downloader with the Obsidian Futuristic interfa
 powered by yt-dlp. Original project-owned source code is licensed under
 **GNU GPL version 3 only (`GPL-3.0-only`)**.
 
-**Public source publication requires a separate owner decision. Public
-Windows/macOS binary releases remain BLOCKED and are not approved.** Local
-Strategy B history remediation is complete; it does not establish removal from
-GitHub or other copies. No remote update or publication is part of this licensing
-change. Existing Git identity and development-path disclosure are owner-accepted.
+**Source-code portfolio project. Windows/macOS binary downloads are not
+currently distributed; binary releases remain BLOCKED and are not approved.**
+Existing tags and release entries, including v1.1.4, are retained for historical
+reference. The owner confirms that v1.1.4's three attached assets were backed up
+and removed; the release entry remains. GitHub-generated source archives are
+source snapshots, not installable applications.
+
+Local Strategy B history remediation is complete. The owner confirms that the
+rewritten branch/tags are on GitHub and repository-level Actions is disabled.
+These are owner-confirmed remote facts, not a fresh remote inspection by this
+local change. Existing Git identity and development-path disclosure are accepted.
 
 ## License and attribution
 
@@ -52,7 +58,7 @@ and credentials, `local.nuvelstudio.app`, `nuvel-obsidian-preferences-v1`, and
 one-time installation of the new package; their updater cannot consume the new
 archive names, roots or product IDs. Configure private-repository access again
 for the new credential namespace. Existing downloads are unaffected. The new
-repository address below requires the GitHub repository rename to be completed.
+source and updater target `Lumin0usX/nuvel-studio`.
 
 Source-folder updates on macOS can migrate the already-branded 1.1.2–1.x app
 automatically: the builder checks its historical bundle ID, build marker,
@@ -87,34 +93,28 @@ extra files even if the output-folder preference has since changed. Older
 builds conservatively reject media found outside their UI/artwork directories.
 This portable app does not register a Windows Apps & Features uninstall entry.
 
-## Download the ready-to-use app
+## Source availability and historical releases
 
-These installation instructions describe existing authorized private packages.
-They are not public-distribution clearance; new LGPL/native candidates remain
-blocked by the third-party obligations above.
+Covered original source code is available under **GPL-3.0-only**. Third-party
+components retain their respective licenses; see [notices](THIRD_PARTY_NOTICES.md).
+[Releases and tags](https://github.com/Lumin0usX/nuvel-studio/releases) are retained
+as historical references. There are currently no distributed Windows/macOS app
+ZIPs, installers or update manifests. Do not treat a historical tag, release
+entry or automatic source archive as an approved binary download.
 
-Open [Releases](https://github.com/Lumin0usX/nuvel-studio/releases) while signed in
-to a GitHub account with access to this private repository. Download the ZIP
-asset, not GitHub's automatically generated source-code archive.
+Local packaging remains a separate development path. Builders require reviewed
+LGPL FFmpeg binaries and corresponding source/build materials; the migration,
+other dependency obligations and native acceptance remain incomplete. See
+[FFmpeg requirements](legal/FFMPEG-LGPL.md). Building locally does not approve
+redistribution, and source publication does not depend on a successful binary build.
+These are project release controls, not extra restrictions on GPL-covered code;
+any downstream distribution must meet the applicable licenses.
 
-- Windows x64: extract **NUVEL-Studio-Windows-x64.zip**, keep the entire
-  **NÜVEL Studio** folder, and open **NÜVEL Studio.exe**. Windows 10/11 needs
-  [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
-  (normally already installed). Python, Git and a terminal are not needed.
-- Mac Apple Silicon: extract **NUVEL-Studio-macOS-arm64.zip**, move
-  **NÜVEL Studio.app** to a writable location such as your user's Applications
-  folder, and open it. Python, Homebrew and a terminal are not needed.
+### Historical packaged updater
 
-Both packages include FFmpeg and an isolated gallery-dl CLI for image posts.
-The legal audit selected LGPL FFmpeg for future packages. Builders now stop
-until an explicit source-bearing LGPL bundle is supplied; migration and native
-acceptance remain incomplete. Review the [audit](legal/AUDIT.md) and
-[FFmpeg requirements](legal/FFMPEG-LGPL.md) before building or distributing.
-Local builds are ad-hoc signed, not Apple-notarized or Windows Authenticode-signed;
-OS trust prompts can appear on a first download. A release is published only
-after both native build jobs and their startup checks succeed.
-
-### Update from inside the app
+The following describes the existing updater for previously installed copies.
+No packaged update is currently distributed; retaining this functionality does
+not mean an update download is available.
 
 Use **Settings → App updates → Check for updates**. For this private repository,
 expand **Private repository access** and save a fine-grained GitHub token scoped
@@ -140,14 +140,19 @@ Source launches can check releases but cannot replace the running Python
 environment in-app. Earlier package identities need the new one-time installation.
 Until a release is published, the app reports that no packaged release is available.
 
-### Publish a version (maintainer)
+### Publication controls (maintainer)
 
-Public binary publication is **BLOCKED** and is not authorized by the GPL
-license decision. Resolve dependency compatibility, corresponding-source,
-notices, native-library, security and native-acceptance findings first.
-Release automation must be reviewed separately before any remote update or
-version-tag push. This licensing-only change does not modify workflow behavior
-or clear a package for distribution. See [third-party notices](THIRD_PARTY_NOTICES.md).
+The current branch's `release.yml` performs **source checks only**. It has no
+push/tag trigger, binary build, artifact upload or release-publishing job. Manual
+execution requires selecting `main` and explicitly confirming source-only checks.
+It checks out the selected commit SHA, with read-only repository permissions.
+
+Repository-level GitHub Actions remains disabled. Historical tag trees still
+contain older publishing workflows; changing this branch does not neutralize
+those copies. Do not re-enable Actions or dispatch historical workflows without
+a separate review. Windows/macOS distribution remains blocked by third-party
+compatibility, source/notices and native acceptance. No release automation or
+visibility change is authorized by this source-only preparation.
 
 ## Features
 
@@ -371,7 +376,7 @@ The builder prepares an isolated environment, bundles the application and
 creates a shortcut to **nuvel-windows/NÜVEL Studio.exe**. The application includes
 Python, the UI, video/audio engines and FFmpeg. Keep the complete nuvel-windows
 folder together; the exe depends on its bundled `_internal` directory.
-The portable ZIP is kept in `dist/windows-<build timestamp>`.
+The local output ZIP is kept in `dist/windows-<build timestamp>`; no official binary release is approved.
 
 Microsoft Edge WebView2 Runtime must be available on Windows.
 The windowless launcher reports startup failures with a dialog and a log in
@@ -416,7 +421,7 @@ bash build_macos.command
 The build prepares dependencies and produces **NÜVEL Studio.app** directly in
 the project folder. Open this app for normal use without Terminal. It contains
 the Python runtime, UI, video/audio engines and FFmpeg; you may copy it into
-Applications. The distributable ZIP is also kept in `dist/<build timestamp>`.
+Applications. A local output ZIP is kept in `dist/<build timestamp>`; no official binary release is approved.
 
 Double-click **update_macos.command** to update and rebuild in one flow, with
 no source/packaged mode choice. The app in the project folder is replaced only
@@ -429,11 +434,10 @@ for public distribution. A macOS binary cannot be built by this project on Windo
 
 ## Validation status
 
-The **2.0.0** identity changes are unreleased. Both native build jobs and startup
-checks must pass before the new ZIPs and manifest can be published.
-See [the verification record](BUILD-VERIFICATION.md) for current results.
-The Windows build passed real desktop native acceptance and is installed locally
-under `nuvel-windows`; macOS acceptance and GitHub publication remain pending.
+The **2.0.0** identity changes are unreleased. Windows/macOS binary acceptance
+and redistribution remain blocked; historical build results do not clear a new
+package. See [the verification record](BUILD-VERIFICATION.md) for dated evidence.
+Source publication and binary acceptance are separate decisions.
 
 Windows tests cover Unicode shortcuts, process ownership, GUI subsystem and
 startup proof, locked installations and rollback. Shared tests cover download

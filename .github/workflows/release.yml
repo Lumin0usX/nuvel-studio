@@ -1,57 +1,51 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Copyright © 2026 Lumin0usX
 
-name: Build desktop release
+name: Validate source publication (no binaries)
 
-on:
-  push:
-    tags: ['v*.*.*']
+'on':
   workflow_dispatch:
     inputs:
-      tag:
-        description: Existing version tag (must match app_version.py)
+      confirm_source_only:
+        description: Run source checks only; no binary build, upload or publication
         required: true
-        type: string
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 concurrency:
-  group: desktop-release-${{ inputs.tag || github.ref_name }}
+  group: source-validation-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  build:
+  validate-source:
+    # Fail closed for other events, refs or an unconfirmed manual request.
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.confirm_source_only == true }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-latest
-            platform: windows-x64
             architecture: x64
           - os: macos-14
-            platform: macos-arm64
             architecture: arm64
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 45
-    env:
-      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref_name }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           architecture: ${{ matrix.architecture }}
-      - run: python release_tools.py check-version --tag "$env:RELEASE_TAG"
-        if: runner.os == 'Windows'
-      - run: python release_tools.py check-version --tag "$RELEASE_TAG"
-        if: runner.os == 'macOS'
-      - run: python -m pip install -r requirements.txt "pyinstaller>=6.16,<7"
+      - run: python -m pip install -r requirements.txt "pyinstaller>=6.16,<7" "pip-audit==2.10.1"
       - run: python repository_audit.py --fail-on-secrets --output audit-report.json
+      - run: python -m pip_audit --strict
       - run: python -m unittest discover -s tests
       - run: node tests/test_theme.cjs
       - run: node tests/test_appearance.cjs
@@ -60,36 +54,6 @@ jobs:
       - run: node tests/test_fonts.cjs
       - run: node tests/test_i18n.cjs
       - run: node tests/test_platform_directory.cjs
-      - run: python build_windows.py --run-build
-        if: runner.os == 'Windows'
-      - run: python build_macos.py
-        if: runner.os == 'macOS'
-      - run: python release_tools.py collect --platform ${{ matrix.platform }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.platform }}
-          path: release/*.zip
-          if-no-files-found: error
-          retention-days: 7
-
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    env:
-      GH_TOKEN: ${{ github.token }}
-      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.tag || github.ref_name }}
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - uses: actions/download-artifact@v4
-        with:
-          path: release
-          merge-multiple: true
-      - run: python release_tools.py publish --folder release --tag "$RELEASE_TAG"
+      # No packaging commands, artifact uploads, release credentials or publisher.
+      # Historical tag trees retain old workflows; keep repository Actions disabled
+      # until those paths and hosted runs receive a separate maintainer review.
