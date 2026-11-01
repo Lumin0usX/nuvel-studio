@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """One-step isolated Windows build; only a verified bundle replaces the current app."""
 import argparse
 import os

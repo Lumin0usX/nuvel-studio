@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Small source-update entry point, independent of the application and build code.
 
 Keep this bootstrap backward compatible: double-click launchers fetch a verified

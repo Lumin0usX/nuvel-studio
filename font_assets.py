@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Vendored UI fonts: one catalog, offline CSS, and native-build integrity checks."""
 from functools import lru_cache
 import hashlib

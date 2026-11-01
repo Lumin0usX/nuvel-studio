@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Quality preferences. Explicit values are ceilings; 'best' selects the best source."""
 import os
 import sys

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright © 2026 Lumin0usX
+
 /* Apply the saved theme before CSS paints. Dark is always the default. */
 (() => {
   'use strict';

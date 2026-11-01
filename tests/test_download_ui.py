@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Exercise job transitions without needing a desktop or network."""
 import queue
 import unittest

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright © 2026 Lumin0usX
+
 // Activity must earn its column; polling and empty state changes use the shipped renderer.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');

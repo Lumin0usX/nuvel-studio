@@ -1,4 +1,6 @@
 @echo off
+rem SPDX-License-Identifier: GPL-3.0-only
+rem Copyright © 2026 Lumin0usX
 setlocal DisableDelayedExpansion
 cd /d "%~dp0"
 set "PYTHONIOENCODING=utf-8"

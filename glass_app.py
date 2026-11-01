@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Desktop shell, with an authenticated local-browser fallback."""
 import copy
 from contextlib import nullcontext

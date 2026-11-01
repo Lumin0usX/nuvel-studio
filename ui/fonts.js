@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright © 2026 Lumin0usX
+
 /* Fonts are bundled, scoped to this app, and remembered per interface language. */
 (() => {
   'use strict';

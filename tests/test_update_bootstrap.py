@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """The stable launcher must fetch before invoking the current build updater."""
 from contextlib import redirect_stderr, redirect_stdout
 import io

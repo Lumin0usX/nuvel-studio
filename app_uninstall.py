@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Offline removal of a verified app bundle, never the source checkout or media."""
 import argparse
 import base64

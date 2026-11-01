@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 from contextlib import redirect_stderr, redirect_stdout
 import io
 from pathlib import Path

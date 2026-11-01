@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Build on an Apple Silicon Mac; no cross-compilation from Windows."""
 from pathlib import Path
 import os

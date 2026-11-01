@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Exercise uninstall validation and preservation using disposable app fixtures."""
 import json
 import io

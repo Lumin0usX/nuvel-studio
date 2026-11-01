@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Unicode product roots must survive macOS ZIPs and reject ambiguous names."""
 import json
 from pathlib import Path

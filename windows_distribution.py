@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Verify a console-free Windows bundle and publish it with a stable shortcut."""
 import json
 import os

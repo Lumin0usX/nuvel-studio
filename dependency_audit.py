@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Inventory the local build environment and exact FFmpeg files, without downloads.
 
 This collects evidence and license texts, not a legal clearance or a claim that

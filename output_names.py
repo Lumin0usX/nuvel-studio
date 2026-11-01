@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Literal output names shared by the media and image downloaders."""
 from pathlib import Path
 import re

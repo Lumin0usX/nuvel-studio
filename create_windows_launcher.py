@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Create a local Windows shortcut to pythonw; no VBS execution is required."""
 from pathlib import Path
 import sys

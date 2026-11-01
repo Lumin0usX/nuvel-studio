@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright © 2026 Lumin0usX
+
 /* Offline UI translations. Message IDs use the original copy; product names stay intact. */
 (() => {
   'use strict';

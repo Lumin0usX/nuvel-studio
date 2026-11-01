@@ -1,0 +1,50 @@
+NÜVEL Studio
+Copyright © 2026 Lumin0usX
+
+The owner licenses the original NÜVEL Studio source code that the owner has
+authority to license under the GNU General Public License, version 3 ONLY.
+SPDX-License-Identifier: GPL-3.0-only
+
+The complete, unmodified license text is in LICENSE. The "or any later version"
+wording in its generic How to Apply example is not this project's grant:
+the owner's choice for covered original project work is GPL-3.0-only.
+
+Scope: original project-owned application code, tests, build/maintenance scripts
+and workflows, and original accompanying documentation. Generated first-party
+font-loader/CSS glue retains the terms of its original generator; generated or
+embedded third-party content retains its own terms. A generator's license is
+not automatically a license for every output or imported dependency.
+
+This grant conveys permissions, not ownership. Preserve existing copyright,
+license, warranty and modification notices as required by the applicable
+licenses, including legitimate contributor/third-party notices. Contributors
+retain copyright in their own work. No copyright assignment or CLA is required.
+No additional always-visible GUI attribution condition is imposed; applicable
+GPL legal-notice requirements still apply.
+
+Exclusions and unresolved provenance:
+
+- Third-party code, engines, runtimes, libraries, SDKs and fonts are not
+  relicensed here. See THIRD_PARTY_NOTICES.md for their separate terms.
+- Artwork in ui/brand/ and the PNG/ICO/ICNS assets in assets/branding/ is
+  excluded from this software grant. Existing asset terms remain unchanged;
+  the owner confirms the supplied 03-Fluid kit is AI-generated artwork created
+  using OpenAI ChatGPT Image Generation at the direction of the project owner.
+  No automatic copyright protection, exclusivity or third-party clearance is
+  asserted. See BRAND-NOTICE.md.
+- ui/index.html combines original template code with Feather 4.29.2 SVG icons.
+  The original template is covered by the grant above; the icon sources and
+  adaptations retain MIT terms, Copyright (c) 2013-2023 Cole Bemis. See
+  third_party/feather/LICENSE and third_party/feather/PROVENANCE.md. No file-wide
+  GPL header or ownership claim is applied to those third-party shapes.
+- The generated gallery CLI entry/combined executable is not cleared by this
+  grant. No GPLv2-compatible exception or alternative license was granted.
+- Third-party license texts and quoted third-party material retain their
+  respective terms and notices. Historical Git objects and existing binaries
+  are not rewritten or automatically represented as licensed by this change.
+
+The name and brand rights are separate from software copyright permissions.
+BRAND-NOTICE.md adds no restriction to GPL-covered code or lawful redistribution.
+See THIRD_PARTY_NOTICES.md for remaining third-party obligations. A root license
+or SPDX header does not establish rights the owner lacks. Publication and binary
+distribution require separate review; this grant is not release clearance.

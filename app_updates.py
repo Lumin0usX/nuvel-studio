@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Nonblocking update service exposed to the existing native UI bridge."""
 import copy
 import shutil

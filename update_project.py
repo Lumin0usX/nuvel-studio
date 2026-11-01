@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Folder-based source updater. Uses the user's existing Git credentials."""
 import argparse
 from pathlib import Path

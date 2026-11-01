@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Fail-closed packaging gate for a separately built, source-bearing LGPL CLI.
 
 This checks supplied evidence; it cannot prove provenance or legal compliance.

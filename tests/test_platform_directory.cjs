@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright © 2026 Lumin0usX
+
 // Exercise the shipped filter: compact discovery must never limit search results.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');

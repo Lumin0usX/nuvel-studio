@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright © 2026 Lumin0usX
+
 // Test actual theme initialization and OS change events, without a browser dependency.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');

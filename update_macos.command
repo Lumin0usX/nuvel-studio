@@ -1,4 +1,7 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 # Parse the whole function before Git replaces this file during the update.
 main() {
     set -euo pipefail

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Windowless source launcher. Own the GUI's process tree, not its download engine."""
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime

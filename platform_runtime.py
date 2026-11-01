@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Small OS adapters shared by the GUI and macOS preflight checks."""
 import os
 from pathlib import Path

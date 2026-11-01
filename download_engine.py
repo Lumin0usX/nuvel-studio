@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 from platform_runtime import install_instructions
 
 PLATFORMS = (

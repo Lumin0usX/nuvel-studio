@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Normalize macOS video downloads for QuickTime using the bundled FFmpeg.
 
 Do not rely on the extension or extractor codec hints: an MP4 may contain

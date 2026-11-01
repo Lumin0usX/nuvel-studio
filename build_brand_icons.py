@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Export native icons from the 1024 px rendering of the supplied Fluid favicon SVG."""
 from PIL import Image
 from platform_runtime import resource_path

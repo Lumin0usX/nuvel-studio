@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Downscale downloaded images in place, preserving originals on failure."""
 import os
 from pathlib import Path

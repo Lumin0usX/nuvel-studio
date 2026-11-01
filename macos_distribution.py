@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Verify the Finder launch path, then publish a complete app without replacing a working build early."""
 import json
 import os

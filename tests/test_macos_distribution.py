@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Verify publication/rollback on disk; the actual native UI test runs during each Mac build."""
 import json
 from pathlib import Path

@@ -1,5 +1,16 @@
 # ผลตรวจการดาวน์โหลดและการแจกจ่าย NÜVEL Studio
 
+> Licensing update — 2026-11-01: the owner selected **GPL-3.0-only** for
+> eligible original code, Copyright © 2026 Lumin0usX. Earlier Proprietary or
+> decision-pending statements below are historical observations, not the current
+> license grant. See [COPYRIGHT](../COPYRIGHT), [license decision](LICENSE-RECOMMENDATION.md),
+> [brand notice](../BRAND-NOTICE.md) and [third-party notices](../THIRD_PARTY_NOTICES.md).
+> Local Strategy B history remediation is complete; the current sprite uses
+> Feather 4.29.2 under MIT. Earlier unknown-sprite and no-local-rewrite statements
+> are superseded. No remote update or publication is implied. Public Windows and
+> macOS binary releases remain **BLOCKED**. This license change does not clear
+> dependencies, assets or packages for distribution, or validate pending code.
+
 วันที่ 2026-10-31 · เริ่มตรวจจาก `ea27c53` · แจกฟรีผ่าน GitHub ตามที่เจ้าของระบุ
 
 **สถานะ: ยังไม่พร้อมรับรองการแจกแพ็กเกจว่าปฏิบัติตามข้อกำหนดครบถ้วน**

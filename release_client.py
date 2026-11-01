@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Read one private GitHub release; credentials never follow asset redirects."""
 import hashlib
 import json

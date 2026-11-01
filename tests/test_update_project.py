@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Use local Git repositories to verify updates without contacting GitHub."""
 from contextlib import redirect_stdout, redirect_stderr
 import io

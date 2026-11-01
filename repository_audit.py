@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Read-only local Git/working-tree audit. Reports locations, never secret values.
 
 Heuristic detection is not proof that a repository is free of credentials.

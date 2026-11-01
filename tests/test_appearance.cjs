@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright © 2026 Lumin0usX
+
 // Exercise the real appearance bootstrap and cancellation, independently of download code.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');

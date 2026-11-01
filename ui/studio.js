@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright © 2026 Lumin0usX
+
 'use strict';
 
 const {t, backend: translateBackend, translatedValues} = window.StudioI18n;

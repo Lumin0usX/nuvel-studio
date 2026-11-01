@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """A failed isolated CLI must stop packaging and report the actual loader error."""
 import subprocess
 import unittest

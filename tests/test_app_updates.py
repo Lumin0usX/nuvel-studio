@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Release transport, real archive/rollback operations, and native-bridge guards."""
 import hashlib
 import io

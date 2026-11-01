@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Image transfers and an isolated gallery-dl CLI adapter (never imported here)."""
 from collections import deque
 import importlib.util

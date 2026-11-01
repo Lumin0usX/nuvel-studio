@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Assemble and publish only complete, versioned native release artifacts."""
 import argparse
 import hashlib

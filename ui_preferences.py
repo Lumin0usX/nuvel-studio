@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Small, atomic store for non-secret UI preferences across desktop launches."""
 import json
 import os

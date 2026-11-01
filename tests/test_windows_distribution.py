@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Publication is tested on disk; actual packaged-UI acceptance is mandatory in the builder."""
 import json
 from pathlib import Path

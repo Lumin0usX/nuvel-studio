@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Exercise real codecs, including an incompatible codec already inside MP4."""
 from pathlib import Path
 from functools import partial

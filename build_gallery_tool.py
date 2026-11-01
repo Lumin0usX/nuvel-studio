@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """Package gallery-dl as its own CLI, isolated from the proprietary GUI process."""
 from importlib.metadata import distribution
 from pathlib import Path

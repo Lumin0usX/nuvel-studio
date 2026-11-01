@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright © 2026 Lumin0usX
+
 // Run with: node tests/test_i18n.cjs. No browser or third-party test dependency.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');

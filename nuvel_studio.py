@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright © 2026 Lumin0usX
+
 """NÜVEL Studio launcher. Use --classic for the previous Tk interface."""
 import sys
 

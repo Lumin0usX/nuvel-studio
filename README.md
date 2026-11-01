@@ -1,7 +1,43 @@
 # NÜVEL Studio
 
 A desktop video, audio and image downloader with the Obsidian Futuristic interface,
-powered by yt-dlp. Original project materials are proprietary.
+powered by yt-dlp. Original project-owned source code is licensed under
+**GNU GPL version 3 only (`GPL-3.0-only`)**.
+
+**Public source publication requires a separate owner decision. Public
+Windows/macOS binary releases remain BLOCKED and are not approved.** Local
+Strategy B history remediation is complete; it does not establish removal from
+GitHub or other copies. No remote update or publication is part of this licensing
+change. Existing Git identity and development-path disclosure are owner-accepted.
+
+## License and attribution
+
+**NÜVEL Studio — Copyright © 2026 Lumin0usX.** Copyright ownership is retained;
+the software grant permits use, study, modification and redistribution under
+the [complete GPLv3 license](LICENSE), **version 3 only**. See [COPYRIGHT](COPYRIGHT)
+for scope, notices and exclusions. The generic “or later” example in the
+unmodified license appendix does not change this project's GPL-3.0-only choice.
+This is the original NÜVEL Studio project, previously named YTDL Studio.
+
+FFmpeg, gallery-dl, yt-dlp, mutagen, Python/native libraries, SDKs, runtimes and
+fonts keep their own terms; they are not relicensed by the root LICENSE.
+See [third-party notices](THIRD_PARTY_NOTICES.md) and the
+[license decision](legal/LICENSE-RECOMMENDATION.md). GPL adoption does not resolve
+the frozen gallery CLI's GPLv2-only/Apache-2.0 question, complete source/notice
+delivery, native SDK terms or the unfinished FFmpeg LGPL migration.
+
+The NÜVEL Studio name, logos and icons are treated separately in the
+[brand notice](BRAND-NOTICE.md). No trademark registration is asserted and no
+additional trademark rights are granted. Brand artwork is excluded from this
+new software grant; existing asset permissions are unchanged. The kit is
+AI-generated artwork created using OpenAI ChatGPT Image Generation at the
+direction of the project owner. No automatic copyright protection, exclusivity
+or third-party rights clearance is asserted. This adds no restriction to
+GPL-covered software. The current SVG symbol sprite uses Feather 4.29.2 icons
+under MIT; see [icon provenance](third_party/feather/PROVENANCE.md).
+
+Contributions are welcome under the [contribution terms](CONTRIBUTING.md).
+Contributors retain their copyright; no CLA or copyright assignment is introduced.
 
 The app uses the **NÜVEL Studio — 03 Fluid** identity, with the supplied outlined
 black/white logos and extracted Ü app icon. The sidebar follows the app theme
@@ -53,6 +89,10 @@ This portable app does not register a Windows Apps & Features uninstall entry.
 
 ## Download the ready-to-use app
 
+These installation instructions describe existing authorized private packages.
+They are not public-distribution clearance; new LGPL/native candidates remain
+blocked by the third-party obligations above.
+
 Open [Releases](https://github.com/Lumin0usX/nuvel-studio/releases) while signed in
 to a GitHub account with access to this private repository. Download the ZIP
 asset, not GitHub's automatically generated source-code archive.
@@ -102,24 +142,12 @@ Until a release is published, the app reports that no packaged release is availa
 
 ### Publish a version (maintainer)
 
-Set `VERSION` in `app_version.py`, commit, and push a matching tag, for example
-`v2.0.0`. `.github/workflows/release.yml` builds Windows x64 and macOS ARM64 on
-their native GitHub runners, runs tests and native startup checks, and uploads
-both ZIPs plus `studio-update.json` to a draft release. Only the complete release
-is published. Re-running is supported for drafts; published versions must not
-be overwritten. This is separate from the Git-based source updater below.
-
-```powershell
-git add .
-git commit -m "Complete NUVEL Studio identity and packaging"
-git push origin main
-git tag v2.0.0
-git push origin v2.0.0
-```
-
-The workflow must be enabled in this private repository. No personal token or
-signing credential is embedded in its artifacts. The workflow uses GitHub's
-short-lived repository token only for publishing release assets.
+Public binary publication is **BLOCKED** and is not authorized by the GPL
+license decision. Resolve dependency compatibility, corresponding-source,
+notices, native-library, security and native-acceptance findings first.
+Release automation must be reviewed separately before any remote update or
+version-tag push. This licensing-only change does not modify workflow behavior
+or clear a package for distribution. See [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Features
 
@@ -431,7 +459,7 @@ python -m unittest discover -s tests -v
 | `download_engine.py` | Platform registry and error guidance |
 | `platform_runtime.py` | Cross-platform resources, FFmpeg, and folder opening |
 | `ui_preferences.py` | Validated, atomic per-user appearance/destination preferences |
-| `legal/` | Distribution audit, platform terms register and proposed freeware permission |
+| `legal/` | License decision, distribution audit and platform review; historical drafts retained |
 | `legacy_tk.py` | Previous interface, available with `--classic` |
 | `tests/` | Automated tests |
 
@@ -441,6 +469,7 @@ and downloaded media are excluded from version control.
 
 ## License
 
-**Proprietary — All rights reserved.** Copyright © 2026 Lumin0usX.
-Use, modification, and redistribution require prior written permission.
-See [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md).
+**GPL-3.0-only** for covered original code. Copyright © 2026 Lumin0usX.
+See [LICENSE](LICENSE), [scope and notices](COPYRIGHT),
+[third-party licenses](THIRD_PARTY_NOTICES.md) and [brand rights](BRAND-NOTICE.md).
+Public binary releases remain **BLOCKED**.
